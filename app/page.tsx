@@ -89,7 +89,12 @@ export default function Home() {
             <h1 className="mt-6 text-5xl font-semibold leading-tight text-white md:text-6xl">
               <span className="sr-only">Zelo</span>
               <span className="inline-flex" aria-hidden="true">
-                <BrandLogo variant="full" className="h-auto w-[280px] max-w-full sm:w-[380px]" priority decorative />
+                <BrandLogo
+                  variant="fullDark"
+                  className="h-auto w-[300px] max-w-full drop-shadow-[0_18px_36px_rgba(0,0,0,0.45)] sm:w-[420px]"
+                  priority
+                  decorative
+                />
               </span>
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-8 text-slate-200">

@@ -1,0 +1,11 @@
+<svg width="100%" viewBox="0 0 680 300" role="img" xmlns="http://www.w3.org/2000/svg">
+  <title>Zelo - logo para fundo escuro</title>
+  <desc>Marca Zelo com arco aberto, ponto central e texto claro para uso sobre fundos escuros.</desc>
+  <g transform="translate(120,90)">
+    <path d="M 60 6 A 54 54 0 1 1 20 22" fill="none" stroke="#6FBF9B" stroke-width="11" stroke-linecap="round" />
+    <circle cx="60" cy="60" r="15" fill="#6FBF9B" />
+  </g>
+  <text x="280" y="172" font-family="Georgia, 'Times New Roman', serif" font-size="76" font-weight="700" fill="#F8FAFC" letter-spacing="0">Zelo</text>
+  <rect x="120" y="228" width="120" height="3" fill="#6FBF9B" />
+  <text x="280" y="232" font-family="Helvetica, Arial, sans-serif" font-size="15" fill="#CBD5E1" letter-spacing="3">NADA PASSA BATIDO</text>
+</svg>
