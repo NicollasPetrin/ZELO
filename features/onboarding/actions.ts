@@ -1,0 +1,37 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { actionError } from "@/lib/action-result";
+import { requireUser } from "@/lib/auth/session";
+import { prisma } from "@/lib/db/client";
+
+export async function completeOnboardingStepAction(key: string) {
+  try {
+    const user = await requireUser();
+
+    await prisma.onboardingStep.upsert({
+      where: {
+        userId_key: {
+          userId: user.id,
+          key,
+        },
+      },
+      create: {
+        companyId: user.companyId,
+        userId: user.id,
+        key,
+        completed: true,
+        completedAt: new Date(),
+      },
+      update: {
+        completed: true,
+        completedAt: new Date(),
+      },
+    });
+
+    revalidatePath("/", "layout");
+    return { ok: true, message: "Guia ocultado." } as const;
+  } catch (error) {
+    return actionError(error);
+  }
+}

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120" role="img">
+<title>Zelo</title>
+<desc>Arco aberto com ponto central.</desc>
+<path d="M 68 8 A 54 54 0 1 1 18 30" fill="none" stroke="#2E7D5B" stroke-width="13" stroke-linecap="round"/>
+<circle cx="60" cy="60" r="16" fill="#2E7D5B"/>
+</svg>
