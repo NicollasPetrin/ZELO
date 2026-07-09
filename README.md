@@ -28,8 +28,8 @@ O projeto ja possui:
 - Painel interno autenticado.
 - Diferencas reais entre planos dentro da aplicacao.
 - Menu lateral desktop e navegacao mobile responsiva.
-- Banco SQLite local com schema completo para SaaS.
-- Seed com empresas, usuarios, tarefas, metas, assinaturas, faturas, relatorios e suporte.
+- Banco PostgreSQL com schema completo para SaaS, pronto para Neon/Vercel.
+- Seed opcional com empresas, usuarios, tarefas, metas, assinaturas, faturas, relatorios e suporte para desenvolvimento.
 - Testes unitarios para regras puras de permissoes, senha e recorrencia.
 - PDF de pitch para investidor em `output/pdf/`.
 
@@ -61,7 +61,7 @@ A Zelo ajuda a empresa a sair de uma rotina baseada em cobranca manual e entrar 
 - TypeScript.
 - Tailwind CSS 4.
 - Prisma 6.
-- SQLite local para desenvolvimento.
+- PostgreSQL em Neon para desenvolvimento/producao.
 - Zod para validacoes.
 - React Hook Form.
 - Lucide React para icones.
@@ -79,8 +79,8 @@ components/                  Componentes reutilizaveis de UI e layout
 features/                    Modulos por dominio com data/actions/forms
 lib/                         Regras compartilhadas, auth, permissoes, planos e utils
 prisma/schema.prisma         Schema completo do banco SaaS
-prisma/seed.ts               Seed completo para desenvolvimento local
-scripts/                     Scripts de setup e criacao do banco
+prisma/seed.ts               Seed opcional para desenvolvimento local
+scripts/                     Scripts de setup do banco
 public/landing-hero.png      Imagem principal da landing page
 output/pdf/                  Materiais gerados, incluindo pitch em PDF
 ```
@@ -236,7 +236,7 @@ As regras ficam centralizadas em `lib/permissions.ts` e os guardas de rota/actio
 
 ## Banco de dados
 
-O banco usa Prisma com SQLite em desenvolvimento. O schema foi desenhado para suportar uma aplicacao SaaS real, com dominios separados para operacao, assinatura, relatorios e suporte.
+O banco usa Prisma com PostgreSQL. O schema foi desenhado para suportar uma aplicacao SaaS real, com dominios separados para operacao, assinatura, relatorios e suporte.
 
 Principais entidades:
 
@@ -267,23 +267,32 @@ npm install
 2. Crie o arquivo `.env`:
 
 ```bash
-DATABASE_URL="file:./dev.db"
+DATABASE_URL="postgresql://USER:PASSWORD@HOST_POOLER/neondb?sslmode=require&channel_binding=require"
+DIRECT_URL="postgresql://USER:PASSWORD@HOST/neondb?sslmode=require&channel_binding=require"
 SESSION_SECRET="troque-esta-chave-em-producao-com-valor-longo"
 ```
 
-3. Gere o Prisma Client, crie o banco SQLite e rode o seed:
+Use `DATABASE_URL` com a URL pooled do Neon para a aplicacao e `DIRECT_URL` com a URL direta para migrations.
+
+3. Gere o Prisma Client e aplique as migrations:
 
 ```bash
-npm run db:setup
+npm run db:deploy
 ```
 
-4. Rode os testes:
+4. Se quiser massa de desenvolvimento, rode o seed:
+
+```bash
+npm run db:seed
+```
+
+5. Rode os testes:
 
 ```bash
 npm run test
 ```
 
-5. Inicie o localhost:
+6. Inicie o localhost:
 
 ```bash
 npm run dev
@@ -306,8 +315,8 @@ http://localhost:3000
 | `npm run test` | Executa testes unitarios com Vitest. |
 | `npm run db:generate` | Gera Prisma Client. |
 | `npm run db:migrate` | Roda migracoes Prisma em desenvolvimento. |
-| `npm run db:create` | Cria banco SQLite a partir do schema. |
-| `npm run db:setup` | Gera Prisma Client, cria banco SQLite e executa seed. |
+| `npm run db:deploy` | Aplica migrations em ambiente remoto/producao. |
+| `npm run db:setup` | Gera Prisma Client, aplica migrations e executa seed. |
 | `npm run db:seed` | Executa seed do Prisma. |
 | `npm run db:reset` | Reseta o banco via Prisma. |
 
@@ -354,8 +363,8 @@ Esse material resume problema, produto, modelo de negocio, planos, diferenciais,
 - A autenticacao atual e local, com cookie assinado e senha com `scrypt`.
 - O upload de anexos esta modelado no banco, mas ainda pode evoluir para storage local ou externo.
 - A recorrencia ja possui schema e helper; um job/cron pode ser adicionado para gerar proximas tarefas automaticamente.
-- O banco local usa SQLite para simplicidade de desenvolvimento.
-- Para producao, o caminho natural e migrar para PostgreSQL e configurar storage, pagamento real e monitoramento.
+- O banco usa PostgreSQL, com `DATABASE_URL` pooled e `DIRECT_URL` direta para migrations.
+- Para producao, o caminho natural e configurar storage, pagamento real e monitoramento.
 
 ## Roadmap sugerido
 
