@@ -12,6 +12,7 @@
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:setup": "tsx scripts/setup-db.ts",
+    "db:demo": "tsx scripts/ensure-plan-demos.ts",
     "db:seed": "prisma db seed",
     "db:reset": "prisma migrate reset --force"
   },

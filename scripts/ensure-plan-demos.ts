@@ -1,8 +1,10 @@
 import { PrismaClient } from "@prisma/client";
 import { hashPassword } from "../lib/auth/password";
+import { getPlanAccess, planDetails, planOrder } from "../lib/plans";
 
 const prisma = new PrismaClient();
-const passwordHash = hashPassword("123456");
+const DEMO_PASSWORD = "DemoZelo123";
+const passwordHash = hashPassword(DEMO_PASSWORD);
 
 type PlanCode = "BASIC" | "MANAGEMENT" | "COMPLETE";
 
@@ -25,6 +27,85 @@ function daysFromNow(days: number) {
   return date;
 }
 
+function featureKey(feature: string) {
+  return feature
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+async function ensurePlanCatalog() {
+  const plans = new Map<PlanCode, { id: string }>();
+
+  for (const [index, plan] of planOrder.entries()) {
+    const details = planDetails[plan];
+    const access = getPlanAccess(plan);
+    const planRecord = await prisma.planCatalog.upsert({
+      where: {
+        code: plan,
+      },
+      update: {
+        name: details.name,
+        label: details.label,
+        description: details.description,
+        priceCents: details.priceCents,
+        pricePerExtraUser: details.pricePerExtraUserCents,
+        includedUsers: details.includedUsers,
+        maxUsers: access.maxUsers,
+        dashboardName: access.dashboardName,
+        isHighlighted: details.highlight,
+        isActive: true,
+        sortOrder: index + 1,
+      },
+      create: {
+        code: plan,
+        name: details.name,
+        label: details.label,
+        description: details.description,
+        priceCents: details.priceCents,
+        pricePerExtraUser: details.pricePerExtraUserCents,
+        includedUsers: details.includedUsers,
+        maxUsers: access.maxUsers,
+        dashboardName: access.dashboardName,
+        isHighlighted: details.highlight,
+        isActive: true,
+        sortOrder: index + 1,
+      },
+    });
+
+    await Promise.all(
+      details.features.map((feature, featureIndex) =>
+        prisma.planFeature.upsert({
+          where: {
+            planId_featureKey: {
+              planId: planRecord.id,
+              featureKey: featureKey(feature),
+            },
+          },
+          update: {
+            name: feature,
+            included: true,
+            sortOrder: featureIndex + 1,
+          },
+          create: {
+            planId: planRecord.id,
+            featureKey: featureKey(feature),
+            name: feature,
+            included: true,
+            sortOrder: featureIndex + 1,
+          },
+        }),
+      ),
+    );
+
+    plans.set(plan, planRecord);
+  }
+
+  return plans;
+}
+
 async function ensureDepartment(companyId: string, name: string) {
   return prisma.department.upsert({
     where: { companyId_name: { companyId, name } },
@@ -38,7 +119,7 @@ async function ensureDepartment(companyId: string, name: string) {
   });
 }
 
-async function ensurePlanCompany(input: DemoInput) {
+async function ensurePlanCompany(input: DemoInput, planCatalog: Map<PlanCode, { id: string }>) {
   const existingCompany = await prisma.company.findFirst({ where: { name: input.companyName } });
   const company = existingCompany
     ? await prisma.company.update({
@@ -158,9 +239,105 @@ async function ensurePlanCompany(input: DemoInput) {
       },
     });
   }
+
+  const planRecord = planCatalog.get(input.plan);
+
+  if (!planRecord) {
+    throw new Error(`Plano ${input.plan} nao encontrado no catalogo.`);
+  }
+
+  const periodStart = daysFromNow(-3);
+  const periodEnd = daysFromNow(27);
+  const existingSubscription = await prisma.companySubscription.findFirst({
+    where: {
+      companyId: company.id,
+      status: "ACTIVE",
+    },
+  });
+  const subscription = existingSubscription
+    ? await prisma.companySubscription.update({
+        where: {
+          id: existingSubscription.id,
+        },
+        data: {
+          planId: planRecord.id,
+          currentPeriodStart: periodStart,
+          currentPeriodEnd: periodEnd,
+          canceledAt: null,
+        },
+      })
+    : await prisma.companySubscription.create({
+        data: {
+          companyId: company.id,
+          planId: planRecord.id,
+          status: "ACTIVE",
+          currentPeriodStart: periodStart,
+          currentPeriodEnd: periodEnd,
+        },
+      });
+
+  const paymentMethod = await prisma.paymentMethod.upsert({
+    where: {
+      id: `${company.id}-demo-payment-method`,
+    },
+    update: {
+      isDefault: true,
+      holderName: input.ownerName,
+    },
+    create: {
+      id: `${company.id}-demo-payment-method`,
+      companyId: company.id,
+      type: "DEMO",
+      provider: "Demo",
+      holderName: input.ownerName,
+      isDefault: true,
+    },
+  });
+
+  await prisma.invoice.upsert({
+    where: {
+      number: `DEMO-${input.plan}`,
+    },
+    update: {
+      companyId: company.id,
+      subscriptionId: subscription.id,
+      paymentMethodId: paymentMethod.id,
+      amountCents: planDetails[input.plan].priceCents,
+      periodStart,
+      periodEnd,
+      status: "PAID",
+    },
+    create: {
+      companyId: company.id,
+      subscriptionId: subscription.id,
+      paymentMethodId: paymentMethod.id,
+      number: `DEMO-${input.plan}`,
+      status: "PAID",
+      amountCents: planDetails[input.plan].priceCents,
+      dueDate: daysFromNow(-1),
+      paidAt: daysFromNow(-2),
+      periodStart,
+      periodEnd,
+      description: `Mensalidade demo do Plano ${planDetails[input.plan].name}`,
+    },
+  });
+
+  await prisma.usageSnapshot.create({
+    data: {
+      companyId: company.id,
+      subscriptionId: subscription.id,
+      activeUsers: await prisma.user.count({ where: { companyId: company.id, isActive: true } }),
+      departments: await prisma.department.count({ where: { companyId: company.id, isActive: true } }),
+      tasks: await prisma.task.count({ where: { companyId: company.id } }),
+      goals: await prisma.goal.count({ where: { companyId: company.id } }),
+      storageMb: 0,
+    },
+  });
 }
 
 async function main() {
+  const planCatalog = await ensurePlanCatalog();
+
   await ensurePlanCompany({
     plan: "BASIC",
     companyName: "Demo Plano Basico",
@@ -175,7 +352,7 @@ async function main() {
       "Comentar pendencias do atendimento",
     ],
     goalTitle: "Organizar 80% da rotina no mes",
-  });
+  }, planCatalog);
 
   await ensurePlanCompany({
     plan: "MANAGEMENT",
@@ -187,7 +364,7 @@ async function main() {
     departmentNames: ["Gestao", "Operacao", "Atendimento", "Financeiro"],
     taskTitles: ["Revisar rotina semanal da equipe gestora"],
     goalTitle: "Concluir 90% das tarefas no prazo",
-  });
+  }, planCatalog);
 
   await ensurePlanCompany({
     plan: "COMPLETE",
@@ -200,11 +377,11 @@ async function main() {
     taskTitles: [
       "Revisar estrutura mensal de tarefas e metas",
       "Preparar relatorio gerencial da operacao",
-      "Treinar gestores sobre rotina recorrente",
+      "Configurar rotina recorrente dos setores",
       "Mapear prioridades para novas funcionalidades",
     ],
     goalTitle: "Ativar controles avancados em todos os setores",
-  });
+  }, planCatalog);
 
   const users = await prisma.user.findMany({
     where: { email: { in: ["basico@demo.com", "gestao@demo.com", "completo@demo.com"] } },
@@ -213,6 +390,7 @@ async function main() {
   });
 
   console.log(users.map((user) => `${user.email} -> ${user.company.plan}`).join("\n"));
+  console.log(`Senha: ${DEMO_PASSWORD}`);
 }
 
 main()

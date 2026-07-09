@@ -317,6 +317,7 @@ http://localhost:3000
 | `npm run db:migrate` | Roda migracoes Prisma em desenvolvimento. |
 | `npm run db:deploy` | Aplica migrations em ambiente remoto/producao. |
 | `npm run db:setup` | Gera Prisma Client, aplica migrations e executa seed. |
+| `npm run db:demo` | Cria/atualiza contas demo dos planos Basico, Gestao e Completo. |
 | `npm run db:seed` | Executa seed do Prisma. |
 | `npm run db:reset` | Reseta o banco via Prisma. |
 
