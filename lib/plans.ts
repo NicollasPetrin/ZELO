@@ -259,6 +259,13 @@ export function canActivateAdditionalUser(plan: SubscriptionPlan, currentActiveU
   return maxUsers === null || currentActiveUserCount < maxUsers;
 }
 
+export function formatPriceCents(amountCents: number) {
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  }).format(amountCents / 100);
+}
+
 export function calculateMonthlyPrice(plan: SubscriptionPlan, activeUserCount: number): MonthlyPriceCalculation {
   if (!Number.isInteger(activeUserCount) || activeUserCount < 0) {
     throw new RangeError("activeUserCount precisa ser um inteiro maior ou igual a zero.");

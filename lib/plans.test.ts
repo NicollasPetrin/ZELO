@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculateMonthlyPrice, canActivateAdditionalUser } from "./plans";
+import { calculateMonthlyPrice, canActivateAdditionalUser, formatPriceCents } from "./plans";
 
 describe("calculateMonthlyPrice", () => {
   it("keeps the base price below the included user limit", () => {
@@ -74,5 +74,11 @@ describe("canActivateAdditionalUser", () => {
   it("rejects invalid current active user counts", () => {
     expect(() => canActivateAdditionalUser("MANAGEMENT", -1)).toThrow(RangeError);
     expect(() => canActivateAdditionalUser("MANAGEMENT", 1.5)).toThrow(RangeError);
+  });
+});
+
+describe("formatPriceCents", () => {
+  it("formats cents as Brazilian reais", () => {
+    expect(formatPriceCents(26480)).toMatch(/^R\$\s?264,80$/);
   });
 });

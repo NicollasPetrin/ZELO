@@ -51,6 +51,7 @@ export const employeeSchema = z
     position: z.string().trim().optional().or(z.literal("")),
     password: z.string().optional().or(z.literal("")),
     isActive: z.boolean().default(true),
+    confirmExtraUserCharge: z.boolean().default(false),
   })
   .superRefine((data, ctx) => {
     if (!data.id && !data.password) {

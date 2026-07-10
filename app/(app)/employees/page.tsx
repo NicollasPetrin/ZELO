@@ -1,4 +1,4 @@
-import { Power, UserRound } from "lucide-react";
+import { UserRound } from "lucide-react";
 import { DataTable, Td, Th } from "@/components/data-table";
 import { EmptyState } from "@/components/empty-state";
 import { LockedFeatureCard } from "@/components/locked-feature-card";
@@ -6,16 +6,15 @@ import { OnboardingCard } from "@/components/onboarding-card";
 import { PageHeader } from "@/components/page-header";
 import { SubscriptionRequiredCard } from "@/components/subscription-required-card";
 import { Badge } from "@/components/ui/badge";
-import { buttonClassName } from "@/components/ui/button";
-import { toggleEmployeeAction } from "@/features/employees/actions";
 import { listEmployees } from "@/features/employees/data";
 import { EmployeeForm } from "@/features/employees/employee-form";
+import { EmployeeStatusButton } from "@/features/employees/employee-status-button";
 import { listActiveDepartments } from "@/features/departments/data";
 import { requireCompanyManager } from "@/lib/auth/guards";
 import { formatDate } from "@/lib/format";
 import { roleLabels } from "@/lib/labels";
 import { isOnboardingCompleted } from "@/lib/onboarding";
-import { getPlanAccess, planDetails } from "@/lib/plans";
+import { calculateMonthlyPrice, formatPriceCents, getPlanAccess, planDetails } from "@/lib/plans";
 import { getActivePlanCode } from "@/lib/subscription";
 
 export default async function EmployeesPage() {
@@ -36,6 +35,18 @@ export default async function EmployeesPage() {
   const activeEmployees = employees.filter((employee) => employee.isActive).length;
   const reachedLimit = access.maxUsers !== null && activeEmployees >= access.maxUsers;
   const maxUsersLabel = access.maxUsers === null ? "ilimitado" : String(access.maxUsers);
+  const currentPrice = calculateMonthlyPrice(activePlanCode, activeEmployees);
+  const nextPrice = calculateMonthlyPrice(activePlanCode, activeEmployees + 1);
+  const billing = {
+    planName: activePlan.name,
+    activeUserCount: activeEmployees,
+    includedUsers: access.includedUsers,
+    maxUsers: access.maxUsers,
+    pricePerExtraUser: activePlan.pricePerExtraUser,
+    currentMonthlyTotal: currentPrice.totalPriceCents === null ? "Upgrade necessario" : formatPriceCents(currentPrice.totalPriceCents),
+    nextMonthlyTotal: nextPrice.totalPriceCents === null ? "Upgrade necessario" : formatPriceCents(nextPrice.totalPriceCents),
+    upgradePlanName: activePlanCode === "BASIC" ? "Gestao" : "Completo",
+  };
 
   return (
     <div className="space-y-6">
@@ -58,6 +69,7 @@ export default async function EmployeesPage() {
             <p className="mt-1 text-sm text-slate-600">
               {activeEmployees} usuarios ativos. {access.includedUsers} incluidos no Plano {activePlan.name}; usuario extra custa {activePlan.pricePerExtraUser}/mes.
             </p>
+            <p className="mt-1 text-sm font-semibold text-slate-950">Mensalidade atual: {billing.currentMonthlyTotal}</p>
           </div>
           <span className="rounded-md bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-800">
             Teto {maxUsersLabel}
@@ -72,7 +84,7 @@ export default async function EmployeesPage() {
           requiredPlan={activePlanCode === "BASIC" ? "Gestao" : "Completo"}
         />
       ) : (
-        <EmployeeForm departments={departments} />
+        <EmployeeForm departments={departments} billing={billing} />
       )}
 
       {employees.length ? (
@@ -105,6 +117,7 @@ export default async function EmployeesPage() {
                             <EmployeeForm
                               compact
                               departments={departments}
+                              billing={billing}
                               initial={{
                                 id: employee.id,
                                 name: employee.name,
@@ -130,17 +143,7 @@ export default async function EmployeesPage() {
                   </Td>
                   <Td>{formatDate(employee.createdAt)}</Td>
                   <Td>
-                    <form
-                      action={async () => {
-                        "use server";
-                        await toggleEmployeeAction(employee.id, !employee.isActive);
-                      }}
-                    >
-                      <button className={buttonClassName("secondary", "sm")} type="submit" disabled={employee.id === user.id}>
-                        <Power className="h-3.5 w-3.5" />
-                        {employee.isActive ? "Inativar" : "Ativar"}
-                      </button>
-                    </form>
+                    <EmployeeStatusButton employeeId={employee.id} isActive={employee.isActive} isCurrentUser={employee.id === user.id} billing={billing} />
                   </Td>
                 </tr>
               ))}

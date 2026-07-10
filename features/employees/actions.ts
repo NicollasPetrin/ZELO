@@ -17,7 +17,27 @@ function userLimitMessage(plan: SubscriptionPlan) {
   return `O Plano ${planDetails[plan].name} permite ate ${maxUsers} usuarios ativos. Para adicionar mais pessoas, faca upgrade de plano.`;
 }
 
-async function assertCanActivateUser(tx: Prisma.TransactionClient, companyId: string, plan: SubscriptionPlan) {
+function extraUserApprovalMessage(plan: SubscriptionPlan) {
+  return `Este funcionario ficara acima dos usuarios incluidos no Plano ${planDetails[plan].name} e adicionara ${planDetails[plan].pricePerExtraUser}/mes a assinatura. Confirme o aceite do custo adicional para continuar.`;
+}
+
+function extraUserSavedMessage(plan: SubscriptionPlan) {
+  const access = getPlanAccess(plan);
+
+  return `Funcionario salvo. Este usuario fica acima dos ${access.includedUsers} incluidos no Plano ${planDetails[plan].name} e adiciona ${planDetails[plan].pricePerExtraUser}/mes a assinatura.`;
+}
+
+async function validateUserActivation({
+  tx,
+  companyId,
+  plan,
+  confirmExtraUserCharge,
+}: {
+  tx: Prisma.TransactionClient;
+  companyId: string;
+  plan: SubscriptionPlan;
+  confirmExtraUserCharge: boolean;
+}) {
   const activeUsers = await tx.user.count({
     where: {
       companyId,
@@ -29,7 +49,17 @@ async function assertCanActivateUser(tx: Prisma.TransactionClient, companyId: st
     throw new Error(userLimitMessage(plan));
   }
 
-  return activeUsers;
+  const price = calculateMonthlyPrice(plan, activeUsers + 1);
+
+  if (price.requiresUpgrade) {
+    throw new Error(userLimitMessage(plan));
+  }
+
+  if (price.extraUsers > 0 && !confirmExtraUserCharge) {
+    throw new Error(extraUserApprovalMessage(plan));
+  }
+
+  return price;
 }
 
 export async function saveEmployeeAction(values: unknown) {
@@ -80,7 +110,16 @@ export async function saveEmployeeAction(values: unknown) {
           }
 
           if (!existingEmployee.isActive && parsed.isActive) {
-            await assertCanActivateUser(tx, user.companyId, activePlan);
+            const price = await validateUserActivation({
+              tx,
+              companyId: user.companyId,
+              plan: activePlan,
+              confirmExtraUserCharge: parsed.confirmExtraUserCharge,
+            });
+
+            if (price.extraUsers > 0) {
+              extraUserMessage = extraUserSavedMessage(activePlan);
+            }
           }
 
           await tx.user.update({
@@ -100,17 +139,15 @@ export async function saveEmployeeAction(values: unknown) {
       await prisma.$transaction(
         async (tx) => {
           if (parsed.isActive) {
-            const activeUsers = await assertCanActivateUser(tx, user.companyId, activePlan);
-            const nextUserCount = activeUsers + 1;
-            const price = calculateMonthlyPrice(activePlan, nextUserCount);
-            const access = getPlanAccess(activePlan);
-
-            if (price.requiresUpgrade) {
-              throw new Error(userLimitMessage(activePlan));
-            }
+            const price = await validateUserActivation({
+              tx,
+              companyId: user.companyId,
+              plan: activePlan,
+              confirmExtraUserCharge: parsed.confirmExtraUserCharge,
+            });
 
             if (price.extraUsers > 0) {
-              extraUserMessage = `Funcionario salvo. Este usuario fica acima dos ${access.includedUsers} incluidos no Plano ${planDetails[activePlan].name} e adiciona ${planDetails[activePlan].pricePerExtraUser}/mes a assinatura.`;
+              extraUserMessage = extraUserSavedMessage(activePlan);
             }
           }
 
@@ -128,13 +165,14 @@ export async function saveEmployeeAction(values: unknown) {
 
     revalidatePath("/employees");
     revalidatePath("/dashboard");
+    revalidatePath("/settings");
     return { ok: true, message: extraUserMessage ?? "Funcionario salvo." } as const;
   } catch (error) {
     return actionError(error, "Nao foi possivel salvar o funcionario.");
   }
 }
 
-export async function toggleEmployeeAction(id: string, isActive: boolean) {
+export async function toggleEmployeeAction(id: string, isActive: boolean, confirmExtraUserCharge = false) {
   try {
     const user = await requireUser();
     assertCanManageTeam(user);
@@ -143,6 +181,8 @@ export async function toggleEmployeeAction(id: string, isActive: boolean) {
     if (id === user.id) {
       throw new Error("Voce nao pode inativar o proprio acesso.");
     }
+
+    let successMessage = isActive ? "Funcionario ativado." : "Funcionario inativado.";
 
     await prisma.$transaction(
       async (tx) => {
@@ -162,7 +202,16 @@ export async function toggleEmployeeAction(id: string, isActive: boolean) {
         }
 
         if (!existingEmployee.isActive && isActive) {
-          await assertCanActivateUser(tx, user.companyId, activePlan);
+          const price = await validateUserActivation({
+            tx,
+            companyId: user.companyId,
+            plan: activePlan,
+            confirmExtraUserCharge,
+          });
+
+          if (price.extraUsers > 0) {
+            successMessage = extraUserSavedMessage(activePlan);
+          }
         }
 
         await tx.user.update({
@@ -179,7 +228,8 @@ export async function toggleEmployeeAction(id: string, isActive: boolean) {
     );
 
     revalidatePath("/employees");
-    return { ok: true, message: isActive ? "Funcionario ativado." : "Funcionario inativado." } as const;
+    revalidatePath("/settings");
+    return { ok: true, message: successMessage } as const;
   } catch (error) {
     return actionError(error, "Nao foi possivel alterar o funcionario.");
   }

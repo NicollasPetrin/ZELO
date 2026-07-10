@@ -2,7 +2,8 @@ import { Check, CreditCard } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { CompanySettingsForm } from "@/features/settings/company-settings-form";
 import { requireCompanyManager } from "@/lib/auth/guards";
-import { getPlanAccess, planDetails, planOrder } from "@/lib/plans";
+import { prisma } from "@/lib/db/client";
+import { calculateMonthlyPrice, formatPriceCents, getPlanAccess, planDetails, planOrder } from "@/lib/plans";
 import { getActivePlanCode } from "@/lib/subscription";
 
 export default async function SettingsPage() {
@@ -10,6 +11,23 @@ export default async function SettingsPage() {
   const activePlanCode = getActivePlanCode(user.company);
   const activePlan = activePlanCode ? planDetails[activePlanCode] : null;
   const access = getPlanAccess(activePlanCode);
+  const activeUserCount = activePlanCode
+    ? await prisma.user.count({
+        where: {
+          companyId: user.companyId,
+          isActive: true,
+        },
+      })
+    : 0;
+  const monthlyPrice = activePlanCode ? calculateMonthlyPrice(activePlanCode, activeUserCount) : null;
+  const currentMonthlyTotal =
+    monthlyPrice?.totalPriceCents === null
+      ? "Upgrade necessario"
+      : monthlyPrice
+        ? formatPriceCents(monthlyPrice.totalPriceCents)
+        : "A contratar";
+  const extraUsers = monthlyPrice?.extraUsers ?? 0;
+  const extraUsersPrice = formatPriceCents(monthlyPrice?.extraUsersPriceCents ?? 0);
   const maxUsersLabel = activePlan ? (access.maxUsers === null ? "Ilimitado" : `Ate ${access.maxUsers}`) : "Nenhum";
   const activeFeatures = activePlan?.features ?? [
     "Cadastro da empresa criado",
@@ -41,18 +59,35 @@ export default async function SettingsPage() {
             <p className="mt-2 text-sm leading-6 text-slate-600">
               {activePlan?.description ?? "Escolha um plano para liberar tarefas, metas, funcionarios, relatorios e demais rotinas da empresa."}
             </p>
-            <p className="mt-4 text-2xl font-semibold text-slate-950">
-              {activePlan?.price ?? "A contratar"}
+            <p className="mt-4 text-xs font-medium uppercase tracking-normal text-slate-400">Mensalidade atual</p>
+            <p className="mt-1 text-2xl font-semibold text-slate-950">
+              {currentMonthlyTotal}
               {activePlan ? <span className="text-sm font-medium text-slate-500">/mes</span> : null}
             </p>
             <dl className="mt-4 grid gap-3 text-sm text-slate-600 sm:grid-cols-2">
+              <div className="rounded-md bg-slate-50 p-3">
+                <dt className="text-xs font-medium uppercase tracking-normal text-slate-400">Base do plano</dt>
+                <dd className="mt-1 font-semibold text-slate-950">{activePlan?.price ?? "-"}</dd>
+              </div>
               <div className="rounded-md bg-slate-50 p-3">
                 <dt className="text-xs font-medium uppercase tracking-normal text-slate-400">Incluidos</dt>
                 <dd className="mt-1 font-semibold text-slate-950">{activePlan ? `Ate ${access.includedUsers}` : "0"}</dd>
               </div>
               <div className="rounded-md bg-slate-50 p-3">
+                <dt className="text-xs font-medium uppercase tracking-normal text-slate-400">Usuarios ativos</dt>
+                <dd className="mt-1 font-semibold text-slate-950">{activeUserCount}</dd>
+              </div>
+              <div className="rounded-md bg-slate-50 p-3">
                 <dt className="text-xs font-medium uppercase tracking-normal text-slate-400">Usuario extra</dt>
                 <dd className="mt-1 font-semibold text-slate-950">{activePlan ? `${activePlan.pricePerExtraUser}/mes` : "-"}</dd>
+              </div>
+              <div className="rounded-md bg-slate-50 p-3">
+                <dt className="text-xs font-medium uppercase tracking-normal text-slate-400">Extras cobrados</dt>
+                <dd className="mt-1 font-semibold text-slate-950">{extraUsers}</dd>
+              </div>
+              <div className="rounded-md bg-slate-50 p-3">
+                <dt className="text-xs font-medium uppercase tracking-normal text-slate-400">Adicional mensal</dt>
+                <dd className="mt-1 font-semibold text-slate-950">{extraUsersPrice}</dd>
               </div>
               <div className="rounded-md bg-slate-50 p-3">
                 <dt className="text-xs font-medium uppercase tracking-normal text-slate-400">Teto</dt>
