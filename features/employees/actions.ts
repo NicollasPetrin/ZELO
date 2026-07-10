@@ -234,3 +234,78 @@ export async function toggleEmployeeAction(id: string, isActive: boolean, confir
     return actionError(error, "Nao foi possivel alterar o funcionario.");
   }
 }
+
+export async function deleteEmployeeAction(id: string) {
+  try {
+    const user = await requireUser();
+    assertCanManageTeam(user);
+    assertCompanyHasActivePlan(user.company);
+
+    if (id === user.id) {
+      throw new Error("Voce nao pode excluir o proprio acesso.");
+    }
+
+    await prisma.$transaction(async (tx) => {
+      const employee = await tx.user.findFirst({
+        where: {
+          id,
+          companyId: user.companyId,
+        },
+        select: {
+          id: true,
+          name: true,
+          _count: {
+            select: {
+              assignedTasks: true,
+              createdTasks: true,
+              comments: true,
+              attachments: true,
+              goals: true,
+              activityLogs: true,
+              taskActivities: true,
+              subscriptionEvents: true,
+              reportSnapshots: true,
+              supportTickets: true,
+            },
+          },
+        },
+      });
+
+      if (!employee) {
+        throw new Error("Funcionario nao encontrado.");
+      }
+
+      const blockers = [
+        employee._count.assignedTasks ? `${employee._count.assignedTasks} tarefa(s) atribuida(s)` : null,
+        employee._count.createdTasks ? `${employee._count.createdTasks} tarefa(s) criada(s)` : null,
+        employee._count.comments ? `${employee._count.comments} comentario(s)` : null,
+        employee._count.attachments ? `${employee._count.attachments} anexo(s)` : null,
+        employee._count.goals ? `${employee._count.goals} meta(s)` : null,
+        employee._count.activityLogs ? `${employee._count.activityLogs} registro(s) de atividade` : null,
+        employee._count.taskActivities ? `${employee._count.taskActivities} historico(s) de tarefa` : null,
+        employee._count.subscriptionEvents ? `${employee._count.subscriptionEvents} evento(s) de assinatura` : null,
+        employee._count.reportSnapshots ? `${employee._count.reportSnapshots} relatorio(s)` : null,
+        employee._count.supportTickets ? `${employee._count.supportTickets} chamado(s)` : null,
+      ].filter(Boolean);
+
+      if (blockers.length > 0) {
+        throw new Error(
+          `Nao foi possivel excluir ${employee.name}, pois existe historico vinculado: ${blockers.join(", ")}. Inative o acesso para preservar os dados da operacao.`,
+        );
+      }
+
+      await tx.user.delete({
+        where: {
+          id: employee.id,
+        },
+      });
+    });
+
+    revalidatePath("/employees");
+    revalidatePath("/dashboard");
+    revalidatePath("/settings");
+    return { ok: true, message: "Funcionario excluido." } as const;
+  } catch (error) {
+    return actionError(error, "Nao foi possivel excluir o funcionario.");
+  }
+}

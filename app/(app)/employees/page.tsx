@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/page-header";
 import { SubscriptionRequiredCard } from "@/components/subscription-required-card";
 import { Badge } from "@/components/ui/badge";
 import { listEmployees } from "@/features/employees/data";
+import { EmployeeDeleteButton } from "@/features/employees/employee-delete-button";
 import { EmployeeForm } from "@/features/employees/employee-form";
 import { EmployeeStatusButton } from "@/features/employees/employee-status-button";
 import { listActiveDepartments } from "@/features/departments/data";
@@ -143,7 +144,10 @@ export default async function EmployeesPage() {
                   </Td>
                   <Td>{formatDate(employee.createdAt)}</Td>
                   <Td>
-                    <EmployeeStatusButton employeeId={employee.id} isActive={employee.isActive} isCurrentUser={employee.id === user.id} billing={billing} />
+                    <div className="flex flex-col gap-2">
+                      <EmployeeStatusButton employeeId={employee.id} isActive={employee.isActive} isCurrentUser={employee.id === user.id} billing={billing} />
+                      <EmployeeDeleteButton employeeId={employee.id} employeeName={employee.name} isCurrentUser={employee.id === user.id} />
+                    </div>
                   </Td>
                 </tr>
               ))}
