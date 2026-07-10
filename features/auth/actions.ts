@@ -4,21 +4,10 @@ import { redirect } from "next/navigation";
 import { createSession, deleteSession, getCurrentUser } from "@/lib/auth/session";
 import { hashPassword, verifyPassword } from "@/lib/auth/password";
 import { prisma } from "@/lib/db/client";
-import { getPlanAccess, planDetails, planOrder } from "@/lib/plans";
 import { loginSchema, signupSchema } from "@/lib/validations";
 
 const DUMMY_PASSWORD_HASH = hashPassword("SenhaFalsaSegura123");
-const DEFAULT_SIGNUP_PLAN = "BASIC" as const;
 const DEFAULT_DEPARTMENTS = ["Gestao", "Operacao", "Atendimento"];
-
-function featureKey(feature: string) {
-  return feature
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-}
 
 export async function loginAction(formData: FormData) {
   const parsed = loginSchema.safeParse({
@@ -77,46 +66,12 @@ export async function signupAction(formData: FormData) {
   }
 
   const userId = await prisma.$transaction(async (tx) => {
-    const details = planDetails[DEFAULT_SIGNUP_PLAN];
-    const access = getPlanAccess(DEFAULT_SIGNUP_PLAN);
-    let planRecord = await tx.planCatalog.findUnique({
-      where: {
-        code: DEFAULT_SIGNUP_PLAN,
-      },
-    });
-
-    if (!planRecord) {
-      planRecord = await tx.planCatalog.create({
-        data: {
-          code: DEFAULT_SIGNUP_PLAN,
-          name: details.name,
-          label: details.label,
-          description: details.description,
-          priceCents: details.priceCents,
-          pricePerExtraUser: details.pricePerExtraUserCents,
-          includedUsers: details.includedUsers,
-          maxUsers: details.maxUsers,
-          dashboardName: access.dashboardName,
-          isHighlighted: details.highlight,
-          sortOrder: planOrder.indexOf(DEFAULT_SIGNUP_PLAN) + 1,
-          features: {
-            create: details.features.map((feature, index) => ({
-              featureKey: featureKey(feature),
-              name: feature,
-              sortOrder: index + 1,
-            })),
-          },
-        },
-      });
-    }
-
     const company = await tx.company.create({
       data: {
         name: parsed.data.companyName,
         segment: parsed.data.segment || null,
         email: parsed.data.email,
         employeeCount: 1,
-        plan: DEFAULT_SIGNUP_PLAN,
         isActive: true,
       },
     });
@@ -150,28 +105,6 @@ export async function signupAction(formData: FormData) {
       },
     });
 
-    const currentPeriodStart = new Date();
-    const currentPeriodEnd = new Date(currentPeriodStart);
-    currentPeriodEnd.setDate(currentPeriodEnd.getDate() + 30);
-
-    await tx.companySubscription.create({
-      data: {
-        companyId: company.id,
-        planId: planRecord.id,
-        status: "ACTIVE",
-        currentPeriodStart,
-        currentPeriodEnd,
-        events: {
-          create: {
-            actorId: owner.id,
-            type: "SUBSCRIPTION_CHANGED",
-            title: `Plano ${details.name} ativado`,
-            description: "Conta criada pelo cadastro publico.",
-          },
-        },
-      },
-    });
-
     await tx.activityLog.create({
       data: {
         companyId: company.id,
@@ -188,7 +121,7 @@ export async function signupAction(formData: FormData) {
   });
 
   await createSession(userId);
-  redirect("/dashboard");
+  redirect("/settings?welcome=1");
 }
 
 export async function logoutAction() {

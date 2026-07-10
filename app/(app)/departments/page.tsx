@@ -3,6 +3,7 @@ import { DataTable, Td, Th } from "@/components/data-table";
 import { EmptyState } from "@/components/empty-state";
 import { OnboardingCard } from "@/components/onboarding-card";
 import { PageHeader } from "@/components/page-header";
+import { SubscriptionRequiredCard } from "@/components/subscription-required-card";
 import { Badge } from "@/components/ui/badge";
 import { buttonClassName } from "@/components/ui/button";
 import { deleteDepartmentAction, toggleDepartmentAction } from "@/features/departments/actions";
@@ -12,9 +13,13 @@ import { requireTeamArea } from "@/lib/auth/guards";
 import { formatDate } from "@/lib/format";
 import { isOnboardingCompleted } from "@/lib/onboarding";
 import { canManageCompany } from "@/lib/permissions";
+import { getActivePlanCode } from "@/lib/subscription";
 
 export default async function DepartmentsPage() {
   const user = await requireTeamArea();
+  if (!getActivePlanCode(user.company)) {
+    return <SubscriptionRequiredCard />;
+  }
 
   const [departments, onboardingCompleted] = await Promise.all([
     listDepartments(user.companyId),

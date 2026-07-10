@@ -6,6 +6,7 @@ import { assertCanManageGoals } from "@/lib/auth/guards";
 import { requireUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/db/client";
 import { getPlanAccess } from "@/lib/plans";
+import { assertCompanyHasActivePlan } from "@/lib/subscription";
 import { goalSchema } from "@/lib/validations";
 
 function dateValue(value: string) {
@@ -18,7 +19,8 @@ export async function saveGoalAction(values: unknown) {
     assertCanManageGoals(user);
 
     const parsed = goalSchema.parse(values);
-    const access = getPlanAccess(user.company.plan);
+    const activePlan = assertCompanyHasActivePlan(user.company);
+    const access = getPlanAccess(activePlan);
 
     if (!access.canUseGoalAssignments && (parsed.departmentId || parsed.responsibleId)) {
       throw new Error("Metas por setor ou responsavel estao disponiveis a partir do Plano Gestao.");
@@ -67,6 +69,7 @@ export async function deleteGoalAction(id: string) {
   try {
     const user = await requireUser();
     assertCanManageGoals(user);
+    assertCompanyHasActivePlan(user.company);
 
     await prisma.goal.delete({
       where: {

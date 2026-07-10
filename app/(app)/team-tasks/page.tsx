@@ -7,6 +7,7 @@ import { OnboardingCard } from "@/components/onboarding-card";
 import { PageHeader } from "@/components/page-header";
 import { PriorityBadge } from "@/components/priority-badge";
 import { StatusBadge } from "@/components/status-badge";
+import { SubscriptionRequiredCard } from "@/components/subscription-required-card";
 import { buttonClassName } from "@/components/ui/button";
 import { Input, Label, Select } from "@/components/ui/fields";
 import { getTaskFormOptions, listTeamTasks } from "@/features/tasks/data";
@@ -17,6 +18,7 @@ import { priorityLabels, statusLabels } from "@/lib/labels";
 import { isOnboardingCompleted } from "@/lib/onboarding";
 import { getPlanAccess } from "@/lib/plans";
 import { SearchParams, searchValue } from "@/lib/search";
+import { getActivePlanCode } from "@/lib/subscription";
 import { taskPriorities, taskStatuses } from "@/lib/validations";
 
 export default async function TeamTasksPage({
@@ -25,6 +27,11 @@ export default async function TeamTasksPage({
   searchParams: Promise<SearchParams>;
 }) {
   const user = await requireTeamArea();
+  const activePlanCode = getActivePlanCode(user.company);
+
+  if (!activePlanCode) {
+    return <SubscriptionRequiredCard />;
+  }
 
   const params = await searchParams;
   const status = searchValue(params, "status");
@@ -32,7 +39,7 @@ export default async function TeamTasksPage({
   const departmentId = searchValue(params, "departmentId");
   const assigneeId = searchValue(params, "assigneeId");
   const query = searchValue(params, "q");
-  const access = getPlanAccess(user.company.plan);
+  const access = getPlanAccess(activePlanCode);
   const taskFilters = access.canUseAdvancedFilters
     ? { q: query, status, priority, departmentId, assigneeId }
     : { q: query, status };

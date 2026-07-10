@@ -8,6 +8,7 @@ import { PriorityBadge } from "@/components/priority-badge";
 import { ProgressBar } from "@/components/progress-bar";
 import { StatCard } from "@/components/stat-card";
 import { StatusBadge } from "@/components/status-badge";
+import { SubscriptionRequiredCard } from "@/components/subscription-required-card";
 import { Badge } from "@/components/ui/badge";
 import { buttonClassName } from "@/components/ui/button";
 import { getPremiumWorkspaceData } from "@/features/premium/data";
@@ -16,6 +17,7 @@ import { formatDate, formatGoalValue, getGoalProgress, isTaskLate } from "@/lib/
 import { goalStatusLabels, priorityLabels, statusLabels } from "@/lib/labels";
 import { canManageCompany } from "@/lib/permissions";
 import { getPlanAccess } from "@/lib/plans";
+import { getActivePlanCode } from "@/lib/subscription";
 
 const goalStatusClasses = {
   ON_TRACK: "bg-emerald-100 text-emerald-800",
@@ -26,7 +28,13 @@ const goalStatusClasses = {
 
 export default async function ReportsPage() {
   const user = await requireTeamArea();
-  const access = getPlanAccess(user.company.plan);
+  const activePlanCode = getActivePlanCode(user.company);
+
+  if (!activePlanCode) {
+    return <SubscriptionRequiredCard />;
+  }
+
+  const access = getPlanAccess(activePlanCode);
 
   if (!access.canUseBasicReports) {
     return (

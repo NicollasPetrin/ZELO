@@ -3,6 +3,7 @@ import { Bell, CheckCheck } from "lucide-react";
 import { DataTable, Td, Th } from "@/components/data-table";
 import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
+import { SubscriptionRequiredCard } from "@/components/subscription-required-card";
 import { Badge } from "@/components/ui/badge";
 import { buttonClassName } from "@/components/ui/button";
 import { markAllNotificationsReadAction, markNotificationReadAction } from "@/features/notifications/actions";
@@ -10,9 +11,14 @@ import { listNotifications } from "@/features/notifications/data";
 import { requireUser } from "@/lib/auth/session";
 import { formatDateTime } from "@/lib/format";
 import { notificationLabels } from "@/lib/labels";
+import { getActivePlanCode } from "@/lib/subscription";
 
 export default async function NotificationsPage() {
   const user = await requireUser();
+  if (!getActivePlanCode(user.company)) {
+    return <SubscriptionRequiredCard />;
+  }
+
   const notifications = await listNotifications(user.id);
 
   const unreadCount = notifications.filter((notification) => !notification.isRead).length;

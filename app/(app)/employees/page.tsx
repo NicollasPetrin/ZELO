@@ -4,6 +4,7 @@ import { EmptyState } from "@/components/empty-state";
 import { LockedFeatureCard } from "@/components/locked-feature-card";
 import { OnboardingCard } from "@/components/onboarding-card";
 import { PageHeader } from "@/components/page-header";
+import { SubscriptionRequiredCard } from "@/components/subscription-required-card";
 import { Badge } from "@/components/ui/badge";
 import { buttonClassName } from "@/components/ui/button";
 import { toggleEmployeeAction } from "@/features/employees/actions";
@@ -15,11 +16,17 @@ import { formatDate } from "@/lib/format";
 import { roleLabels } from "@/lib/labels";
 import { isOnboardingCompleted } from "@/lib/onboarding";
 import { getPlanAccess, planDetails } from "@/lib/plans";
+import { getActivePlanCode } from "@/lib/subscription";
 
 export default async function EmployeesPage() {
   const user = await requireCompanyManager();
-  const activePlan = planDetails[user.company.plan];
-  const access = getPlanAccess(user.company.plan);
+  const activePlanCode = getActivePlanCode(user.company);
+  if (!activePlanCode) {
+    return <SubscriptionRequiredCard />;
+  }
+
+  const activePlan = planDetails[activePlanCode];
+  const access = getPlanAccess(activePlanCode);
 
   const [employees, departments, onboardingCompleted] = await Promise.all([
     listEmployees(user.companyId),
@@ -62,7 +69,7 @@ export default async function EmployeesPage() {
         <LockedFeatureCard
           title="Limite de usuarios atingido"
           description="Para adicionar mais pessoas ativas, evolua para um plano com limite maior."
-          requiredPlan={user.company.plan === "BASIC" ? "Gestao" : "Completo"}
+          requiredPlan={activePlanCode === "BASIC" ? "Gestao" : "Completo"}
         />
       ) : (
         <EmployeeForm departments={departments} />

@@ -7,6 +7,7 @@ import { requireUser } from "@/lib/auth/session";
 import { findTaskForUser } from "@/features/tasks/data";
 import { prisma } from "@/lib/db/client";
 import { getPlanAccess } from "@/lib/plans";
+import { assertCompanyHasActivePlan } from "@/lib/subscription";
 import { attachmentSchema, commentSchema, taskSchema, taskStatusSchema } from "@/lib/validations";
 
 function taskDate(value: string) {
@@ -35,7 +36,8 @@ export async function createTaskAction(values: unknown) {
     assertCanManageTasks(user);
 
     const parsed = taskSchema.parse(values);
-    const access = getPlanAccess(user.company.plan);
+    const activePlan = assertCompanyHasActivePlan(user.company);
+    const access = getPlanAccess(activePlan);
 
     if (!access.canUseRecurringTasks && parsed.recurrenceType !== "NONE") {
       throw new Error("Tarefas recorrentes estao disponiveis a partir do Plano Gestao.");
@@ -98,7 +100,8 @@ export async function updateTaskAction(values: unknown) {
     assertCanManageTasks(user);
 
     const parsed = taskSchema.parse(values);
-    const access = getPlanAccess(user.company.plan);
+    const activePlan = assertCompanyHasActivePlan(user.company);
+    const access = getPlanAccess(activePlan);
 
     if (!access.canUseRecurringTasks && parsed.recurrenceType !== "NONE") {
       throw new Error("Tarefas recorrentes estao disponiveis a partir do Plano Gestao.");
@@ -167,6 +170,7 @@ export async function updateTaskAction(values: unknown) {
 export async function updateTaskStatusAction(values: unknown) {
   try {
     const user = await requireUser();
+    assertCompanyHasActivePlan(user.company);
     const parsed = taskStatusSchema.parse(values);
     const task = await findTaskForUser(parsed.taskId, user);
 
@@ -213,6 +217,7 @@ export async function updateTaskStatusAction(values: unknown) {
 export async function addTaskCommentAction(values: unknown) {
   try {
     const user = await requireUser();
+    assertCompanyHasActivePlan(user.company);
     const parsed = commentSchema.parse(values);
     const task = await findTaskForUser(parsed.taskId, user);
 
@@ -258,6 +263,7 @@ export async function addTaskCommentAction(values: unknown) {
 export async function addTaskAttachmentAction(values: unknown) {
   try {
     const user = await requireUser();
+    assertCompanyHasActivePlan(user.company);
     const parsed = attachmentSchema.parse(values);
     const task = await findTaskForUser(parsed.taskId, user);
 

@@ -16,6 +16,7 @@ import { PageHeader } from "@/components/page-header";
 import { PriorityBadge } from "@/components/priority-badge";
 import { StatCard } from "@/components/stat-card";
 import { StatusBadge } from "@/components/status-badge";
+import { SubscriptionRequiredCard } from "@/components/subscription-required-card";
 import { buttonClassName } from "@/components/ui/button";
 import { getDashboardData } from "@/features/dashboard/data";
 import { requireUser } from "@/lib/auth/session";
@@ -23,6 +24,7 @@ import { formatDate, isTaskLate } from "@/lib/format";
 import { roleLabels } from "@/lib/labels";
 import { isOnboardingCompleted } from "@/lib/onboarding";
 import { getPlanAccess } from "@/lib/plans";
+import { getActivePlanCode } from "@/lib/subscription";
 
 const premiumCards = [
   {
@@ -54,12 +56,18 @@ const basicReportsCard = {
 
 export default async function DashboardPage() {
   const user = await requireUser();
+  const activePlanCode = getActivePlanCode(user.company);
+
+  if (!activePlanCode) {
+    return <SubscriptionRequiredCard />;
+  }
+
   const [dashboard, onboardingCompleted] = await Promise.all([
     getDashboardData(user),
     isOnboardingCompleted(user.id, "dashboard"),
   ]);
   const { teamScope, stats, upcomingTasks, employeeHotspots, departmentHotspots, attentionItems } = dashboard;
-  const access = getPlanAccess(user.company.plan);
+  const access = getPlanAccess(activePlanCode);
   const BasicReportsIcon = basicReportsCard.icon;
 
   return (

@@ -6,6 +6,7 @@ import { OnboardingCard } from "@/components/onboarding-card";
 import { PageHeader } from "@/components/page-header";
 import { PriorityBadge } from "@/components/priority-badge";
 import { StatusBadge } from "@/components/status-badge";
+import { SubscriptionRequiredCard } from "@/components/subscription-required-card";
 import { buttonClassName } from "@/components/ui/button";
 import { Input, Label, Select } from "@/components/ui/fields";
 import { listMyTasks } from "@/features/tasks/data";
@@ -15,6 +16,7 @@ import { formatDate, isTaskLate } from "@/lib/format";
 import { priorityLabels, statusLabels } from "@/lib/labels";
 import { isOnboardingCompleted } from "@/lib/onboarding";
 import { SearchParams, searchValue } from "@/lib/search";
+import { getActivePlanCode } from "@/lib/subscription";
 import { taskPriorities, taskStatuses } from "@/lib/validations";
 
 export default async function MyTasksPage({
@@ -23,6 +25,10 @@ export default async function MyTasksPage({
   searchParams: Promise<SearchParams>;
 }) {
   const user = await requireUser();
+  if (!getActivePlanCode(user.company)) {
+    return <SubscriptionRequiredCard />;
+  }
+
   const params = await searchParams;
   const status = searchValue(params, "status");
   const priority = searchValue(params, "priority");

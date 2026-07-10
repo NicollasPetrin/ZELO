@@ -45,6 +45,20 @@ export type MonthlyPriceCalculation = {
 
 export const planOrder: SubscriptionPlan[] = ["BASIC", "MANAGEMENT", "COMPLETE"];
 
+const noActivePlanAccess: PlanAccess = {
+  includedUsers: 0,
+  maxUsers: 0,
+  dashboardName: "Assinatura pendente",
+  canUseAdvancedFilters: false,
+  canViewPerformance: false,
+  canUseRecurringTasks: false,
+  canUseGoalAssignments: false,
+  canViewActivityHistory: false,
+  canUseBasicReports: false,
+  canUseAdvancedReports: false,
+  canUsePremiumSupport: false,
+};
+
 export const planDetails: Record<SubscriptionPlan, PlanDetails> = {
   BASIC: {
     code: "BASIC",
@@ -231,8 +245,18 @@ export const planDifferences = [
   },
 ] satisfies Array<Record<SubscriptionPlan | "feature", string>>;
 
-export function getPlanAccess(plan: SubscriptionPlan) {
-  return planAccess[plan];
+export function getPlanAccess(plan: SubscriptionPlan | null | undefined) {
+  return plan ? planAccess[plan] : noActivePlanAccess;
+}
+
+export function canActivateAdditionalUser(plan: SubscriptionPlan, currentActiveUserCount: number) {
+  if (!Number.isInteger(currentActiveUserCount) || currentActiveUserCount < 0) {
+    throw new RangeError("currentActiveUserCount precisa ser um inteiro maior ou igual a zero.");
+  }
+
+  const maxUsers = planDetails[plan].maxUsers;
+
+  return maxUsers === null || currentActiveUserCount < maxUsers;
 }
 
 export function calculateMonthlyPrice(plan: SubscriptionPlan, activeUserCount: number): MonthlyPriceCalculation {

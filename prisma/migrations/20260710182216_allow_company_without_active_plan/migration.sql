@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Company" ALTER COLUMN "plan" DROP NOT NULL,
+ALTER COLUMN "plan" DROP DEFAULT;

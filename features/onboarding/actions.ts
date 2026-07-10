@@ -4,10 +4,12 @@ import { revalidatePath } from "next/cache";
 import { actionError } from "@/lib/action-result";
 import { requireUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/db/client";
+import { assertCompanyHasActivePlan } from "@/lib/subscription";
 
 export async function completeOnboardingStepAction(key: string) {
   try {
     const user = await requireUser();
+    assertCompanyHasActivePlan(user.company);
 
     await prisma.onboardingStep.upsert({
       where: {

@@ -5,6 +5,7 @@ import { LockedFeatureCard } from "@/components/locked-feature-card";
 import { PageHeader } from "@/components/page-header";
 import { PriorityBadge } from "@/components/priority-badge";
 import { StatusBadge } from "@/components/status-badge";
+import { SubscriptionRequiredCard } from "@/components/subscription-required-card";
 import { buttonClassName } from "@/components/ui/button";
 import { getTaskDetail, getTaskFormOptions } from "@/features/tasks/data";
 import { TaskAttachmentForm, TaskCommentForm, TaskStatusForm } from "@/features/tasks/task-inline-forms";
@@ -13,6 +14,7 @@ import { requireUser } from "@/lib/auth/session";
 import { formatDate, formatDateTime, isTaskLate, toDateInputValue } from "@/lib/format";
 import { recurrenceLabels } from "@/lib/labels";
 import { getPlanAccess } from "@/lib/plans";
+import { getActivePlanCode } from "@/lib/subscription";
 
 export default async function TaskDetailPage({
   params,
@@ -20,9 +22,15 @@ export default async function TaskDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const user = await requireUser();
+  const activePlanCode = getActivePlanCode(user.company);
+
+  if (!activePlanCode) {
+    return <SubscriptionRequiredCard />;
+  }
+
   const { id } = await params;
   const { task, canManage } = await getTaskDetail(user, id);
-  const access = getPlanAccess(user.company.plan);
+  const access = getPlanAccess(activePlanCode);
 
   const { departments, users } = canManage ? await getTaskFormOptions(user.companyId) : { departments: [], users: [] };
 

@@ -39,14 +39,17 @@ const navItems: NavItem[] = [
   { href: "/settings", label: "Configuracoes", icon: Settings, roles: ["OWNER"] },
 ];
 
-export function Sidebar({ role, plan }: { role: UserRole; plan: SubscriptionPlan }) {
+export function Sidebar({ role, plan }: { role: UserRole; plan: SubscriptionPlan | null }) {
   const pathname = usePathname();
-  const visibleItems = navItems.filter((item) => item.roles.includes(role));
-  const activePlan = planDetails[plan];
+  const hasActiveSubscription = Boolean(plan);
+  const visibleItems = navItems.filter((item) => item.roles.includes(role) && (hasActiveSubscription || item.href === "/settings"));
+  const activePlan = plan ? planDetails[plan] : null;
   const access = getPlanAccess(plan);
   const maxUsersLabel = access.maxUsers === null ? "usuarios ilimitados" : `limite de ${access.maxUsers} usuarios`;
   const lockedSummary =
-    plan === "BASIC"
+    !plan
+      ? "Escolha um plano para liberar o produto"
+      : plan === "BASIC"
       ? "Sem filtros avancados e desempenho"
       : plan === "MANAGEMENT"
         ? "Sem relatorios premium"
@@ -88,7 +91,7 @@ export function Sidebar({ role, plan }: { role: UserRole; plan: SubscriptionPlan
           <CreditCard className="h-4 w-4 text-emerald-700" aria-hidden="true" />
           <div>
             <p className="text-xs font-medium text-slate-500">Assinatura</p>
-            <p className="text-sm font-semibold text-slate-950">Plano {activePlan.name}</p>
+            <p className="text-sm font-semibold text-slate-950">{activePlan ? `Plano ${activePlan.name}` : "Sem plano ativo"}</p>
           </div>
         </div>
         <p className="text-xs font-medium text-slate-500">Acesso atual</p>
@@ -103,9 +106,15 @@ export function Sidebar({ role, plan }: { role: UserRole; plan: SubscriptionPlan
   );
 }
 
-export function MobileNavigation({ role }: { role: UserRole }) {
+export function MobileNavigation({
+  role,
+  hasActiveSubscription,
+}: {
+  role: UserRole;
+  hasActiveSubscription: boolean;
+}) {
   const pathname = usePathname();
-  const visibleItems = navItems.filter((item) => item.roles.includes(role));
+  const visibleItems = navItems.filter((item) => item.roles.includes(role) && (hasActiveSubscription || item.href === "/settings"));
 
   return (
     <nav className="sticky top-16 z-10 border-b border-slate-200 bg-white/95 px-3 py-2 backdrop-blur lg:hidden" aria-label="Navegacao principal">

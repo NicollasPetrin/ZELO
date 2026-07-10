@@ -5,12 +5,14 @@ import { actionError } from "@/lib/action-result";
 import { assertCanManageCompany } from "@/lib/auth/guards";
 import { requireUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/db/client";
+import { assertCompanyHasActivePlan } from "@/lib/subscription";
 import { departmentSchema } from "@/lib/validations";
 
 export async function saveDepartmentAction(values: unknown) {
   try {
     const user = await requireUser();
     assertCanManageCompany(user);
+    assertCompanyHasActivePlan(user.company);
 
     const parsed = departmentSchema.parse(values);
     const data = {
@@ -48,6 +50,7 @@ export async function toggleDepartmentAction(id: string, isActive: boolean) {
   try {
     const user = await requireUser();
     assertCanManageCompany(user);
+    assertCompanyHasActivePlan(user.company);
 
     await prisma.department.update({
       where: {
@@ -70,6 +73,7 @@ export async function deleteDepartmentAction(id: string) {
   try {
     const user = await requireUser();
     assertCanManageCompany(user);
+    assertCompanyHasActivePlan(user.company);
 
     await prisma.department.delete({
       where: {

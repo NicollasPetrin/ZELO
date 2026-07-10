@@ -5,6 +5,7 @@ import { LockedFeatureCard } from "@/components/locked-feature-card";
 import { OnboardingCard } from "@/components/onboarding-card";
 import { PageHeader } from "@/components/page-header";
 import { ProgressBar } from "@/components/progress-bar";
+import { SubscriptionRequiredCard } from "@/components/subscription-required-card";
 import { Badge } from "@/components/ui/badge";
 import { buttonClassName } from "@/components/ui/button";
 import { deleteGoalAction } from "@/features/goals/actions";
@@ -18,6 +19,7 @@ import { goalPeriodLabels, goalStatusLabels } from "@/lib/labels";
 import { isOnboardingCompleted } from "@/lib/onboarding";
 import { canManageGoals } from "@/lib/permissions";
 import { getPlanAccess } from "@/lib/plans";
+import { getActivePlanCode } from "@/lib/subscription";
 
 const goalStatusClasses = {
   ON_TRACK: "bg-emerald-100 text-emerald-800",
@@ -28,8 +30,14 @@ const goalStatusClasses = {
 
 export default async function GoalsPage() {
   const user = await requireUser();
+  const activePlanCode = getActivePlanCode(user.company);
+
+  if (!activePlanCode) {
+    return <SubscriptionRequiredCard />;
+  }
+
   const canManage = canManageGoals(user.role);
-  const access = getPlanAccess(user.company.plan);
+  const access = getPlanAccess(activePlanCode);
 
   const [departments, users, goals, onboardingCompleted] = await Promise.all([
     listActiveDepartments(user.companyId),

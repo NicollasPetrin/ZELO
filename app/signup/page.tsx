@@ -6,7 +6,6 @@ import { signupAction } from "@/features/auth/actions";
 import { getCurrentUser } from "@/lib/auth/session";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/fields";
-import { planDetails } from "@/lib/plans";
 
 const errorMessages: Record<string, string> = {
   dados: "Revise os dados. A senha deve ter 10 caracteres, letra maiuscula, minuscula e numero.",
@@ -26,8 +25,6 @@ export default async function SignupPage({
 
   const params = await searchParams;
   const error = params.error ? errorMessages[params.error] : null;
-  const plan = planDetails.BASIC;
-
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-100 px-4 py-10">
       <div className="grid w-full max-w-5xl overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm lg:grid-cols-[1fr_440px]">
@@ -54,11 +51,11 @@ export default async function SignupPage({
         <section className="p-8">
           <div className="mb-8 flex items-center gap-2 text-sm font-medium text-slate-500">
             <Building2 className="h-4 w-4" aria-hidden="true" />
-            Plano inicial {plan.name}: {plan.price}/mes
+            Cadastro sem cobranca automatica
           </div>
           <h2 className="text-2xl font-semibold text-slate-950">Criar conta</h2>
           <p className="mt-2 text-sm leading-6 text-slate-600">
-            Os dados cadastrados ficam salvos no banco da aplicacao e separados por empresa.
+            Os dados cadastrados ficam salvos por empresa. As funcionalidades sao liberadas somente apos uma assinatura ativa.
           </p>
 
           <form action={signupAction} className="mt-8 space-y-4">

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculateMonthlyPrice } from "./plans";
+import { calculateMonthlyPrice, canActivateAdditionalUser } from "./plans";
 
 describe("calculateMonthlyPrice", () => {
   it("keeps the base price below the included user limit", () => {
@@ -55,5 +55,24 @@ describe("calculateMonthlyPrice", () => {
   it("rejects invalid active user counts", () => {
     expect(() => calculateMonthlyPrice("BASIC", -1)).toThrow(RangeError);
     expect(() => calculateMonthlyPrice("BASIC", 1.5)).toThrow(RangeError);
+  });
+});
+
+describe("canActivateAdditionalUser", () => {
+  it("allows activation below the hard user cap", () => {
+    expect(canActivateAdditionalUser("BASIC", 14)).toBe(true);
+  });
+
+  it("blocks activation at the hard user cap", () => {
+    expect(canActivateAdditionalUser("BASIC", 15)).toBe(false);
+  });
+
+  it("allows activation for unlimited plans", () => {
+    expect(canActivateAdditionalUser("COMPLETE", 140)).toBe(true);
+  });
+
+  it("rejects invalid current active user counts", () => {
+    expect(() => canActivateAdditionalUser("MANAGEMENT", -1)).toThrow(RangeError);
+    expect(() => canActivateAdditionalUser("MANAGEMENT", 1.5)).toThrow(RangeError);
   });
 });

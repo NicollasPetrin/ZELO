@@ -84,7 +84,25 @@ export async function getCurrentUser() {
       },
     },
     include: {
-      company: true,
+      company: {
+        include: {
+          subscriptions: {
+            where: {
+              status: "ACTIVE",
+              currentPeriodEnd: {
+                gte: new Date(),
+              },
+            },
+            include: {
+              plan: true,
+            },
+            orderBy: {
+              currentPeriodEnd: "desc",
+            },
+            take: 1,
+          },
+        },
+      },
       department: true,
     },
   });
