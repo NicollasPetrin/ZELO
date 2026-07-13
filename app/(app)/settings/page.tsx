@@ -1,5 +1,6 @@
 import { Check, CreditCard } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
+import { PlanCheckoutButton } from "@/features/billing/plan-checkout-button";
 import { CompanySettingsForm } from "@/features/settings/company-settings-form";
 import { requireCompanyManager } from "@/lib/auth/guards";
 import { prisma } from "@/lib/db/client";
@@ -11,14 +12,12 @@ export default async function SettingsPage() {
   const activePlanCode = getActivePlanCode(user.company);
   const activePlan = activePlanCode ? planDetails[activePlanCode] : null;
   const access = getPlanAccess(activePlanCode);
-  const activeUserCount = activePlanCode
-    ? await prisma.user.count({
-        where: {
-          companyId: user.companyId,
-          isActive: true,
-        },
-      })
-    : 0;
+  const activeUserCount = await prisma.user.count({
+    where: {
+      companyId: user.companyId,
+      isActive: true,
+    },
+  });
   const monthlyPrice = activePlanCode ? calculateMonthlyPrice(activePlanCode, activeUserCount) : null;
   const currentMonthlyTotal =
     monthlyPrice?.totalPriceCents === null
@@ -48,6 +47,10 @@ export default async function SettingsPage() {
           <p className="mt-1 text-sm leading-6 text-slate-600">
             Consulte o plano ativo, usuarios incluidos, custo por usuario extra e funcionalidades contratadas.
           </p>
+          <div className="mt-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm leading-6 text-amber-950">
+            O acesso as funcionalidades e liberado somente quando o pagamento do plano for confirmado pela processadora.
+            Criar conta ou iniciar checkout nao ativa assinatura automaticamente.
+          </div>
         </div>
         <div className="grid gap-5 lg:grid-cols-[0.75fr_1.25fr] lg:items-start">
           <div>
@@ -119,6 +122,20 @@ export default async function SettingsPage() {
             {planOrder.map((planCode) => {
               const plan = planDetails[planCode];
               const isCurrent = activePlanCode === planCode;
+              const planPrice = calculateMonthlyPrice(planCode, activeUserCount);
+              const targetDoesNotFit = planPrice.requiresUpgrade || planPrice.totalPriceCents === null;
+              const planIndex = planOrder.indexOf(planCode);
+              const activePlanIndex = activePlanCode ? planOrder.indexOf(activePlanCode) : -1;
+              const checkoutLabel = !activePlanCode
+                ? "Comprar plano"
+                : isCurrent
+                  ? "Plano atual"
+                  : planIndex > activePlanIndex
+                    ? "Aprimorar plano"
+                    : "Trocar plano";
+              const disabledReason = targetDoesNotFit
+                ? `Este plano nao comporta ${activeUserCount} usuarios ativos.`
+                : undefined;
 
               return (
                 <article key={plan.code} className="rounded-md border border-slate-200 bg-slate-50 p-3">
@@ -138,6 +155,15 @@ export default async function SettingsPage() {
                   <p className="mt-2 text-xs leading-5 text-slate-600">
                     {plan.includedUsers} usuarios incluidos, {plan.pricePerExtraUser}/mes por usuario extra.
                   </p>
+                  <p className="mt-2 text-xs font-semibold text-slate-950">
+                    Total estimado agora: {planPrice.totalPriceCents === null ? "Upgrade necessario" : formatPriceCents(planPrice.totalPriceCents)}/mes
+                  </p>
+                  <PlanCheckoutButton
+                    planCode={planCode}
+                    label={checkoutLabel}
+                    disabled={isCurrent || targetDoesNotFit}
+                    disabledReason={disabledReason}
+                  />
                 </article>
               );
             })}
