@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { UserRole } from "@prisma/client";
 import {
   AlertTriangle,
   ArrowRight,
@@ -74,7 +75,7 @@ export default async function DashboardPage() {
     <div className="space-y-6">
       <PageHeader
         title="Painel"
-        description={`Resumo de ${user.company.name}. Voce esta acessando como ${roleLabels[user.role]}.`}
+        description={`Resumo de ${user.company.name}. Voce esta acessando como ${roleLabels[user.role as UserRole]}.`}
         actions={<Link href={teamScope ? "/team-tasks" : "/my-tasks"} className={buttonClassName("primary")}>Ver tarefas</Link>}
       />
 
