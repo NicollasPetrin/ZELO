@@ -10,6 +10,7 @@ import { Input, Label } from "@/components/ui/fields";
 const errorMessages: Record<string, string> = {
   credenciais: "E-mail ou senha invalidos.",
   preencha: "Preencha e-mail e senha para entrar.",
+  rate: "Muitas tentativas. Aguarde alguns minutos e tente novamente.",
 };
 
 export default async function LoginPage({

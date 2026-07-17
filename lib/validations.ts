@@ -1,19 +1,34 @@
 import { z } from "zod";
 
 export const userRoles = ["OWNER", "MANAGER", "EMPLOYEE"] as const;
+export const subscriptionPlans = ["BASIC", "MANAGEMENT", "COMPLETE"] as const;
 export const taskPriorities = ["LOW", "MEDIUM", "HIGH", "URGENT"] as const;
 export const taskStatuses = ["PENDING", "IN_PROGRESS", "IN_REVIEW", "COMPLETED", "OVERDUE", "CANCELED"] as const;
 export const recurrenceTypes = ["NONE", "DAILY", "WEEKLY", "MONTHLY", "SPECIFIC_WEEKDAYS", "SPECIFIC_MONTH_DAY"] as const;
 export const goalUnits = ["BRL", "PERCENT", "NUMBER", "TASKS", "CLIENTS", "SALES"] as const;
 export const goalPeriods = ["WEEKLY", "MONTHLY", "QUARTERLY", "CUSTOM"] as const;
 export const goalStatuses = ["ON_TRACK", "ATTENTION", "LATE", "COMPLETED"] as const;
+const commonPasswords = new Set([
+  "123456",
+  "12345678",
+  "123456789",
+  "password",
+  "senha",
+  "qwerty",
+  "admin123",
+  "zelo123",
+  "demo123",
+]);
 
 export const strongPasswordSchema = z
   .string()
   .min(10, "Use pelo menos 10 caracteres.")
   .regex(/[a-z]/, "Inclua uma letra minuscula.")
   .regex(/[A-Z]/, "Inclua uma letra maiuscula.")
-  .regex(/[0-9]/, "Inclua um numero.");
+  .regex(/[0-9]/, "Inclua um numero.")
+  .refine((password) => !commonPasswords.has(password.trim().toLowerCase()), {
+    message: "Use uma senha menos comum.",
+  });
 
 export const loginSchema = z.object({
   email: z.string().email("Informe um e-mail valido.").trim().toLowerCase(),
@@ -131,3 +146,7 @@ export const companySettingsSchema = z.object({
   employeeCount: z.coerce.number().min(0).optional().or(z.literal("")),
   isActive: z.boolean().default(true),
 });
+
+export const idSchema = z.string().trim().min(1, "Identificador invalido.");
+export const onboardingKeySchema = z.string().trim().min(1).max(64).regex(/^[a-z0-9-]+$/i, "Chave invalida.");
+export const subscriptionPlanSchema = z.enum(subscriptionPlans);

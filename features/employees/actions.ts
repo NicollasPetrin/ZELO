@@ -3,13 +3,15 @@
 import { Prisma, type SubscriptionPlan } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { actionError } from "@/lib/action-result";
+import { recordActivity } from "@/lib/audit";
 import { assertCanManageTeam } from "@/lib/auth/guards";
 import { hashPassword } from "@/lib/auth/password";
 import { requireUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/db/client";
 import { calculateMonthlyPrice, canActivateAdditionalUser, getPlanAccess, planDetails } from "@/lib/plans";
+import { assertUserActionRateLimit } from "@/lib/rate-limit";
 import { assertCompanyHasActivePlan } from "@/lib/subscription";
-import { employeeSchema } from "@/lib/validations";
+import { employeeSchema, idSchema } from "@/lib/validations";
 
 function userLimitMessage(plan: SubscriptionPlan) {
   const maxUsers = planDetails[plan].maxUsers;
@@ -67,6 +69,7 @@ export async function saveEmployeeAction(values: unknown) {
     const user = await requireUser();
     assertCanManageTeam(user);
     const activePlan = assertCompanyHasActivePlan(user.company);
+    await assertUserActionRateLimit(user.id, "employees:save");
 
     const parsed = employeeSchema.parse(values);
     const department = await prisma.department.findFirst({
@@ -90,6 +93,7 @@ export async function saveEmployeeAction(values: unknown) {
     };
 
     let extraUserMessage: string | null = null;
+    let entityId = parsed.id ?? null;
 
     if (parsed.id) {
       await prisma.$transaction(
@@ -122,7 +126,7 @@ export async function saveEmployeeAction(values: unknown) {
             }
           }
 
-          await tx.user.update({
+          const result = await tx.user.updateMany({
             where: {
               id: parsed.id,
               companyId: user.companyId,
@@ -132,6 +136,10 @@ export async function saveEmployeeAction(values: unknown) {
               ...(parsed.password ? { passwordHash: hashPassword(parsed.password) } : {}),
             },
           });
+
+          if (result.count === 0) {
+            throw new Error("Funcionario nao encontrado.");
+          }
         },
         { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
       );
@@ -151,17 +159,32 @@ export async function saveEmployeeAction(values: unknown) {
             }
           }
 
-          await tx.user.create({
+          const employee = await tx.user.create({
             data: {
               ...data,
               companyId: user.companyId,
               passwordHash: hashPassword(parsed.password ?? ""),
             },
           });
+          entityId = employee.id;
         },
         { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
       );
     }
+
+    await recordActivity({
+      companyId: user.companyId,
+      actorId: user.id,
+      type: parsed.id ? "USER_UPDATED" : "USER_CREATED",
+      entityType: "User",
+      entityId,
+      title: parsed.id ? "Funcionario atualizado" : "Funcionario criado",
+      description: data.email,
+      metadata: {
+        role: data.role,
+        isActive: data.isActive,
+      },
+    });
 
     revalidatePath("/employees");
     revalidatePath("/dashboard");
@@ -177,8 +200,10 @@ export async function toggleEmployeeAction(id: string, isActive: boolean, confir
     const user = await requireUser();
     assertCanManageTeam(user);
     const activePlan = assertCompanyHasActivePlan(user.company);
+    await assertUserActionRateLimit(user.id, "employees:toggle");
+    const parsedId = idSchema.parse(id);
 
-    if (id === user.id) {
+    if (parsedId === user.id) {
       throw new Error("Voce nao pode inativar o proprio acesso.");
     }
 
@@ -188,7 +213,7 @@ export async function toggleEmployeeAction(id: string, isActive: boolean, confir
       async (tx) => {
         const existingEmployee = await tx.user.findFirst({
           where: {
-            id,
+            id: parsedId,
             companyId: user.companyId,
           },
           select: {
@@ -214,18 +239,31 @@ export async function toggleEmployeeAction(id: string, isActive: boolean, confir
           }
         }
 
-        await tx.user.update({
+        const result = await tx.user.updateMany({
           where: {
-            id,
+            id: parsedId,
             companyId: user.companyId,
           },
           data: {
             isActive,
           },
         });
+
+        if (result.count === 0) {
+          throw new Error("Funcionario nao encontrado.");
+        }
       },
       { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
     );
+
+    await recordActivity({
+      companyId: user.companyId,
+      actorId: user.id,
+      type: "USER_UPDATED",
+      entityType: "User",
+      entityId: parsedId,
+      title: isActive ? "Funcionario ativado" : "Funcionario inativado",
+    });
 
     revalidatePath("/employees");
     revalidatePath("/settings");
@@ -240,15 +278,19 @@ export async function deleteEmployeeAction(id: string) {
     const user = await requireUser();
     assertCanManageTeam(user);
     assertCompanyHasActivePlan(user.company);
+    await assertUserActionRateLimit(user.id, "employees:delete");
+    const parsedId = idSchema.parse(id);
 
-    if (id === user.id) {
+    if (parsedId === user.id) {
       throw new Error("Voce nao pode excluir o proprio acesso.");
     }
+
+    let employeeName = "";
 
     await prisma.$transaction(async (tx) => {
       const employee = await tx.user.findFirst({
         where: {
-          id,
+          id: parsedId,
           companyId: user.companyId,
         },
         select: {
@@ -274,6 +316,7 @@ export async function deleteEmployeeAction(id: string) {
       if (!employee) {
         throw new Error("Funcionario nao encontrado.");
       }
+      employeeName = employee.name;
 
       const blockers = [
         employee._count.assignedTasks ? `${employee._count.assignedTasks} tarefa(s) atribuida(s)` : null,
@@ -294,11 +337,26 @@ export async function deleteEmployeeAction(id: string) {
         );
       }
 
-      await tx.user.delete({
+      const result = await tx.user.deleteMany({
         where: {
           id: employee.id,
+          companyId: user.companyId,
         },
       });
+
+      if (result.count === 0) {
+        throw new Error("Funcionario nao encontrado.");
+      }
+    });
+
+    await recordActivity({
+      companyId: user.companyId,
+      actorId: user.id,
+      type: "USER_UPDATED",
+      entityType: "User",
+      entityId: parsedId,
+      title: "Funcionario excluido",
+      description: employeeName,
     });
 
     revalidatePath("/employees");

@@ -6,7 +6,7 @@ import { getActivePlanCode } from "@/lib/subscription";
 
 export default async function AuthenticatedLayout({ children }: { children: ReactNode }) {
   const user = await requireUser();
-  const unreadCount = await countUnreadNotifications(user.id);
+  const unreadCount = await countUnreadNotifications(user);
   const activePlan = getActivePlanCode(user.company);
 
   return (

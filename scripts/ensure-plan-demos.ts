@@ -124,7 +124,7 @@ async function ensurePlanCompany(input: DemoInput, planCatalog: Map<PlanCode, { 
   const company = existingCompany
     ? await prisma.company.update({
         where: { id: existingCompany.id },
-        data: { plan: input.plan, segment: input.segment, employeeCount: input.employeeCount, isActive: true },
+        data: { plan: input.plan, segment: input.segment, employeeCount: input.employeeCount, isDemo: true, isActive: true },
       })
     : await prisma.company.create({
         data: {
@@ -132,6 +132,7 @@ async function ensurePlanCompany(input: DemoInput, planCatalog: Map<PlanCode, { 
           plan: input.plan,
           segment: input.segment,
           employeeCount: input.employeeCount,
+          isDemo: true,
           isActive: true,
         },
       });

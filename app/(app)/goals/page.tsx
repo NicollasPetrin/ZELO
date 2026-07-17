@@ -43,7 +43,7 @@ export default async function GoalsPage() {
     listActiveDepartments(user.companyId),
     listActiveEmployees(user.companyId),
     listGoalsForUser(user),
-    isOnboardingCompleted(user.id, "goals"),
+    isOnboardingCompleted(user, "goals"),
   ]);
 
   if (!canManage && !user.departmentId) {

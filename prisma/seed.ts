@@ -9,7 +9,8 @@ import { hashPassword } from "../lib/auth/password";
 import { getPlanAccess, planDetails, planOrder } from "../lib/plans";
 
 const prisma = new PrismaClient();
-const passwordHash = hashPassword("123456");
+const DEMO_PASSWORD = "DemoZelo123";
+const passwordHash = hashPassword(DEMO_PASSWORD);
 
 const planPrices: Record<SubscriptionPlan, number> = {
   BASIC: 5990,
@@ -237,6 +238,7 @@ async function createDemoCompany(input: DemoCompanyInput, plans: Map<Subscriptio
       state: input.state,
       employeeCount: input.employeeCount,
       plan: input.plan,
+      isDemo: true,
       isActive: true,
     },
   });
@@ -728,7 +730,7 @@ async function main() {
   );
 
   console.log("Seed completo concluido.");
-  console.log("Logins: basico@demo.com, gestao@demo.com, completo@demo.com / senha 123456");
+  console.log(`Logins: basico@demo.com, gestao@demo.com, completo@demo.com / senha ${DEMO_PASSWORD}`);
 }
 
 main()

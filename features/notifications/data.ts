@@ -1,10 +1,12 @@
 import "server-only";
+import type { CurrentUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/db/client";
 
-export function listNotifications(userId: string) {
+export function listNotifications(user: CurrentUser) {
   return prisma.notification.findMany({
     where: {
-      userId,
+      userId: user.id,
+      companyId: user.companyId,
     },
     orderBy: {
       createdAt: "desc",
@@ -13,10 +15,11 @@ export function listNotifications(userId: string) {
   });
 }
 
-export function countUnreadNotifications(userId: string) {
+export function countUnreadNotifications(user: CurrentUser) {
   return prisma.notification.count({
     where: {
-      userId,
+      userId: user.id,
+      companyId: user.companyId,
       isRead: false,
     },
   });

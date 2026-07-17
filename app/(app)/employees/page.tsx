@@ -31,7 +31,7 @@ export default async function EmployeesPage() {
   const [employees, departments, onboardingCompleted] = await Promise.all([
     listEmployees(user.companyId),
     listActiveDepartments(user.companyId),
-    isOnboardingCompleted(user.id, "employees"),
+    isOnboardingCompleted(user, "employees"),
   ]);
   const activeEmployees = employees.filter((employee) => employee.isActive).length;
   const reachedLimit = access.maxUsers !== null && activeEmployees >= access.maxUsers;

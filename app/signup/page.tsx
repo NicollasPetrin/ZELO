@@ -10,6 +10,7 @@ import { Input, Label } from "@/components/ui/fields";
 const errorMessages: Record<string, string> = {
   dados: "Revise os dados. A senha deve ter 10 caracteres, letra maiuscula, minuscula e numero.",
   email: "Este e-mail ja esta cadastrado. Entre na conta ou use outro e-mail.",
+  rate: "Muitas tentativas. Aguarde alguns minutos e tente novamente.",
 };
 
 export default async function SignupPage({

@@ -2,13 +2,15 @@
 
 import { revalidatePath } from "next/cache";
 import { actionError } from "@/lib/action-result";
+import { recordActivity } from "@/lib/audit";
 import { assertCanManageTasks } from "@/lib/auth/guards";
 import { requireUser } from "@/lib/auth/session";
 import { findTaskForUser } from "@/features/tasks/data";
 import { prisma } from "@/lib/db/client";
 import { getPlanAccess } from "@/lib/plans";
+import { assertUserActionRateLimit } from "@/lib/rate-limit";
 import { assertCompanyHasActivePlan } from "@/lib/subscription";
-import { attachmentSchema, commentSchema, taskSchema, taskStatusSchema } from "@/lib/validations";
+import { attachmentSchema, commentSchema, idSchema, taskSchema, taskStatusSchema } from "@/lib/validations";
 
 function taskDate(value: string) {
   const date = new Date(`${value}T17:00:00`);
@@ -34,6 +36,7 @@ export async function createTaskAction(values: unknown) {
   try {
     const user = await requireUser();
     assertCanManageTasks(user);
+    await assertUserActionRateLimit(user.id, "tasks:create");
 
     const parsed = taskSchema.parse(values);
     const activePlan = assertCompanyHasActivePlan(user.company);
@@ -44,7 +47,7 @@ export async function createTaskAction(values: unknown) {
     }
 
     const [department, assignee] = await Promise.all([
-      prisma.department.findFirst({ where: { id: parsed.departmentId, companyId: user.companyId } }),
+      prisma.department.findFirst({ where: { id: parsed.departmentId, companyId: user.companyId, isActive: true } }),
       prisma.user.findFirst({ where: { id: parsed.assigneeId, companyId: user.companyId, isActive: true } }),
     ]);
 
@@ -84,6 +87,21 @@ export async function createTaskAction(values: unknown) {
       },
     });
 
+    await recordActivity({
+      companyId: user.companyId,
+      actorId: user.id,
+      type: "TASK_CREATED",
+      entityType: "Task",
+      entityId: task.id,
+      title: "Tarefa criada",
+      description: parsed.title,
+      metadata: {
+        assigneeId: parsed.assigneeId,
+        priority: parsed.priority,
+        status: parsed.status,
+      },
+    });
+
     revalidatePath("/team-tasks");
     revalidatePath("/my-tasks");
     revalidatePath("/dashboard");
@@ -98,6 +116,7 @@ export async function updateTaskAction(values: unknown) {
   try {
     const user = await requireUser();
     assertCanManageTasks(user);
+    await assertUserActionRateLimit(user.id, "tasks:update");
 
     const parsed = taskSchema.parse(values);
     const activePlan = assertCompanyHasActivePlan(user.company);
@@ -110,10 +129,11 @@ export async function updateTaskAction(values: unknown) {
     if (!parsed.id) {
       throw new Error("Tarefa invalida.");
     }
+    const parsedTaskId = idSchema.parse(parsed.id);
 
     const task = await prisma.task.findFirst({
       where: {
-        id: parsed.id,
+        id: parsedTaskId,
         companyId: user.companyId,
       },
     });
@@ -122,9 +142,19 @@ export async function updateTaskAction(values: unknown) {
       throw new Error("Tarefa nao encontrada.");
     }
 
-    await prisma.task.update({
+    const [department, assignee] = await Promise.all([
+      prisma.department.findFirst({ where: { id: parsed.departmentId, companyId: user.companyId, isActive: true } }),
+      prisma.user.findFirst({ where: { id: parsed.assigneeId, companyId: user.companyId, isActive: true } }),
+    ]);
+
+    if (!department || !assignee) {
+      throw new Error("Responsavel ou setor invalido.");
+    }
+
+    const updateResult = await prisma.task.updateMany({
       where: {
         id: task.id,
+        companyId: user.companyId,
       },
       data: {
         departmentId: parsed.departmentId,
@@ -137,6 +167,10 @@ export async function updateTaskAction(values: unknown) {
         completedAt: parsed.status === "COMPLETED" ? task.completedAt ?? new Date() : null,
       },
     });
+
+    if (updateResult.count === 0) {
+      throw new Error("Tarefa nao encontrada.");
+    }
 
     const recurrence = recurrenceData(parsed, task.id);
     if (recurrence) {
@@ -157,6 +191,21 @@ export async function updateTaskAction(values: unknown) {
       await prisma.recurrenceRule.deleteMany({ where: { taskId: task.id } });
     }
 
+    await recordActivity({
+      companyId: user.companyId,
+      actorId: user.id,
+      type: "TASK_UPDATED",
+      entityType: "Task",
+      entityId: task.id,
+      title: "Tarefa atualizada",
+      description: parsed.title,
+      metadata: {
+        assigneeId: parsed.assigneeId,
+        priority: parsed.priority,
+        status: parsed.status,
+      },
+    });
+
     revalidatePath("/team-tasks");
     revalidatePath("/my-tasks");
     revalidatePath(`/tasks/${task.id}`);
@@ -171,22 +220,29 @@ export async function updateTaskStatusAction(values: unknown) {
   try {
     const user = await requireUser();
     assertCompanyHasActivePlan(user.company);
+    await assertUserActionRateLimit(user.id, "tasks:update-status");
     const parsed = taskStatusSchema.parse(values);
-    const task = await findTaskForUser(parsed.taskId, user);
+    const taskId = idSchema.parse(parsed.taskId);
+    const task = await findTaskForUser(taskId, user);
 
     if (!task) {
       throw new Error("Voce nao tem permissao para alterar esta tarefa.");
     }
 
-    await prisma.task.update({
+    const updateResult = await prisma.task.updateMany({
       where: {
         id: task.id,
+        companyId: user.companyId,
       },
       data: {
         status: parsed.status,
         completedAt: parsed.status === "COMPLETED" ? task.completedAt ?? new Date() : null,
       },
     });
+
+    if (updateResult.count === 0) {
+      throw new Error("Tarefa nao encontrada.");
+    }
 
     const recipientId = task.creatorId === user.id ? task.assigneeId : task.creatorId;
     if (recipientId !== user.id) {
@@ -203,6 +259,19 @@ export async function updateTaskStatusAction(values: unknown) {
       });
     }
 
+    await recordActivity({
+      companyId: user.companyId,
+      actorId: user.id,
+      type: "TASK_UPDATED",
+      entityType: "Task",
+      entityId: task.id,
+      title: "Status da tarefa atualizado",
+      description: task.title,
+      metadata: {
+        status: parsed.status,
+      },
+    });
+
     revalidatePath("/team-tasks");
     revalidatePath("/my-tasks");
     revalidatePath(`/tasks/${task.id}`);
@@ -218,8 +287,10 @@ export async function addTaskCommentAction(values: unknown) {
   try {
     const user = await requireUser();
     assertCompanyHasActivePlan(user.company);
+    await assertUserActionRateLimit(user.id, "tasks:add-comment");
     const parsed = commentSchema.parse(values);
-    const task = await findTaskForUser(parsed.taskId, user);
+    const taskId = idSchema.parse(parsed.taskId);
+    const task = await findTaskForUser(taskId, user);
 
     if (!task) {
       throw new Error("Voce nao tem permissao para comentar nesta tarefa.");
@@ -252,6 +323,16 @@ export async function addTaskCommentAction(values: unknown) {
       ),
     );
 
+    await recordActivity({
+      companyId: user.companyId,
+      actorId: user.id,
+      type: "TASK_COMMENTED",
+      entityType: "Task",
+      entityId: task.id,
+      title: "Comentario em tarefa",
+      description: task.title,
+    });
+
     revalidatePath(`/tasks/${task.id}`);
     revalidatePath("/notifications");
     return { ok: true, message: "Comentario registrado." } as const;
@@ -264,8 +345,10 @@ export async function addTaskAttachmentAction(values: unknown) {
   try {
     const user = await requireUser();
     assertCompanyHasActivePlan(user.company);
+    await assertUserActionRateLimit(user.id, "tasks:add-attachment");
     const parsed = attachmentSchema.parse(values);
-    const task = await findTaskForUser(parsed.taskId, user);
+    const taskId = idSchema.parse(parsed.taskId);
+    const task = await findTaskForUser(taskId, user);
 
     if (!task) {
       throw new Error("Voce nao tem permissao para anexar nesta tarefa.");
@@ -280,6 +363,16 @@ export async function addTaskAttachmentAction(values: unknown) {
         fileType: parsed.fileType || null,
         fileSize: parsed.fileSize === "" ? null : parsed.fileSize,
       },
+    });
+
+    await recordActivity({
+      companyId: user.companyId,
+      actorId: user.id,
+      type: "TASK_UPDATED",
+      entityType: "Task",
+      entityId: task.id,
+      title: "Anexo registrado em tarefa",
+      description: parsed.fileName,
     });
 
     revalidatePath(`/tasks/${task.id}`);

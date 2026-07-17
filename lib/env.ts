@@ -3,7 +3,7 @@ import { z } from "zod";
 
 const envSchema = z.object({
   DATABASE_URL: z.string().min(1),
-  SESSION_SECRET: z.string().min(32).optional(),
+  SESSION_SECRET: z.string().min(32),
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
 });
 
@@ -14,13 +14,5 @@ export const env = envSchema.parse({
 });
 
 export function getSessionSecret() {
-  if (env.SESSION_SECRET) {
-    return env.SESSION_SECRET;
-  }
-
-  if (env.NODE_ENV === "production") {
-    throw new Error("SESSION_SECRET precisa estar definido em producao.");
-  }
-
-  return "zelo-dev-secret-change-before-production";
+  return env.SESSION_SECRET;
 }

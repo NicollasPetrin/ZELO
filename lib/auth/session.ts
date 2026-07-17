@@ -1,5 +1,5 @@
 import "server-only";
-import { createHmac, randomBytes, timingSafeEqual } from "crypto";
+import { createHash, createHmac, randomBytes, timingSafeEqual } from "crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db/client";
@@ -12,10 +12,12 @@ function sign(value: string) {
   return createHmac("sha256", getSessionSecret()).update(value).digest("hex");
 }
 
-function createToken(userId: string) {
-  const expiresAt = Date.now() + SESSION_DAYS * 24 * 60 * 60 * 1000;
-  const nonce = randomBytes(18).toString("base64url");
-  const payload = `${userId}.${expiresAt}.${nonce}`;
+function hashToken(value: string) {
+  return createHash("sha256").update(value).digest("hex");
+}
+
+function createCookieValue(sessionId: string, verifier: string) {
+  const payload = `${sessionId}.${verifier}`;
 
   return `${payload}.${sign(payload)}`;
 }
@@ -25,19 +27,13 @@ function readToken(token?: string) {
     return null;
   }
 
-  const [userId, expiresAt, nonce, signature] = token.split(".");
+  const [sessionId, verifier, signature] = token.split(".");
 
-  if (!userId || !expiresAt || !nonce || !signature) {
+  if (!sessionId || !verifier || !signature) {
     return null;
   }
 
-  const expiresAtNumber = Number(expiresAt);
-
-  if (!Number.isFinite(expiresAtNumber) || expiresAtNumber <= Date.now()) {
-    return null;
-  }
-
-  const payload = `${userId}.${expiresAt}.${nonce}`;
+  const payload = `${sessionId}.${verifier}`;
   const expected = Buffer.from(sign(payload), "hex");
   const received = Buffer.from(signature, "hex");
 
@@ -45,14 +41,43 @@ function readToken(token?: string) {
     return null;
   }
 
-  return userId;
+  return {
+    sessionId,
+    verifier,
+  };
 }
 
 export async function createSession(userId: string) {
   const cookieStore = await cookies();
   const expires = new Date(Date.now() + SESSION_DAYS * 24 * 60 * 60 * 1000);
+  const verifier = randomBytes(32).toString("base64url");
+  const now = new Date();
 
-  cookieStore.set(COOKIE_NAME, createToken(userId), {
+  await prisma.session.updateMany({
+    where: {
+      userId,
+      revokedAt: null,
+      expiresAt: {
+        gt: now,
+      },
+    },
+    data: {
+      revokedAt: now,
+    },
+  });
+
+  const session = await prisma.session.create({
+    data: {
+      userId,
+      tokenHash: hashToken(verifier),
+      expiresAt: expires,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  cookieStore.set(COOKIE_NAME, createCookieValue(session.id, verifier), {
     httpOnly: true,
     sameSite: "strict",
     secure: process.env.NODE_ENV === "production",
@@ -64,48 +89,92 @@ export async function createSession(userId: string) {
 
 export async function deleteSession() {
   const cookieStore = await cookies();
+  const token = readToken(cookieStore.get(COOKIE_NAME)?.value);
+
+  if (token) {
+    await prisma.session.updateMany({
+      where: {
+        id: token.sessionId,
+        revokedAt: null,
+      },
+      data: {
+        revokedAt: new Date(),
+      },
+    });
+  }
+
   cookieStore.delete(COOKIE_NAME);
 }
 
 export async function getCurrentUser() {
   const cookieStore = await cookies();
-  const userId = readToken(cookieStore.get(COOKIE_NAME)?.value);
+  const token = readToken(cookieStore.get(COOKIE_NAME)?.value);
 
-  if (!userId) {
+  if (!token) {
     return null;
   }
 
-  return prisma.user.findFirst({
+  const session = await prisma.session.findFirst({
     where: {
-      id: userId,
-      isActive: true,
-      company: {
-        isActive: true,
+      id: token.sessionId,
+      revokedAt: null,
+      expiresAt: {
+        gt: new Date(),
       },
     },
     include: {
-      company: {
+      user: {
         include: {
-          subscriptions: {
-            where: {
-              status: "ACTIVE",
-              currentPeriodEnd: {
-                gte: new Date(),
+          company: {
+            include: {
+              subscriptions: {
+                where: {
+                  status: "ACTIVE",
+                  currentPeriodEnd: {
+                    gte: new Date(),
+                  },
+                },
+                include: {
+                  plan: true,
+                },
+                orderBy: {
+                  currentPeriodEnd: "desc",
+                },
+                take: 1,
               },
             },
-            include: {
-              plan: true,
-            },
-            orderBy: {
-              currentPeriodEnd: "desc",
-            },
-            take: 1,
           },
+          department: true,
         },
       },
-      department: true,
     },
   });
+
+  if (!session) {
+    return null;
+  }
+
+  const expectedHash = Buffer.from(session.tokenHash);
+  const receivedHash = Buffer.from(hashToken(token.verifier));
+
+  if (expectedHash.length !== receivedHash.length || !timingSafeEqual(expectedHash, receivedHash)) {
+    await prisma.session.updateMany({
+      where: {
+        id: token.sessionId,
+        revokedAt: null,
+      },
+      data: {
+        revokedAt: new Date(),
+      },
+    });
+    return null;
+  }
+
+  if (!session.user.isActive || !session.user.company.isActive) {
+    return null;
+  }
+
+  return session.user;
 }
 
 export type CurrentUser = NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>;

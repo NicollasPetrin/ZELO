@@ -190,6 +190,7 @@ model Company {
   state           String?
   employeeCount   Int?
   plan            SubscriptionPlan?
+  isDemo          Boolean               @default(false)
   isActive        Boolean               @default(true)
   createdAt       DateTime              @default(now())
   updatedAt       DateTime              @updatedAt
@@ -234,9 +235,25 @@ model User {
   subscriptionEvents SubscriptionEvent[] @relation("SubscriptionEventActor")
   reportSnapshots    ReportSnapshot[]    @relation("ReportSnapshotCreator")
   supportTickets     SupportTicket[]     @relation("SupportRequester")
+  sessions           Session[]
 
   @@index([companyId])
   @@index([departmentId])
+}
+
+model Session {
+  id         String    @id @default(cuid())
+  userId     String
+  tokenHash  String    @unique
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  createdAt  DateTime  @default(now())
+  lastSeenAt DateTime?
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([revokedAt])
 }
 
 model Department {

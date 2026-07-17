@@ -64,7 +64,7 @@ export default async function DashboardPage() {
 
   const [dashboard, onboardingCompleted] = await Promise.all([
     getDashboardData(user),
-    isOnboardingCompleted(user.id, "dashboard"),
+    isOnboardingCompleted(user, "dashboard"),
   ]);
   const { teamScope, stats, upcomingTasks, employeeHotspots, departmentHotspots, attentionItems } = dashboard;
   const access = getPlanAccess(activePlanCode);

@@ -35,7 +35,7 @@ export default async function MyTasksPage({
   const query = searchValue(params, "q");
   const [tasks, onboardingCompleted] = await Promise.all([
     listMyTasks(user, { q: query, status, priority }),
-    isOnboardingCompleted(user.id, "tasks"),
+    isOnboardingCompleted(user, "tasks"),
   ]);
 
   return (

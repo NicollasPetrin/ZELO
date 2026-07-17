@@ -19,7 +19,7 @@ export default async function NotificationsPage() {
     return <SubscriptionRequiredCard />;
   }
 
-  const notifications = await listNotifications(user.id);
+  const notifications = await listNotifications(user);
 
   const unreadCount = notifications.filter((notification) => !notification.isRead).length;
 

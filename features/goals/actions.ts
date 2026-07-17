@@ -2,12 +2,14 @@
 
 import { revalidatePath } from "next/cache";
 import { actionError } from "@/lib/action-result";
+import { recordActivity } from "@/lib/audit";
 import { assertCanManageGoals } from "@/lib/auth/guards";
 import { requireUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/db/client";
 import { getPlanAccess } from "@/lib/plans";
+import { assertUserActionRateLimit } from "@/lib/rate-limit";
 import { assertCompanyHasActivePlan } from "@/lib/subscription";
-import { goalSchema } from "@/lib/validations";
+import { goalSchema, idSchema } from "@/lib/validations";
 
 function dateValue(value: string) {
   return new Date(`${value}T12:00:00`);
@@ -17,6 +19,7 @@ export async function saveGoalAction(values: unknown) {
   try {
     const user = await requireUser();
     assertCanManageGoals(user);
+    await assertUserActionRateLimit(user.id, "goals:save");
 
     const parsed = goalSchema.parse(values);
     const activePlan = assertCompanyHasActivePlan(user.company);
@@ -39,23 +42,43 @@ export async function saveGoalAction(values: unknown) {
       startDate: dateValue(parsed.startDate),
       endDate: dateValue(parsed.endDate),
     };
+    let entityId = parsed.id ?? null;
 
     if (parsed.id) {
-      await prisma.goal.update({
+      const result = await prisma.goal.updateMany({
         where: {
           id: parsed.id,
           companyId: user.companyId,
         },
         data,
       });
+
+      if (result.count === 0) {
+        throw new Error("Meta nao encontrada.");
+      }
     } else {
-      await prisma.goal.create({
+      const goal = await prisma.goal.create({
         data: {
           ...data,
           companyId: user.companyId,
         },
       });
+      entityId = goal.id;
     }
+
+    await recordActivity({
+      companyId: user.companyId,
+      actorId: user.id,
+      type: parsed.id ? "GOAL_UPDATED" : "GOAL_CREATED",
+      entityType: "Goal",
+      entityId,
+      title: parsed.id ? "Meta atualizada" : "Meta criada",
+      description: data.title,
+      metadata: {
+        status: data.status,
+        period: data.period,
+      },
+    });
 
     revalidatePath("/goals");
     revalidatePath("/dashboard");
@@ -70,12 +93,27 @@ export async function deleteGoalAction(id: string) {
     const user = await requireUser();
     assertCanManageGoals(user);
     assertCompanyHasActivePlan(user.company);
+    await assertUserActionRateLimit(user.id, "goals:delete");
+    const parsedId = idSchema.parse(id);
 
-    await prisma.goal.delete({
+    const result = await prisma.goal.deleteMany({
       where: {
-        id,
+        id: parsedId,
         companyId: user.companyId,
       },
+    });
+
+    if (result.count === 0) {
+      throw new Error("Meta nao encontrada.");
+    }
+
+    await recordActivity({
+      companyId: user.companyId,
+      actorId: user.id,
+      type: "GOAL_UPDATED",
+      entityType: "Goal",
+      entityId: parsedId,
+      title: "Meta excluida",
     });
 
     revalidatePath("/goals");

@@ -4,12 +4,19 @@ import { redirect } from "next/navigation";
 import { createSession, deleteSession, getCurrentUser } from "@/lib/auth/session";
 import { hashPassword, verifyPassword } from "@/lib/auth/password";
 import { prisma } from "@/lib/db/client";
+import { assertIpRateLimit, assertRateLimit } from "@/lib/rate-limit";
 import { loginSchema, signupSchema } from "@/lib/validations";
 
 const DUMMY_PASSWORD_HASH = hashPassword("SenhaFalsaSegura123");
 const DEFAULT_DEPARTMENTS = ["Gestao", "Operacao", "Atendimento"];
 
 export async function loginAction(formData: FormData) {
+  try {
+    await assertIpRateLimit("login", 10, 15 * 60_000);
+  } catch {
+    redirect("/login?error=rate");
+  }
+
   const parsed = loginSchema.safeParse({
     email: formData.get("email"),
     password: formData.get("password"),
@@ -17,6 +24,16 @@ export async function loginAction(formData: FormData) {
 
   if (!parsed.success) {
     redirect("/login?error=preencha");
+  }
+
+  try {
+    await assertRateLimit({
+      key: `login:email:${parsed.data.email}`,
+      limit: 8,
+      windowMs: 15 * 60_000,
+    });
+  } catch {
+    redirect("/login?error=rate");
   }
 
   const user = await prisma.user.findUnique({
@@ -39,6 +56,12 @@ export async function loginAction(formData: FormData) {
 }
 
 export async function signupAction(formData: FormData) {
+  try {
+    await assertIpRateLimit("signup", 5, 60 * 60_000);
+  } catch {
+    redirect("/signup?error=rate");
+  }
+
   const parsed = signupSchema.safeParse({
     companyName: formData.get("companyName"),
     segment: formData.get("segment"),
@@ -50,6 +73,16 @@ export async function signupAction(formData: FormData) {
 
   if (!parsed.success) {
     redirect("/signup?error=dados");
+  }
+
+  try {
+    await assertRateLimit({
+      key: `signup:email:${parsed.data.email}`,
+      limit: 3,
+      windowMs: 60 * 60_000,
+    });
+  } catch {
+    redirect("/signup?error=rate");
   }
 
   const existingUser = await prisma.user.findUnique({

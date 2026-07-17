@@ -23,7 +23,7 @@ export default async function DepartmentsPage() {
 
   const [departments, onboardingCompleted] = await Promise.all([
     listDepartments(user.companyId),
-    isOnboardingCompleted(user.id, "departments"),
+    isOnboardingCompleted(user, "departments"),
   ]);
 
   const canManage = canManageCompany(user.role);

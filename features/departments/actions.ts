@@ -2,17 +2,20 @@
 
 import { revalidatePath } from "next/cache";
 import { actionError } from "@/lib/action-result";
+import { recordActivity } from "@/lib/audit";
 import { assertCanManageCompany } from "@/lib/auth/guards";
 import { requireUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/db/client";
+import { assertUserActionRateLimit } from "@/lib/rate-limit";
 import { assertCompanyHasActivePlan } from "@/lib/subscription";
-import { departmentSchema } from "@/lib/validations";
+import { departmentSchema, idSchema } from "@/lib/validations";
 
 export async function saveDepartmentAction(values: unknown) {
   try {
     const user = await requireUser();
     assertCanManageCompany(user);
     assertCompanyHasActivePlan(user.company);
+    await assertUserActionRateLimit(user.id, "departments:save");
 
     const parsed = departmentSchema.parse(values);
     const data = {
@@ -20,23 +23,39 @@ export async function saveDepartmentAction(values: unknown) {
       description: parsed.description || null,
       isActive: parsed.isActive,
     };
+    let entityId = parsed.id ?? null;
 
     if (parsed.id) {
-      await prisma.department.update({
+      const result = await prisma.department.updateMany({
         where: {
           id: parsed.id,
           companyId: user.companyId,
         },
         data,
       });
+
+      if (result.count === 0) {
+        throw new Error("Setor nao encontrado.");
+      }
     } else {
-      await prisma.department.create({
+      const department = await prisma.department.create({
         data: {
           ...data,
           companyId: user.companyId,
         },
       });
+      entityId = department.id;
     }
+
+    await recordActivity({
+      companyId: user.companyId,
+      actorId: user.id,
+      type: parsed.id ? "DEPARTMENT_UPDATED" : "DEPARTMENT_CREATED",
+      entityType: "Department",
+      entityId,
+      title: parsed.id ? "Setor atualizado" : "Setor criado",
+      description: data.name,
+    });
 
     revalidatePath("/departments");
     revalidatePath("/dashboard");
@@ -51,15 +70,30 @@ export async function toggleDepartmentAction(id: string, isActive: boolean) {
     const user = await requireUser();
     assertCanManageCompany(user);
     assertCompanyHasActivePlan(user.company);
+    await assertUserActionRateLimit(user.id, "departments:toggle");
+    const parsedId = idSchema.parse(id);
 
-    await prisma.department.update({
+    const result = await prisma.department.updateMany({
       where: {
-        id,
+        id: parsedId,
         companyId: user.companyId,
       },
       data: {
         isActive,
       },
+    });
+
+    if (result.count === 0) {
+      throw new Error("Setor nao encontrado.");
+    }
+
+    await recordActivity({
+      companyId: user.companyId,
+      actorId: user.id,
+      type: "DEPARTMENT_UPDATED",
+      entityType: "Department",
+      entityId: parsedId,
+      title: isActive ? "Setor ativado" : "Setor inativado",
     });
 
     revalidatePath("/departments");
@@ -74,12 +108,27 @@ export async function deleteDepartmentAction(id: string) {
     const user = await requireUser();
     assertCanManageCompany(user);
     assertCompanyHasActivePlan(user.company);
+    await assertUserActionRateLimit(user.id, "departments:delete");
+    const parsedId = idSchema.parse(id);
 
-    await prisma.department.delete({
+    const result = await prisma.department.deleteMany({
       where: {
-        id,
+        id: parsedId,
         companyId: user.companyId,
       },
+    });
+
+    if (result.count === 0) {
+      throw new Error("Setor nao encontrado.");
+    }
+
+    await recordActivity({
+      companyId: user.companyId,
+      actorId: user.id,
+      type: "DEPARTMENT_UPDATED",
+      entityType: "Department",
+      entityId: parsedId,
+      title: "Setor excluido",
     });
 
     revalidatePath("/departments");

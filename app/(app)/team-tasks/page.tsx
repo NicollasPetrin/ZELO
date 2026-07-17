@@ -47,7 +47,7 @@ export default async function TeamTasksPage({
   const [tasks, options, onboardingCompleted] = await Promise.all([
     listTeamTasks(user, taskFilters),
     getTaskFormOptions(user.companyId),
-    isOnboardingCompleted(user.id, "team-tasks"),
+    isOnboardingCompleted(user, "team-tasks"),
   ]);
   const { departments, users } = options;
 
