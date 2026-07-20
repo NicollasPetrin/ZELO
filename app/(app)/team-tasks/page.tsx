@@ -4,6 +4,7 @@ import { DataTable, Td, Th } from "@/components/data-table";
 import { EmptyState } from "@/components/empty-state";
 import { LockedFeatureCard } from "@/components/locked-feature-card";
 import { OnboardingCard } from "@/components/onboarding-card";
+import { Pagination } from "@/components/pagination";
 import { PageHeader } from "@/components/page-header";
 import { PriorityBadge } from "@/components/priority-badge";
 import { StatusBadge } from "@/components/status-badge";
@@ -17,6 +18,7 @@ import { formatDate, isTaskLate } from "@/lib/format";
 import { priorityLabels, statusLabels } from "@/lib/labels";
 import { isOnboardingCompleted } from "@/lib/onboarding";
 import { getPlanAccess } from "@/lib/plans";
+import { parsePage } from "@/lib/pagination";
 import { SearchParams, searchValue } from "@/lib/search";
 import { getActivePlanCode } from "@/lib/subscription";
 import { taskPriorities, taskStatuses } from "@/lib/validations";
@@ -39,16 +41,18 @@ export default async function TeamTasksPage({
   const departmentId = searchValue(params, "departmentId");
   const assigneeId = searchValue(params, "assigneeId");
   const query = searchValue(params, "q");
+  const page = parsePage(searchValue(params, "page"));
   const access = getPlanAccess(activePlanCode);
   const taskFilters = access.canUseAdvancedFilters
     ? { q: query, status, priority, departmentId, assigneeId }
     : { q: query, status };
 
-  const [tasks, options, onboardingCompleted] = await Promise.all([
-    listTeamTasks(user, taskFilters),
+  const [taskPage, options, onboardingCompleted] = await Promise.all([
+    listTeamTasks(user, taskFilters, page),
     getTaskFormOptions(user.companyId),
     isOnboardingCompleted(user, "team-tasks"),
   ]);
+  const tasks = taskPage.items;
   const { departments, users } = options;
 
   return (
@@ -179,6 +183,7 @@ export default async function TeamTasksPage({
           description="Comece criando a primeira tarefa da equipe para tirar as pendencias do WhatsApp e colocar tudo em um lugar visivel."
         />
       )}
+      <Pagination {...taskPage} searchParams={params} />
 
       <section id="nova-tarefa" className="space-y-3">
         <h2 className="text-lg font-semibold text-slate-950">Nova tarefa</h2>

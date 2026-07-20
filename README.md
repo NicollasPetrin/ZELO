@@ -319,7 +319,23 @@ http://localhost:3000
 | `npm run db:setup` | Gera Prisma Client, aplica migrations e executa seed. |
 | `npm run db:demo` | Cria/atualiza contas demo dos planos Basico, Gestao e Completo. |
 | `npm run db:seed` | Executa seed do Prisma. |
+| `npm run db:load-seed` | Gera massa sintetica somente para teste de carga em staging. |
 | `npm run db:reset` | Reseta o banco via Prisma. |
+| `npm run load:public` | Executa teste de carga leve nas rotas publicas. |
+| `npm run load:test` | Executa teste de carga configuravel. |
+| `npm run load:ramp` | Executa uma rampa publica com concorrencia 5, 10, 25 e 50. |
+
+## Teste de carga
+
+O projeto inclui um runner simples para medir latencia, throughput e erros:
+
+```bash
+npm run load:public -- --base-url https://zeloapp.vercel.app --duration 30 --concurrency 10
+```
+
+Para paginas autenticadas e cenarios maiores, veja `docs/load-testing.md`.
+
+O plano tecnico completo para 1.000 usuarios esta em `docs/scaling-to-1000-users.md`.
 
 ## Arquitetura da aplicacao
 

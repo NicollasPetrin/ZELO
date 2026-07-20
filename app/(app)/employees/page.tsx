@@ -3,6 +3,7 @@ import { DataTable, Td, Th } from "@/components/data-table";
 import { EmptyState } from "@/components/empty-state";
 import { LockedFeatureCard } from "@/components/locked-feature-card";
 import { OnboardingCard } from "@/components/onboarding-card";
+import { Pagination } from "@/components/pagination";
 import { PageHeader } from "@/components/page-header";
 import { SubscriptionRequiredCard } from "@/components/subscription-required-card";
 import { Badge } from "@/components/ui/badge";
@@ -15,10 +16,12 @@ import { requireCompanyManager } from "@/lib/auth/guards";
 import { formatDate } from "@/lib/format";
 import { roleLabels } from "@/lib/labels";
 import { isOnboardingCompleted } from "@/lib/onboarding";
+import { parsePage } from "@/lib/pagination";
 import { calculateMonthlyPrice, formatPriceCents, getPlanAccess, planDetails } from "@/lib/plans";
+import { SearchParams, searchValue } from "@/lib/search";
 import { getActivePlanCode } from "@/lib/subscription";
 
-export default async function EmployeesPage() {
+export default async function EmployeesPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const user = await requireCompanyManager();
   const activePlanCode = getActivePlanCode(user.company);
   if (!activePlanCode) {
@@ -27,13 +30,16 @@ export default async function EmployeesPage() {
 
   const activePlan = planDetails[activePlanCode];
   const access = getPlanAccess(activePlanCode);
+  const params = await searchParams;
+  const page = parsePage(searchValue(params, "page"));
 
-  const [employees, departments, onboardingCompleted] = await Promise.all([
-    listEmployees(user.companyId),
+  const [employeePage, departments, onboardingCompleted] = await Promise.all([
+    listEmployees(user.companyId, page),
     listActiveDepartments(user.companyId),
     isOnboardingCompleted(user, "employees"),
   ]);
-  const activeEmployees = employees.filter((employee) => employee.isActive).length;
+  const employees = employeePage.items;
+  const activeEmployees = employeePage.activeUserCount;
   const reachedLimit = access.maxUsers !== null && activeEmployees >= access.maxUsers;
   const maxUsersLabel = access.maxUsers === null ? "ilimitado" : String(access.maxUsers);
   const currentPrice = calculateMonthlyPrice(activePlanCode, activeEmployees);
@@ -160,6 +166,7 @@ export default async function EmployeesPage() {
           description="Cadastre sua equipe para comecar a distribuir tarefas e acompanhar responsabilidades."
         />
       )}
+      <Pagination {...employeePage} searchParams={params} />
     </div>
   );
 }

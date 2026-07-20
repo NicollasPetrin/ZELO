@@ -44,9 +44,16 @@ export async function getPremiumWorkspaceData(user: CurrentUser) {
       where: {
         companyId: user.companyId,
       },
-      include: {
-        assignee: true,
-        department: true,
+      select: {
+        id: true,
+        title: true,
+        dueDate: true,
+        priority: true,
+        status: true,
+        assigneeId: true,
+        departmentId: true,
+        assignee: { select: { name: true } },
+        department: { select: { name: true } },
       },
       orderBy: [{ dueDate: "asc" }],
     }),
@@ -54,9 +61,16 @@ export async function getPremiumWorkspaceData(user: CurrentUser) {
       where: {
         companyId: user.companyId,
       },
-      include: {
-        department: true,
-        responsible: true,
+      select: {
+        id: true,
+        title: true,
+        targetValue: true,
+        currentValue: true,
+        unit: true,
+        status: true,
+        departmentId: true,
+        department: { select: { name: true } },
+        responsible: { select: { name: true } },
       },
       orderBy: [{ status: "asc" }, { endDate: "asc" }],
     }),
@@ -64,6 +78,7 @@ export async function getPremiumWorkspaceData(user: CurrentUser) {
       where: {
         companyId: user.companyId,
       },
+      select: { id: true, name: true, isActive: true },
       orderBy: [{ isActive: "desc" }, { name: "asc" }],
     }),
     prisma.user.findMany({
@@ -71,8 +86,10 @@ export async function getPremiumWorkspaceData(user: CurrentUser) {
         companyId: user.companyId,
         isActive: true,
       },
-      include: {
-        department: true,
+      select: {
+        id: true,
+        name: true,
+        department: { select: { name: true } },
       },
       orderBy: { name: "asc" },
     }),
@@ -95,44 +112,60 @@ export async function getPremiumWorkspaceData(user: CurrentUser) {
     Math.min(100, 100 - Math.round(overdueRate * 0.45) - Math.round(goalRiskRate * 0.35) - (urgentTasks.length > 0 ? 8 : 0)),
   );
 
+  const departmentTaskMetrics = new Map<string, { totalTasks: number; openTasks: number; overdueTasks: number; completedTasks: number }>();
+  const employeeTaskMetrics = new Map<string, { totalTasks: number; openTasks: number; overdueTasks: number; completedTasks: number }>();
+
+  for (const task of tasks) {
+    const isOpen = isOpenTaskStatus(task.status);
+    const isCompleted = task.status === "COMPLETED";
+    const isOverdue = isTaskOperationallyLate(task, now);
+    const departmentMetric = departmentTaskMetrics.get(task.departmentId) ?? { totalTasks: 0, openTasks: 0, overdueTasks: 0, completedTasks: 0 };
+    const employeeMetric = employeeTaskMetrics.get(task.assigneeId) ?? { totalTasks: 0, openTasks: 0, overdueTasks: 0, completedTasks: 0 };
+
+    departmentMetric.totalTasks += 1;
+    departmentMetric.openTasks += isOpen ? 1 : 0;
+    departmentMetric.overdueTasks += isOverdue ? 1 : 0;
+    departmentMetric.completedTasks += isCompleted ? 1 : 0;
+    employeeMetric.totalTasks += 1;
+    employeeMetric.openTasks += isOpen ? 1 : 0;
+    employeeMetric.overdueTasks += isOverdue ? 1 : 0;
+    employeeMetric.completedTasks += isCompleted ? 1 : 0;
+    departmentTaskMetrics.set(task.departmentId, departmentMetric);
+    employeeTaskMetrics.set(task.assigneeId, employeeMetric);
+  }
+
+  const goalsAtRiskByDepartment = new Map<string, number>();
+  for (const goal of goalsAtRisk) {
+    if (goal.departmentId) {
+      goalsAtRiskByDepartment.set(goal.departmentId, (goalsAtRiskByDepartment.get(goal.departmentId) ?? 0) + 1);
+    }
+  }
+
   const departmentMetrics = sortByRisk(
     departments.map((department) => {
-      const departmentTasks = tasks.filter((task) => task.departmentId === department.id);
-      const departmentOpenTasks = departmentTasks.filter((task) => isOpenTaskStatus(task.status));
-      const departmentCompletedTasks = departmentTasks.filter((task) => task.status === "COMPLETED");
-      const departmentOverdueTasks = departmentOpenTasks.filter((task) => isTaskOperationallyLate(task, now));
-      const departmentGoalsAtRisk = goalsAtRisk.filter((goal) => goal.departmentId === department.id);
+      const metrics = departmentTaskMetrics.get(department.id) ?? { totalTasks: 0, openTasks: 0, overdueTasks: 0, completedTasks: 0 };
 
       return {
         id: department.id,
         name: department.name,
         isActive: department.isActive,
-        totalTasks: departmentTasks.length,
-        openTasks: departmentOpenTasks.length,
-        overdueTasks: departmentOverdueTasks.length,
-        completedTasks: departmentCompletedTasks.length,
-        goalsAtRisk: departmentGoalsAtRisk.length,
-        completionRate: percentage(departmentCompletedTasks.length, departmentTasks.length),
+        ...metrics,
+        goalsAtRisk: goalsAtRiskByDepartment.get(department.id) ?? 0,
+        completionRate: percentage(metrics.completedTasks, metrics.totalTasks),
       };
     }),
   );
 
   const employeeMetrics = sortByRisk(
     users.map((teamUser) => {
-      const userTasks = tasks.filter((task) => task.assigneeId === teamUser.id);
-      const userOpenTasks = userTasks.filter((task) => isOpenTaskStatus(task.status));
-      const userCompletedTasks = userTasks.filter((task) => task.status === "COMPLETED");
-      const userOverdueTasks = userOpenTasks.filter((task) => isTaskOperationallyLate(task, now));
+      const metrics = employeeTaskMetrics.get(teamUser.id) ?? { totalTasks: 0, openTasks: 0, overdueTasks: 0, completedTasks: 0 };
 
       return {
         id: teamUser.id,
         name: teamUser.name,
         department: teamUser.department?.name ?? "Sem setor",
-        totalTasks: userTasks.length,
-        openTasks: userOpenTasks.length,
-        overdueTasks: userOverdueTasks.length,
-        completedTasks: userCompletedTasks.length,
-        completionRate: percentage(userCompletedTasks.length, userTasks.length),
+        ...metrics,
+        completionRate: percentage(metrics.completedTasks, metrics.totalTasks),
       };
     }),
   );

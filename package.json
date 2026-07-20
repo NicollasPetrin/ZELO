@@ -14,7 +14,11 @@
     "db:setup": "tsx scripts/setup-db.ts",
     "db:demo": "tsx scripts/ensure-plan-demos.ts",
     "db:seed": "prisma db seed",
-    "db:reset": "prisma migrate reset --force"
+    "db:load-seed": "tsx scripts/seed-load-test.ts",
+    "db:reset": "prisma migrate reset --force",
+    "load:test": "tsx scripts/load-test.ts",
+    "load:public": "tsx scripts/load-test.ts --scenario public",
+    "load:ramp": "tsx scripts/load-test.ts --scenario public --concurrencies 5,10,25,50 --duration 30"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",

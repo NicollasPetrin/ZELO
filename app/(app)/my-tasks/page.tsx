@@ -3,6 +3,7 @@ import { Search } from "lucide-react";
 import { DataTable, Td, Th } from "@/components/data-table";
 import { EmptyState } from "@/components/empty-state";
 import { OnboardingCard } from "@/components/onboarding-card";
+import { Pagination } from "@/components/pagination";
 import { PageHeader } from "@/components/page-header";
 import { PriorityBadge } from "@/components/priority-badge";
 import { StatusBadge } from "@/components/status-badge";
@@ -15,6 +16,7 @@ import { requireUser } from "@/lib/auth/session";
 import { formatDate, isTaskLate } from "@/lib/format";
 import { priorityLabels, statusLabels } from "@/lib/labels";
 import { isOnboardingCompleted } from "@/lib/onboarding";
+import { parsePage } from "@/lib/pagination";
 import { SearchParams, searchValue } from "@/lib/search";
 import { getActivePlanCode } from "@/lib/subscription";
 import { taskPriorities, taskStatuses } from "@/lib/validations";
@@ -33,10 +35,12 @@ export default async function MyTasksPage({
   const status = searchValue(params, "status");
   const priority = searchValue(params, "priority");
   const query = searchValue(params, "q");
-  const [tasks, onboardingCompleted] = await Promise.all([
-    listMyTasks(user, { q: query, status, priority }),
+  const page = parsePage(searchValue(params, "page"));
+  const [taskPage, onboardingCompleted] = await Promise.all([
+    listMyTasks(user, { q: query, status, priority }, page),
     isOnboardingCompleted(user, "tasks"),
   ]);
+  const tasks = taskPage.items;
 
   return (
     <div className="space-y-6">
@@ -127,6 +131,7 @@ export default async function MyTasksPage({
           description="Quando uma tarefa for atribuida a voce, ela aparecera aqui com prazo, prioridade e status para acompanhamento."
         />
       )}
+      <Pagination {...taskPage} searchParams={params} />
     </div>
   );
 }

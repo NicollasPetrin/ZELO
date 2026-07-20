@@ -1,5 +1,5 @@
 import "server-only";
-import type { TaskStatus } from "@prisma/client";
+import type { Prisma, TaskStatus } from "@prisma/client";
 import type { CurrentUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/db/client";
 import { canViewTeamArea } from "@/lib/permissions";
@@ -7,11 +7,11 @@ import { canViewTeamArea } from "@/lib/permissions";
 export async function getDashboardData(user: CurrentUser) {
   const teamScope = canViewTeamArea(user.role);
   const closedStatuses: TaskStatus[] = ["COMPLETED", "CANCELED"];
-  const taskWhere = {
+  const taskWhere: Prisma.TaskWhereInput = {
     companyId: user.companyId,
     ...(teamScope ? {} : { assigneeId: user.id }),
   };
-  const activeTaskWhere = {
+  const activeTaskWhere: Prisma.TaskWhereInput = {
     ...taskWhere,
     status: {
       notIn: closedStatuses,
@@ -20,30 +20,32 @@ export async function getDashboardData(user: CurrentUser) {
   const now = new Date();
   const sevenDays = new Date();
   sevenDays.setDate(sevenDays.getDate() + 7);
+  const overdueWhere: Prisma.TaskWhereInput = {
+    ...activeTaskWhere,
+    OR: [{ status: "OVERDUE" }, { dueDate: { lt: now } }],
+  };
 
   const [
-    pending,
-    inProgress,
-    completed,
+    taskStatusGroups,
     urgent,
     overdue,
-    goalsOnTrack,
-    goalsAttention,
+    goalStatusGroups,
     upcomingTasks,
-    overdueTasks,
+    overdueByEmployeeGroups,
+    overdueByDepartmentGroups,
   ] = await Promise.all([
-    prisma.task.count({ where: { ...taskWhere, status: "PENDING" } }),
-    prisma.task.count({ where: { ...taskWhere, status: "IN_PROGRESS" } }),
-    prisma.task.count({ where: { ...taskWhere, status: "COMPLETED" } }),
-    prisma.task.count({ where: { ...activeTaskWhere, priority: "URGENT" } }),
-    prisma.task.count({
-      where: {
-        ...activeTaskWhere,
-        OR: [{ status: "OVERDUE" }, { dueDate: { lt: now } }],
-      },
+    prisma.task.groupBy({
+      by: ["status"],
+      where: taskWhere,
+      _count: { _all: true },
     }),
-    prisma.goal.count({ where: { companyId: user.companyId, status: "ON_TRACK" } }),
-    prisma.goal.count({ where: { companyId: user.companyId, status: { in: ["ATTENTION", "LATE"] } } }),
+    prisma.task.count({ where: { ...activeTaskWhere, priority: "URGENT" } }),
+    prisma.task.count({ where: overdueWhere }),
+    prisma.goal.groupBy({
+      by: ["status"],
+      where: { companyId: user.companyId },
+      _count: { _all: true },
+    }),
     prisma.task.findMany({
       where: {
         ...activeTaskWhere,
@@ -61,30 +63,44 @@ export async function getDashboardData(user: CurrentUser) {
       },
       take: 6,
     }),
-    prisma.task.findMany({
-      where: {
-        ...activeTaskWhere,
-        OR: [{ status: "OVERDUE" }, { dueDate: { lt: now } }],
-      },
-      include: {
-        assignee: true,
-        department: true,
-      },
-      orderBy: {
-        dueDate: "asc",
-      },
+    prisma.task.groupBy({
+      by: ["assigneeId"],
+      where: overdueWhere,
+      _count: { _all: true },
+      orderBy: { _count: { assigneeId: "desc" } },
+      take: 3,
+    }),
+    prisma.task.groupBy({
+      by: ["departmentId"],
+      where: overdueWhere,
+      _count: { _all: true },
+      orderBy: { _count: { departmentId: "desc" } },
+      take: 3,
     }),
   ]);
 
-  const overdueByEmployee = new Map<string, number>();
-  const overdueByDepartment = new Map<string, number>();
-  overdueTasks.forEach((task) => {
-    overdueByEmployee.set(task.assignee.name, (overdueByEmployee.get(task.assignee.name) ?? 0) + 1);
-    overdueByDepartment.set(task.department.name, (overdueByDepartment.get(task.department.name) ?? 0) + 1);
-  });
+  const [hotspotUsers, hotspotDepartments] = await Promise.all([
+    prisma.user.findMany({
+      where: { id: { in: overdueByEmployeeGroups.map((item) => item.assigneeId) }, companyId: user.companyId },
+      select: { id: true, name: true },
+    }),
+    prisma.department.findMany({
+      where: { id: { in: overdueByDepartmentGroups.map((item) => item.departmentId) }, companyId: user.companyId },
+      select: { id: true, name: true },
+    }),
+  ]);
+  const taskStatusCounts = new Map(taskStatusGroups.map((item) => [item.status, item._count._all]));
+  const goalStatusCounts = new Map(goalStatusGroups.map((item) => [item.status, item._count._all]));
+  const userNames = new Map(hotspotUsers.map((item) => [item.id, item.name]));
+  const departmentNames = new Map(hotspotDepartments.map((item) => [item.id, item.name]));
+  const pending = taskStatusCounts.get("PENDING") ?? 0;
+  const inProgress = taskStatusCounts.get("IN_PROGRESS") ?? 0;
+  const completed = taskStatusCounts.get("COMPLETED") ?? 0;
+  const goalsOnTrack = goalStatusCounts.get("ON_TRACK") ?? 0;
+  const goalsAttention = (goalStatusCounts.get("ATTENTION") ?? 0) + (goalStatusCounts.get("LATE") ?? 0);
 
-  const employeeHotspots = Array.from(overdueByEmployee.entries()).sort((a, b) => b[1] - a[1]).slice(0, 3);
-  const departmentHotspots = Array.from(overdueByDepartment.entries()).sort((a, b) => b[1] - a[1]).slice(0, 3);
+  const employeeHotspots = overdueByEmployeeGroups.map((item) => [userNames.get(item.assigneeId) ?? "Funcionario removido", item._count._all] as [string, number]);
+  const departmentHotspots = overdueByDepartmentGroups.map((item) => [departmentNames.get(item.departmentId) ?? "Setor removido", item._count._all] as [string, number]);
   const attentionItems = [
     overdue > 0 ? `${overdue} tarefa${overdue === 1 ? "" : "s"} atrasada${overdue === 1 ? "" : "s"}` : null,
     urgent > 0 ? `${urgent} tarefa${urgent === 1 ? "" : "s"} urgente${urgent === 1 ? "" : "s"} em aberto` : null,

@@ -3,6 +3,7 @@ import { Bell, CheckCheck } from "lucide-react";
 import { DataTable, Td, Th } from "@/components/data-table";
 import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
+import { Pagination } from "@/components/pagination";
 import { SubscriptionRequiredCard } from "@/components/subscription-required-card";
 import { Badge } from "@/components/ui/badge";
 import { buttonClassName } from "@/components/ui/button";
@@ -11,17 +12,21 @@ import { listNotifications } from "@/features/notifications/data";
 import { requireUser } from "@/lib/auth/session";
 import { formatDateTime } from "@/lib/format";
 import { notificationLabels } from "@/lib/labels";
+import { parsePage } from "@/lib/pagination";
+import { SearchParams, searchValue } from "@/lib/search";
 import { getActivePlanCode } from "@/lib/subscription";
 
-export default async function NotificationsPage() {
+export default async function NotificationsPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const user = await requireUser();
   if (!getActivePlanCode(user.company)) {
     return <SubscriptionRequiredCard />;
   }
 
-  const notifications = await listNotifications(user);
-
-  const unreadCount = notifications.filter((notification) => !notification.isRead).length;
+  const params = await searchParams;
+  const page = parsePage(searchValue(params, "page"));
+  const notificationPage = await listNotifications(user, page);
+  const notifications = notificationPage.items;
+  const unreadCount = notificationPage.unreadCount;
 
   return (
     <div className="space-y-6">
@@ -108,6 +113,7 @@ export default async function NotificationsPage() {
           description="Eventos como nova tarefa, comentario, atraso e meta em atencao aparecerao aqui."
         />
       )}
+      <Pagination {...notificationPage} searchParams={params} />
     </div>
   );
 }

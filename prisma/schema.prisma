@@ -239,6 +239,8 @@ model User {
 
   @@index([companyId])
   @@index([departmentId])
+  @@index([companyId, isActive, name])
+  @@index([companyId, role])
 }
 
 model Session {
@@ -271,6 +273,7 @@ model Department {
 
   @@unique([companyId, name])
   @@index([companyId])
+  @@index([companyId, isActive, name])
 }
 
 model Task {
@@ -299,8 +302,13 @@ model Task {
   @@index([companyId, status])
   @@index([companyId, priority])
   @@index([companyId, dueDate])
+  @@index([companyId, assigneeId, dueDate])
+  @@index([companyId, status, dueDate])
+  @@index([companyId, departmentId, status])
   @@index([departmentId])
   @@index([assigneeId])
+  @@index([title(ops: raw("gin_trgm_ops"))], type: Gin, map: "Task_title_trgm_idx")
+  @@index([description(ops: raw("gin_trgm_ops"))], type: Gin, map: "Task_description_trgm_idx")
 }
 
 model TaskComment {
@@ -380,6 +388,7 @@ model Goal {
   responsible   User?       @relation("GoalResponsible", fields: [responsibleId], references: [id], onDelete: SetNull)
 
   @@index([companyId, status])
+  @@index([companyId, status, endDate])
   @@index([departmentId])
   @@index([responsibleId])
 }
@@ -400,6 +409,7 @@ model Notification {
   user          User             @relation("NotificationRecipient", fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, isRead])
+  @@index([userId, createdAt])
   @@index([companyId, createdAt])
 }
 

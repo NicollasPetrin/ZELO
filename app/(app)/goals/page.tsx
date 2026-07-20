@@ -3,6 +3,7 @@ import { Target, Trash2 } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
 import { LockedFeatureCard } from "@/components/locked-feature-card";
 import { OnboardingCard } from "@/components/onboarding-card";
+import { Pagination } from "@/components/pagination";
 import { PageHeader } from "@/components/page-header";
 import { ProgressBar } from "@/components/progress-bar";
 import { SubscriptionRequiredCard } from "@/components/subscription-required-card";
@@ -18,7 +19,9 @@ import { formatDate, formatGoalValue, getGoalProgress, toDateInputValue } from "
 import { goalPeriodLabels, goalStatusLabels } from "@/lib/labels";
 import { isOnboardingCompleted } from "@/lib/onboarding";
 import { canManageGoals } from "@/lib/permissions";
+import { parsePage } from "@/lib/pagination";
 import { getPlanAccess } from "@/lib/plans";
+import { SearchParams, searchValue } from "@/lib/search";
 import { getActivePlanCode } from "@/lib/subscription";
 
 const goalStatusClasses = {
@@ -28,7 +31,7 @@ const goalStatusClasses = {
   COMPLETED: "bg-sky-100 text-sky-800",
 };
 
-export default async function GoalsPage() {
+export default async function GoalsPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const user = await requireUser();
   const activePlanCode = getActivePlanCode(user.company);
 
@@ -38,13 +41,16 @@ export default async function GoalsPage() {
 
   const canManage = canManageGoals(user.role);
   const access = getPlanAccess(activePlanCode);
+  const params = await searchParams;
+  const page = parsePage(searchValue(params, "page"));
 
-  const [departments, users, goals, onboardingCompleted] = await Promise.all([
+  const [departments, users, goalPage, onboardingCompleted] = await Promise.all([
     listActiveDepartments(user.companyId),
     listActiveEmployees(user.companyId),
-    listGoalsForUser(user),
+    listGoalsForUser(user, page),
     isOnboardingCompleted(user, "goals"),
   ]);
+  const goals = goalPage.items;
 
   if (!canManage && !user.departmentId) {
     redirect("/my-tasks");
@@ -183,6 +189,7 @@ export default async function GoalsPage() {
           description="Crie uma meta simples para acompanhar se sua equipe esta no caminho certo."
         />
       )}
+      <Pagination {...goalPage} searchParams={params} />
     </div>
   );
 }

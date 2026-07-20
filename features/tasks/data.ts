@@ -4,6 +4,7 @@ import type { Prisma, TaskPriority, TaskStatus } from "@prisma/client";
 import type { CurrentUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/db/client";
 import { canManageTasks } from "@/lib/permissions";
+import { DEFAULT_PAGE_SIZE, pageOffset, paginatedResult } from "@/lib/pagination";
 import { taskPriorities, taskStatuses } from "@/lib/validations";
 
 export type TaskFilters = {
@@ -44,37 +45,64 @@ function buildTaskSearchWhere(filters: ReturnType<typeof normalizeTaskFilters>):
   };
 }
 
-export async function listMyTasks(user: CurrentUser, filters: TaskFilters) {
+export async function listMyTasks(user: CurrentUser, filters: TaskFilters, page = 1) {
   const normalized = normalizeTaskFilters(filters);
+  const where: Prisma.TaskWhereInput = {
+    companyId: user.companyId,
+    assigneeId: user.id,
+    ...buildTaskSearchWhere(normalized),
+  };
 
-  return prisma.task.findMany({
-    where: {
-      companyId: user.companyId,
-      assigneeId: user.id,
-      ...buildTaskSearchWhere(normalized),
-    },
-    include: {
-      department: true,
-      assignee: true,
-    },
-    orderBy: [{ dueDate: "asc" }],
-  });
+  const [totalItems, items] = await prisma.$transaction([
+    prisma.task.count({ where }),
+    prisma.task.findMany({
+      where,
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        dueDate: true,
+        priority: true,
+        status: true,
+        department: { select: { id: true, name: true } },
+      },
+      orderBy: [{ dueDate: "asc" }, { id: "asc" }],
+      skip: pageOffset(page),
+      take: DEFAULT_PAGE_SIZE,
+    }),
+  ]);
+
+  return paginatedResult(items, totalItems, page);
 }
 
-export async function listTeamTasks(user: CurrentUser, filters: TaskFilters) {
+export async function listTeamTasks(user: CurrentUser, filters: TaskFilters, page = 1) {
   const normalized = normalizeTaskFilters(filters);
+  const where: Prisma.TaskWhereInput = {
+    companyId: user.companyId,
+    ...buildTaskSearchWhere(normalized),
+  };
 
-  return prisma.task.findMany({
-    where: {
-      companyId: user.companyId,
-      ...buildTaskSearchWhere(normalized),
-    },
-    include: {
-      assignee: true,
-      department: true,
-    },
-    orderBy: [{ dueDate: "asc" }],
-  });
+  const [totalItems, items] = await prisma.$transaction([
+    prisma.task.count({ where }),
+    prisma.task.findMany({
+      where,
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        dueDate: true,
+        priority: true,
+        status: true,
+        assignee: { select: { id: true, name: true } },
+        department: { select: { id: true, name: true } },
+      },
+      orderBy: [{ dueDate: "asc" }, { id: "asc" }],
+      skip: pageOffset(page),
+      take: DEFAULT_PAGE_SIZE,
+    }),
+  ]);
+
+  return paginatedResult(items, totalItems, page);
 }
 
 export async function getTaskFormOptions(companyId: string) {
