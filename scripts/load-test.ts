@@ -12,6 +12,10 @@ type Config = {
   concurrencyStages: number[];
   timeoutMs: number;
   cookie?: string;
+  login?: {
+    email: string;
+    password: string;
+  };
   paths: string[];
   maxErrorRate: number;
   maxP95Ms?: number;
@@ -118,10 +122,16 @@ function parseConfig(): Config {
   }
 
   const cookie = readArg("cookie") ?? process.env.LOAD_COOKIE;
+  const loginEmail = process.env.LOAD_LOGIN_EMAIL;
+  const loginPassword = process.env.LOAD_LOGIN_PASSWORD;
   const needsCookie = scenario === "auth-read" || scenario === "mixed";
 
-  if (needsCookie && !cookie) {
-    throw new Error("Este scenario precisa de cookie. Defina LOAD_COOKIE='zelo_session=...'.");
+  if (Boolean(loginEmail) !== Boolean(loginPassword)) {
+    throw new Error("Defina LOAD_LOGIN_EMAIL e LOAD_LOGIN_PASSWORD juntos.");
+  }
+
+  if (needsCookie && !cookie && (!loginEmail || !loginPassword)) {
+    throw new Error("Este scenario precisa de LOAD_COOKIE ou LOAD_LOGIN_EMAIL e LOAD_LOGIN_PASSWORD.");
   }
 
   const concurrency = readNumberArg("concurrency", Number(process.env.LOAD_CONCURRENCY ?? 10));
@@ -135,11 +145,48 @@ function parseConfig(): Config {
     concurrencyStages: parseConcurrencyStages(concurrency),
     timeoutMs: readNumberArg("timeout-ms", Number(process.env.LOAD_TIMEOUT_MS ?? 10_000)),
     cookie,
+    login: loginEmail && loginPassword ? { email: loginEmail, password: loginPassword } : undefined,
     paths: parsePaths(scenario),
     maxErrorRate: readNonNegativeNumberArg("max-error-rate", Number(process.env.LOAD_MAX_ERROR_RATE ?? 1)),
     maxP95Ms: readArg("max-p95-ms") || process.env.LOAD_MAX_P95_MS
       ? readNumberArg("max-p95-ms", Number(process.env.LOAD_MAX_P95_MS ?? 0))
       : undefined,
+  };
+}
+
+async function authenticate(config: Config): Promise<Config> {
+  if (config.cookie || !config.login) {
+    return config;
+  }
+
+  const loginUrl = new URL("/login", config.baseUrl);
+  const loginPage = await fetch(loginUrl, { cache: "no-store" });
+  const html = await loginPage.text();
+  const actionName = html.match(/name="(\$ACTION_ID_[^"]+)"/)?.[1];
+
+  if (!actionName) {
+    throw new Error("Nao foi possivel localizar a acao de login.");
+  }
+
+  const form = new FormData();
+  form.set(actionName, "");
+  form.set("email", config.login.email);
+  form.set("password", config.login.password);
+  const response = await fetch(loginUrl, {
+    method: "POST",
+    body: form,
+    redirect: "manual",
+  });
+  const setCookie = response.headers.get("set-cookie");
+  const sessionValue = setCookie?.match(/(?:^|,\s*)zelo_session=([^;]+)/)?.[1];
+
+  if (!sessionValue) {
+    throw new Error("Login de carga recusado. Confira as credenciais e o ambiente alvo.");
+  }
+
+  return {
+    ...config,
+    cookie: `zelo_session=${sessionValue}`,
   };
 }
 
@@ -287,7 +334,7 @@ function printSummary(config: Config, results: Result[], elapsedSeconds: number)
 }
 
 async function main() {
-  const config = parseConfig();
+  const config = await authenticate(parseConfig());
 
   console.log("Zelo load test");
   console.log(`Target: ${config.baseUrl}`);

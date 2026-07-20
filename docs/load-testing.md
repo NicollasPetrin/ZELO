@@ -55,6 +55,15 @@ $env:LOAD_COOKIE = "zelo_session=COLE_O_VALOR_AQUI"
 npm run load:test -- --base-url https://zeloapp.vercel.app --scenario auth-read --duration 30 --concurrency 10
 ```
 
+Tambem e possivel deixar o runner autenticar sem copiar o cookie. Use uma conta exclusiva de staging e mantenha a senha apenas na sessao do terminal:
+
+```powershell
+$env:LOAD_LOGIN_EMAIL = "load.owner@zelo.invalid"
+$env:LOAD_LOGIN_PASSWORD = "SENHA_DA_CONTA_DE_STAGING"
+npm run load:test -- --base-url https://SEU-STAGING.vercel.app --scenario auth-read --duration 30 --concurrency 10
+Remove-Item Env:LOAD_LOGIN_EMAIL, Env:LOAD_LOGIN_PASSWORD
+```
+
 Rotas do scenario `auth-read`:
 
 ```text
