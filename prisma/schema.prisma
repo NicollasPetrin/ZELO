@@ -104,6 +104,13 @@ enum InvoiceStatus {
   REFUNDED
 }
 
+enum WebhookEventStatus {
+  RECEIVED
+  PROCESSED
+  FAILED
+  IGNORED
+}
+
 enum PaymentMethodType {
   CREDIT_CARD
   PIX
@@ -191,6 +198,7 @@ model Company {
   employeeCount   Int?
   plan            SubscriptionPlan?
   isDemo          Boolean               @default(false)
+  asaasCustomerId String?               @unique
   isActive        Boolean               @default(true)
   createdAt       DateTime              @default(now())
   updatedAt       DateTime              @updatedAt
@@ -433,6 +441,8 @@ model CompanySubscription {
   id                 String              @id @default(cuid())
   companyId          String
   planId             String
+  provider           String?
+  externalId         String?             @unique
   status             SubscriptionStatus  @default(ACTIVE)
   currentPeriodStart DateTime
   currentPeriodEnd   DateTime
@@ -470,6 +480,7 @@ model PaymentMethod {
   companyId  String
   type       PaymentMethodType
   provider   String?
+  externalId String?           @unique
   brand      String?
   last4      String?
   holderName String?
@@ -488,6 +499,9 @@ model Invoice {
   subscriptionId  String?
   paymentMethodId String?
   number          String               @unique
+  provider        String?
+  externalId      String?              @unique
+  checkoutUrl     String?
   status          InvoiceStatus        @default(OPEN)
   amountCents     Int
   currency        String               @default("BRL")
@@ -575,4 +589,21 @@ model SupportTicket {
 
   @@index([companyId, status])
   @@index([requesterId])
+}
+
+model WebhookEvent {
+  id          String             @id @default(cuid())
+  provider    String
+  externalId  String
+  event       String
+  payload     String
+  status      WebhookEventStatus @default(RECEIVED)
+  error       String?
+  attempts    Int                @default(0)
+  receivedAt  DateTime           @default(now())
+  processedAt DateTime?
+
+  @@unique([provider, externalId])
+  @@index([status, receivedAt])
+  @@index([provider, event])
 }

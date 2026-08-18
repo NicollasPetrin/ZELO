@@ -6,12 +6,10 @@ import { recordActivity } from "@/lib/audit";
 import { assertCanManageCompany } from "@/lib/auth/guards";
 import { requireUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/db/client";
+import { ASAAS_NOT_CONFIGURED_MESSAGE, isAsaasConfigured } from "@/lib/env";
 import { calculateMonthlyPrice, formatPriceCents, planDetails } from "@/lib/plans";
 import { assertUserActionRateLimit } from "@/lib/rate-limit";
 import { subscriptionPlanSchema } from "@/lib/validations";
-
-const CHECKOUT_NOT_CONFIGURED_MESSAGE =
-  "Checkout de pagamento ainda nao configurado. Configure a processadora para permitir a compra online do plano.";
 
 export async function startPlanCheckoutAction(planCode: SubscriptionPlan) {
   try {
@@ -37,8 +35,8 @@ export async function startPlanCheckoutAction(planCode: SubscriptionPlan) {
       throw new Error(`O Plano ${plan.name} nao comporta ${activeUserCount} usuarios ativos. Escolha um plano maior.`);
     }
 
-    if (!process.env.ASAAS_API_KEY) {
-      throw new Error(CHECKOUT_NOT_CONFIGURED_MESSAGE);
+    if (!isAsaasConfigured()) {
+      throw new Error(ASAAS_NOT_CONFIGURED_MESSAGE);
     }
 
     await recordActivity({
