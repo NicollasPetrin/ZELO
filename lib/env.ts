@@ -19,7 +19,7 @@ function optionalEnv(value: string | undefined) {
   return trimmed ? trimmed : undefined;
 }
 
-export const env = envSchema.parse({
+const parsedEnv = envSchema.safeParse({
   DATABASE_URL: process.env.DATABASE_URL,
   SESSION_SECRET: process.env.SESSION_SECRET,
   NODE_ENV: process.env.NODE_ENV,
@@ -28,6 +28,29 @@ export const env = envSchema.parse({
   ASAAS_WEBHOOK_TOKEN: optionalEnv(process.env.ASAAS_WEBHOOK_TOKEN),
   ASAAS_USER_AGENT: optionalEnv(process.env.ASAAS_USER_AGENT),
 });
+
+// Este modulo e avaliado durante o build, quando o Next carrega os modulos de
+// servidor para coletar os dados das paginas. Sem uma mensagem propria, uma
+// variavel ausente aparece como "Failed to collect page data for /alguma-pagina",
+// que nao diz o que faltou nem onde definir. Nunca imprimimos o valor recebido,
+// apenas o nome da variavel e o motivo.
+if (!parsedEnv.success) {
+  const problemas = parsedEnv.error.issues
+    .map((issue) => `  - ${issue.path.join(".") || "(raiz)"}: ${issue.message}`)
+    .join("\n");
+
+  throw new Error(
+    [
+      "Variaveis de ambiente ausentes ou invalidas:",
+      problemas,
+      "",
+      "Defina-as no ambiente de build e de execucao da plataforma.",
+      "O arquivo .env.example lista todas as variaveis esperadas.",
+    ].join("\n"),
+  );
+}
+
+export const env = parsedEnv.data;
 
 export function getSessionSecret() {
   return env.SESSION_SECRET;
