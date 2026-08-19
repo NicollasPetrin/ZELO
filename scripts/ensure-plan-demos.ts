@@ -3,7 +3,28 @@ import { hashPassword } from "../lib/auth/password";
 import { getPlanAccess, planDetails, planOrder } from "../lib/plans";
 
 const prisma = new PrismaClient();
-const DEMO_PASSWORD = "DemoZelo123";
+
+// As credenciais demo nao ficam no repositorio. Este script roda contra o banco
+// de producao, entao uma senha fixa aqui seria uma conta publica na producao de
+// quem clonasse o projeto. Tudo vem do ambiente, sem valor padrao.
+function requiredEnv(name: string) {
+  const value = process.env[name]?.trim();
+
+  if (!value) {
+    throw new Error(
+      `${name} nao definida. Defina as credenciais demo no .env (veja .env.example) antes de rodar este script.`,
+    );
+  }
+
+  return value;
+}
+
+const DEMO_PASSWORD = requiredEnv("DEMO_PASSWORD");
+const demoEmails = {
+  BASIC: requiredEnv("DEMO_EMAIL_BASIC"),
+  MANAGEMENT: requiredEnv("DEMO_EMAIL_MANAGEMENT"),
+  COMPLETE: requiredEnv("DEMO_EMAIL_COMPLETE"),
+} as const;
 const passwordHash = hashPassword(DEMO_PASSWORD);
 
 type PlanCode = "BASIC" | "MANAGEMENT" | "COMPLETE";
@@ -344,7 +365,7 @@ async function main() {
     companyName: "Demo Plano Basico",
     segment: "Servicos locais",
     employeeCount: 5,
-    ownerEmail: "basico@demo.com",
+    ownerEmail: demoEmails.BASIC,
     ownerName: "Dono Plano Basico",
     departmentNames: ["Gestao", "Operacao", "Atendimento"],
     taskTitles: [
@@ -360,7 +381,7 @@ async function main() {
     companyName: "Mercado Boa Gestao",
     segment: "Varejo alimenticio",
     employeeCount: 18,
-    ownerEmail: "gestao@demo.com",
+    ownerEmail: demoEmails.MANAGEMENT,
     ownerName: "Demo Plano Gestao",
     departmentNames: ["Gestao", "Operacao", "Atendimento", "Financeiro"],
     taskTitles: ["Revisar rotina semanal da equipe gestora"],
@@ -372,7 +393,7 @@ async function main() {
     companyName: "Demo Plano Completo",
     segment: "Clinica multidisciplinar",
     employeeCount: 48,
-    ownerEmail: "completo@demo.com",
+    ownerEmail: demoEmails.COMPLETE,
     ownerName: "Dono Plano Completo",
     departmentNames: ["Gestao", "Operacao", "Financeiro", "Atendimento", "Administrativo"],
     taskTitles: [
@@ -385,13 +406,14 @@ async function main() {
   }, planCatalog);
 
   const users = await prisma.user.findMany({
-    where: { email: { in: ["basico@demo.com", "gestao@demo.com", "completo@demo.com"] } },
+    where: { email: { in: [demoEmails.BASIC, demoEmails.MANAGEMENT, demoEmails.COMPLETE] } },
     include: { company: true },
     orderBy: { email: "asc" },
   });
 
   console.log(users.map((user) => `${user.email} -> ${user.company.plan}`).join("\n"));
-  console.log(`Senha: ${DEMO_PASSWORD}`);
+  // A senha nao e impressa: a saida deste script pode acabar num log de deploy.
+  console.log("Senha: definida em DEMO_PASSWORD.");
 }
 
 main()

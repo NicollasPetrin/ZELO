@@ -9,7 +9,18 @@ import { hashPassword } from "../lib/auth/password";
 import { getPlanAccess, planDetails, planOrder } from "../lib/plans";
 
 const prisma = new PrismaClient();
-const DEMO_PASSWORD = "DemoZelo123";
+
+// Senha fora do repositorio: este seed pode ser apontado para o banco de
+// producao, e um valor fixo aqui viraria conta publica para quem clonasse o
+// projeto. Sem valor padrao, de proposito.
+const DEMO_PASSWORD = process.env.DEMO_PASSWORD?.trim();
+
+if (!DEMO_PASSWORD) {
+  throw new Error(
+    "DEMO_PASSWORD nao definida. Defina as credenciais demo no .env (veja .env.example) antes de rodar o seed.",
+  );
+}
+
 const passwordHash = hashPassword(DEMO_PASSWORD);
 
 const planPrices: Record<SubscriptionPlan, number> = {

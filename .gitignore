@@ -50,3 +50,6 @@ next-env.d.ts
 /lib/generated/prisma
 /prisma/dev.db
 /prisma/dev.db-journal
+
+# credenciais das contas demo (nunca versionar)
+demo-credentials.local.txt
