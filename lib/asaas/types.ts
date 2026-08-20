@@ -91,6 +91,38 @@ export const asaasWebhookEventSchema = z.object({
 
 export type AsaasWebhookEvent = z.infer<typeof asaasWebhookEventSchema>;
 
+export const asaasCheckoutSchema = z.object({
+  id: z.string().min(1),
+  /** URL hospedada pelo Asaas onde o cliente conclui o pagamento. */
+  link: z.string().min(1),
+  status: z.string().min(1),
+  externalReference: z.string().nullish(),
+});
+
+export type AsaasCheckout = z.infer<typeof asaasCheckoutSchema>;
+
+export type AsaasCheckoutInput = {
+  billingTypes: AsaasBillingType[];
+  chargeTypes: Array<"DETACHED" | "RECURRENT" | "INSTALLMENT">;
+  minutesToExpire: number;
+  externalReference: string;
+  items: Array<{
+    name: string;
+    description?: string;
+    quantity: number;
+    value: number;
+  }>;
+  subscription?: {
+    cycle: "MONTHLY" | "YEARLY";
+    nextDueDate: string;
+  };
+  callback: {
+    successUrl: string;
+    cancelUrl: string;
+    expiredUrl: string;
+  };
+};
+
 export const asaasCustomerSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),

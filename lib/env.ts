@@ -9,6 +9,7 @@ const envSchema = z.object({
   ASAAS_ENVIRONMENT: z.enum(["sandbox", "production"]).default("sandbox"),
   ASAAS_WEBHOOK_TOKEN: z.string().min(16).optional(),
   ASAAS_USER_AGENT: z.string().min(1).default("Zelo"),
+  APP_URL: z.string().url().optional(),
 });
 
 // Uma variavel declarada e vazia no .env chega aqui como "" e nao como undefined,
@@ -27,6 +28,7 @@ const parsedEnv = envSchema.safeParse({
   ASAAS_ENVIRONMENT: optionalEnv(process.env.ASAAS_ENVIRONMENT),
   ASAAS_WEBHOOK_TOKEN: optionalEnv(process.env.ASAAS_WEBHOOK_TOKEN),
   ASAAS_USER_AGENT: optionalEnv(process.env.ASAAS_USER_AGENT),
+  APP_URL: optionalEnv(process.env.APP_URL),
 });
 
 // Este modulo e avaliado durante o build, quando o Next carrega os modulos de
@@ -89,6 +91,18 @@ export function getAsaasConfig(): AsaasConfig {
     userAgent: env.ASAAS_USER_AGENT,
     environment: env.ASAAS_ENVIRONMENT,
   };
+}
+
+export const APP_URL_NOT_CONFIGURED_MESSAGE =
+  "APP_URL nao configurada. Ela e necessaria para o Asaas devolver o cliente ao site depois do pagamento.";
+
+/** Base publica da aplicacao, usada nos retornos de checkout. */
+export function getAppUrl() {
+  if (!env.APP_URL) {
+    throw new Error(APP_URL_NOT_CONFIGURED_MESSAGE);
+  }
+
+  return env.APP_URL.replace(/\/+$/, "");
 }
 
 export function getAsaasWebhookToken() {

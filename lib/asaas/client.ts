@@ -1,6 +1,14 @@
 import "server-only";
 import { getAsaasConfig } from "@/lib/env";
-import { asaasCustomerSchema, asaasPaymentSchema, type AsaasCustomer, type AsaasPayment } from "@/lib/asaas/types";
+import {
+  asaasCheckoutSchema,
+  asaasCustomerSchema,
+  asaasPaymentSchema,
+  type AsaasCheckout,
+  type AsaasCheckoutInput,
+  type AsaasCustomer,
+  type AsaasPayment,
+} from "@/lib/asaas/types";
 
 const DEFAULT_TIMEOUT_MS = 15_000;
 
@@ -92,4 +100,13 @@ export function createCustomer(input: {
 
 export function getPayment(paymentId: string): Promise<AsaasPayment> {
   return asaasRequest(`/payments/${encodeURIComponent(paymentId)}`, asaasPaymentSchema);
+}
+
+/**
+ * Cria uma sessao de checkout hospedada pelo Asaas e devolve o link para onde o
+ * cliente e redirecionado. Como a pagina e do Asaas, a Zelo nunca recebe dado de
+ * cartao, o que mantem a aplicacao fora do escopo de PCI.
+ */
+export function createCheckout(input: AsaasCheckoutInput): Promise<AsaasCheckout> {
+  return asaasRequest("/checkouts", asaasCheckoutSchema, { method: "POST", body: input });
 }
