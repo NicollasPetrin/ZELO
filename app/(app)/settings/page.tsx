@@ -180,6 +180,12 @@ export default async function SettingsPage() {
         company={{
           name: user.company.name,
           document: user.company.document,
+          phone: user.company.phone,
+          postalCode: user.company.postalCode,
+          address: user.company.address,
+          addressNumber: user.company.addressNumber,
+          addressComplement: user.company.addressComplement,
+          province: user.company.province,
           // Depois que existe cadastro na processadora, o documento vira somente
           // leitura para nao desalinhar os dois lados.
           documentLocked: Boolean(user.company.asaasCustomerId),

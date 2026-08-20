@@ -188,35 +188,40 @@ model PlanFeature {
 }
 
 model Company {
-  id              String                @id @default(cuid())
-  name            String
-  segment         String?
-  document        String?               @unique
-  phone           String?
-  email           String?
-  city            String?
-  state           String?
-  employeeCount   Int?
-  plan            SubscriptionPlan?
-  isDemo          Boolean               @default(false)
-  asaasCustomerId String?               @unique
-  pendingPlanCode SubscriptionPlan?
-  isActive        Boolean               @default(true)
-  createdAt       DateTime              @default(now())
-  updatedAt       DateTime              @updatedAt
-  users           User[]
-  departments     Department[]
-  tasks           Task[]
-  goals           Goal[]
-  notifications   Notification[]
-  onboarding      OnboardingStep[]
-  subscriptions   CompanySubscription[]
-  paymentMethods  PaymentMethod[]
-  invoices        Invoice[]
-  usageSnapshots  UsageSnapshot[]
-  activityLogs    ActivityLog[]
-  reportSnapshots ReportSnapshot[]
-  supportTickets  SupportTicket[]
+  id                String                @id @default(cuid())
+  name              String
+  segment           String?
+  document          String?               @unique
+  phone             String?
+  email             String?
+  postalCode        String?
+  address           String?
+  addressNumber     String?
+  addressComplement String?
+  province          String?
+  city              String?
+  state             String?
+  employeeCount     Int?
+  plan              SubscriptionPlan?
+  isDemo            Boolean               @default(false)
+  asaasCustomerId   String?               @unique
+  pendingPlanCode   SubscriptionPlan?
+  isActive          Boolean               @default(true)
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+  users             User[]
+  departments       Department[]
+  tasks             Task[]
+  goals             Goal[]
+  notifications     Notification[]
+  onboarding        OnboardingStep[]
+  subscriptions     CompanySubscription[]
+  paymentMethods    PaymentMethod[]
+  invoices          Invoice[]
+  usageSnapshots    UsageSnapshot[]
+  activityLogs      ActivityLog[]
+  reportSnapshots   ReportSnapshot[]
+  supportTickets    SupportTicket[]
 }
 
 model User {

@@ -88,14 +88,29 @@ export async function asaasRequest<T>(
   return schema.parse(parsedBody);
 }
 
-export function createCustomer(input: {
+type CustomerInput = {
   name: string;
   cpfCnpj: string;
   email?: string;
   phone?: string;
+  mobilePhone?: string;
+  postalCode?: string;
+  address?: string;
+  addressNumber?: string;
+  complement?: string;
+  province?: string;
   externalReference?: string;
-}): Promise<AsaasCustomer> {
+};
+
+export function createCustomer(input: CustomerInput): Promise<AsaasCustomer> {
   return asaasRequest("/customers", asaasCustomerSchema, { method: "POST", body: input });
+}
+
+export function updateCustomer(customerId: string, input: CustomerInput): Promise<AsaasCustomer> {
+  return asaasRequest(`/customers/${encodeURIComponent(customerId)}`, asaasCustomerSchema, {
+    method: "PUT",
+    body: input,
+  });
 }
 
 export function getPayment(paymentId: string): Promise<AsaasPayment> {

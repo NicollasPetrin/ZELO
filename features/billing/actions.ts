@@ -57,6 +57,11 @@ export async function startPlanCheckoutAction(planCode: SubscriptionPlan) {
       document: user.company.document,
       email: user.company.email,
       phone: user.company.phone,
+      postalCode: user.company.postalCode,
+      address: user.company.address,
+      addressNumber: user.company.addressNumber,
+      addressComplement: user.company.addressComplement,
+      province: user.company.province,
       asaasCustomerId: user.company.asaasCustomerId,
     });
 

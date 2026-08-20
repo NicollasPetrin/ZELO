@@ -18,6 +18,12 @@ export function CompanySettingsForm({
   company: {
     name: string;
     document: string | null;
+    phone: string | null;
+    postalCode: string | null;
+    address: string | null;
+    addressNumber: string | null;
+    addressComplement: string | null;
+    province: string | null;
     documentLocked: boolean;
     segment: string | null;
     employeeCount: number | null;
@@ -36,6 +42,12 @@ export function CompanySettingsForm({
     defaultValues: {
       name: company.name,
       document: company.document ?? "",
+      phone: company.phone ?? "",
+      postalCode: company.postalCode ?? "",
+      address: company.address ?? "",
+      addressNumber: company.addressNumber ?? "",
+      addressComplement: company.addressComplement ?? "",
+      province: company.province ?? "",
       segment: company.segment ?? "",
       employeeCount: company.employeeCount ?? "",
       isActive: company.isActive,
@@ -78,6 +90,38 @@ export function CompanySettingsForm({
             {company.documentLocked
               ? "Bloqueado porque a assinatura ja foi iniciada. Fale com o suporte para corrigir."
               : "Necessario para assinar um plano. A processadora exige o documento para emitir a cobranca."}
+          </p>
+        </div>
+        <div className="space-y-1.5">
+          <Label>Telefone</Label>
+          <Input inputMode="tel" autoComplete="tel" placeholder="(11) 98765-4321" {...register("phone")} />
+          <FieldError message={errors.phone?.message} />
+          <p className="text-xs leading-5 text-slate-600">
+            Necessario para assinar um plano. A processadora exige o telefone do pagador.
+          </p>
+        </div>
+        <div className="space-y-1.5">
+          <Label>CEP</Label>
+          <Input inputMode="numeric" autoComplete="postal-code" placeholder="01310-100" {...register("postalCode")} />
+          <FieldError message={errors.postalCode?.message} />
+        </div>
+        <div className="space-y-1.5">
+          <Label>Logradouro</Label>
+          <Input autoComplete="address-line1" placeholder="Avenida Paulista" {...register("address")} />
+        </div>
+        <div className="space-y-1.5">
+          <Label>Numero</Label>
+          <Input placeholder="1000" {...register("addressNumber")} />
+        </div>
+        <div className="space-y-1.5">
+          <Label>Complemento</Label>
+          <Input placeholder="Sala 12 (opcional)" {...register("addressComplement")} />
+        </div>
+        <div className="space-y-1.5">
+          <Label>Bairro</Label>
+          <Input placeholder="Bela Vista" {...register("province")} />
+          <p className="text-xs leading-5 text-slate-600">
+            CEP, logradouro, numero e bairro sao exigidos pela processadora para assinar um plano.
           </p>
         </div>
         <div className="space-y-1.5">

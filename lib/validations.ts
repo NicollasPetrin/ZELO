@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { isValidDocument } from "@/lib/document";
+import { isValidPhone } from "@/lib/phone";
 
 export const userRoles = ["OWNER", "MANAGER", "EMPLOYEE"] as const;
 export const subscriptionPlans = ["BASIC", "MANAGEMENT", "COMPLETE"] as const;
@@ -150,6 +151,25 @@ export const companySettingsSchema = z.object({
     .refine((value) => value === "" || isValidDocument(value), "CNPJ ou CPF invalido.")
     .optional()
     .or(z.literal("")),
+  // Idem: opcional no cadastro, obrigatorio para assinar.
+  phone: z
+    .string()
+    .trim()
+    .refine((value) => value === "" || isValidPhone(value), "Telefone invalido. Use DDD + numero.")
+    .optional()
+    .or(z.literal("")),
+  // Endereco de cobranca. Exigido pela processadora na hora de assinar, e
+  // tambem pela nota fiscal, entao vale coletar mesmo antes da venda.
+  postalCode: z
+    .string()
+    .trim()
+    .refine((value) => value === "" || value.replace(/\D/g, "").length === 8, "CEP invalido.")
+    .optional()
+    .or(z.literal("")),
+  address: z.string().trim().optional().or(z.literal("")),
+  addressNumber: z.string().trim().optional().or(z.literal("")),
+  addressComplement: z.string().trim().optional().or(z.literal("")),
+  province: z.string().trim().optional().or(z.literal("")),
   segment: z.string().trim().optional().or(z.literal("")),
   employeeCount: z.coerce.number().min(0).optional().or(z.literal("")),
   isActive: z.boolean().default(true),
