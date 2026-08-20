@@ -1,5 +1,12 @@
 import { createHash, timingSafeEqual } from "node:crypto";
-import { asaasWebhookEventSchema, handledPaymentEvents, type AsaasWebhookEvent, type HandledPaymentEvent } from "@/lib/asaas/types";
+import {
+  asaasWebhookEventSchema,
+  handledInvoiceEvents,
+  handledPaymentEvents,
+  type AsaasWebhookEvent,
+  type HandledInvoiceEvent,
+  type HandledPaymentEvent,
+} from "@/lib/asaas/types";
 
 export const ASAAS_WEBHOOK_TOKEN_HEADER = "asaas-access-token";
 
@@ -22,6 +29,15 @@ export function isValidWebhookToken(received: string | null | undefined, expecte
 
 export function isHandledPaymentEvent(event: string): event is HandledPaymentEvent {
   return (handledPaymentEvents as readonly string[]).includes(event);
+}
+
+export function isHandledInvoiceEvent(event: string): event is HandledInvoiceEvent {
+  return (handledInvoiceEvents as readonly string[]).includes(event);
+}
+
+/** Se a aplicacao sabe o que fazer com o evento, seja de cobranca ou de nota. */
+export function isHandledEvent(event: string) {
+  return isHandledPaymentEvent(event) || isHandledInvoiceEvent(event);
 }
 
 export type ParsedWebhook =

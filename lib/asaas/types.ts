@@ -21,6 +21,19 @@ export const handledPaymentEvents = [
 
 export type HandledPaymentEvent = (typeof handledPaymentEvents)[number];
 
+/** Eventos de nota fiscal de servico emitida pelo Asaas. */
+export const handledInvoiceEvents = [
+  "INVOICE_CREATED",
+  "INVOICE_UPDATED",
+  "INVOICE_SYNCHRONIZED",
+  "INVOICE_AUTHORIZED",
+  "INVOICE_CANCELED",
+  "INVOICE_CANCELLATION_DENIED",
+  "INVOICE_ERROR",
+] as const;
+
+export type HandledInvoiceEvent = (typeof handledInvoiceEvents)[number];
+
 export const asaasBillingTypeSchema = z.enum([
   "BOLETO",
   "CREDIT_CARD",
@@ -46,11 +59,34 @@ export const asaasPaymentSchema = z.object({
 
 export type AsaasPayment = z.infer<typeof asaasPaymentSchema>;
 
+export const asaasInvoiceSchema = z.object({
+  id: z.string().min(1),
+  status: z.string().min(1),
+  customer: z.string().nullish(),
+  payment: z.string().nullish(),
+  number: z.string().nullish(),
+  value: z.number().nullish(),
+  effectiveDate: z.string().nullish(),
+  pdfUrl: z.string().nullish(),
+  xmlUrl: z.string().nullish(),
+  externalReference: z.string().nullish(),
+});
+
+export type AsaasInvoice = z.infer<typeof asaasInvoiceSchema>;
+
+/**
+ * Só `id` e `event` são exigidos, porque são o minimo para gravar o evento sem
+ * duplicar. Os objetos de cobranca e de nota vem conforme a familia do evento, e
+ * ambos sao opcionais de proposito: exigir um deles faria o endpoint devolver
+ * 400 para qualquer familia de evento nova que o Asaas venha a criar, e 15
+ * respostas de erro seguidas pausam a fila de entrega.
+ */
 export const asaasWebhookEventSchema = z.object({
   id: z.string().min(1),
   event: z.string().min(1),
   dateCreated: z.string().nullish(),
-  payment: asaasPaymentSchema,
+  payment: asaasPaymentSchema.optional(),
+  invoice: asaasInvoiceSchema.optional(),
 });
 
 export type AsaasWebhookEvent = z.infer<typeof asaasWebhookEventSchema>;

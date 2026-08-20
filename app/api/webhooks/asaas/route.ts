@@ -4,7 +4,7 @@ import { Prisma } from "@prisma/client";
 import { ASAAS_PROVIDER } from "@/lib/asaas/types";
 import {
   ASAAS_WEBHOOK_TOKEN_HEADER,
-  isHandledPaymentEvent,
+  isHandledEvent,
   isValidWebhookToken,
   parseWebhookPayload,
 } from "@/lib/asaas/webhook";
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
         payload: rawBody,
         // O processamento de fato acontece em etapa separada; aqui apenas
         // registramos de forma duravel para nao perder nem repetir evento.
-        status: isHandledPaymentEvent(event.event) ? "RECEIVED" : "IGNORED",
+        status: isHandledEvent(event.event) ? "RECEIVED" : "IGNORED",
       },
     });
   } catch (error) {

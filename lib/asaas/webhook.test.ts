@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isHandledPaymentEvent, isValidWebhookToken, parseWebhookPayload } from "./webhook";
+import { isHandledEvent, isHandledInvoiceEvent, isHandledPaymentEvent, isValidWebhookToken, parseWebhookPayload } from "./webhook";
 
 const token = "token-de-webhook-do-asaas";
 
@@ -52,8 +52,8 @@ describe("parseWebhookPayload", () => {
     if (result.ok) {
       expect(result.data.id).toBe("evt_0001");
       expect(result.data.event).toBe("PAYMENT_RECEIVED");
-      expect(result.data.payment.id).toBe("pay_0001");
-      expect(result.data.payment.billingType).toBe("PIX");
+      expect(result.data.payment?.id).toBe("pay_0001");
+      expect(result.data.payment?.billingType).toBe("PIX");
     }
   });
 
@@ -63,7 +63,7 @@ describe("parseWebhookPayload", () => {
     expect(result.ok).toBe(true);
 
     if (result.ok) {
-      expect(result.data.payment.subscription).toBeNull();
+      expect(result.data.payment?.subscription).toBeNull();
     }
   });
 
@@ -73,7 +73,7 @@ describe("parseWebhookPayload", () => {
     expect(result.ok).toBe(true);
 
     if (result.ok) {
-      expect(result.data.payment.billingType).toBe("UNDEFINED");
+      expect(result.data.payment?.billingType).toBe("UNDEFINED");
     }
   });
 
@@ -83,16 +83,57 @@ describe("parseWebhookPayload", () => {
     expect(result.ok).toBe(false);
   });
 
-  it("rejects an event without the payment object", () => {
-    const result = parseWebhookPayload(JSON.stringify({ id: "evt_0002", event: "PAYMENT_RECEIVED" }));
+  it("accepts an event carrying an invoice instead of a payment", () => {
+    const result = parseWebhookPayload(
+      JSON.stringify({
+        id: "evt_0003",
+        event: "INVOICE_AUTHORIZED",
+        invoice: { id: "inv_0001", status: "AUTHORIZED", number: "123", pdfUrl: "https://exemplo/nf.pdf" },
+      }),
+    );
 
-    expect(result.ok).toBe(false);
+    expect(result.ok).toBe(true);
+
+    if (result.ok) {
+      expect(result.data.invoice?.id).toBe("inv_0001");
+      expect(result.data.payment).toBeUndefined();
+    }
+  });
+
+  it("accepts an unknown event family, so a new one never blocks the queue", () => {
+    const result = parseWebhookPayload(JSON.stringify({ id: "evt_0004", event: "TRANSFER_CREATED" }));
+
+    expect(result.ok).toBe(true);
   });
 
   it("rejects an event without an id, since idempotency depends on it", () => {
     const result = parseWebhookPayload(paymentEvent().replace('"id":"evt_0001",', ""));
 
     expect(result.ok).toBe(false);
+  });
+});
+
+describe("isHandledInvoiceEvent", () => {
+  it("recognises the invoice lifecycle", () => {
+    expect(isHandledInvoiceEvent("INVOICE_AUTHORIZED")).toBe(true);
+    expect(isHandledInvoiceEvent("INVOICE_CANCELED")).toBe(true);
+    expect(isHandledInvoiceEvent("INVOICE_ERROR")).toBe(true);
+  });
+
+  it("does not confuse invoice events with payment events", () => {
+    expect(isHandledInvoiceEvent("PAYMENT_RECEIVED")).toBe(false);
+    expect(isHandledPaymentEvent("INVOICE_AUTHORIZED")).toBe(false);
+  });
+});
+
+describe("isHandledEvent", () => {
+  it("covers both families", () => {
+    expect(isHandledEvent("PAYMENT_RECEIVED")).toBe(true);
+    expect(isHandledEvent("INVOICE_AUTHORIZED")).toBe(true);
+  });
+
+  it("stays false for anything else", () => {
+    expect(isHandledEvent("TRANSFER_CREATED")).toBe(false);
   });
 });
 
