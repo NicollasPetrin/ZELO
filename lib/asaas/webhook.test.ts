@@ -103,8 +103,11 @@ describe("isHandledPaymentEvent", () => {
     expect(isHandledPaymentEvent("PAYMENT_OVERDUE")).toBe(true);
   });
 
+  it("recognises the event that opens each subscription cycle", () => {
+    expect(isHandledPaymentEvent("PAYMENT_CREATED")).toBe(true);
+  });
+
   it("ignores events with no effect on access", () => {
-    expect(isHandledPaymentEvent("PAYMENT_CREATED")).toBe(false);
     expect(isHandledPaymentEvent("PAYMENT_UPDATED")).toBe(false);
     expect(isHandledPaymentEvent("QUALQUER_COISA")).toBe(false);
   });

@@ -8,6 +8,9 @@ export const ASAAS_PROVIDER = "asaas";
  * precisa tratar. Os demais sao aceitos e registrados como IGNORED.
  */
 export const handledPaymentEvents = [
+  // Marca o inicio de cada ciclo da assinatura: e neste evento que a fatura
+  // local do mes passa a existir, antes mesmo de haver pagamento.
+  "PAYMENT_CREATED",
   "PAYMENT_CONFIRMED",
   "PAYMENT_RECEIVED",
   "PAYMENT_OVERDUE",
