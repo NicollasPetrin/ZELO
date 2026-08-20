@@ -71,7 +71,11 @@ export async function startPlanCheckoutAction(planCode: SubscriptionPlan) {
     });
 
     const appUrl = getAppUrl();
-    const settingsUrl = `${appUrl}/settings#gerenciamento-assinatura`;
+    // O retorno carrega o desfecho para que a pagina saiba o que dizer. Sem
+    // isso, quem paga volta para uma tela que ainda mostra "sem plano ativo",
+    // porque a confirmacao chega por webhook e pode demorar mais que o
+    // redirecionamento.
+    const retorno = (estado: string) => `${appUrl}/settings?pagamento=${estado}`;
 
     const checkout = await createCheckout({
       billingTypes: ["CREDIT_CARD"],
@@ -93,9 +97,10 @@ export async function startPlanCheckoutAction(planCode: SubscriptionPlan) {
         nextDueDate: formatDueDate(new Date()),
       },
       callback: {
-        successUrl: settingsUrl,
-        cancelUrl: settingsUrl,
-        expiredUrl: settingsUrl,
+        successUrl: retorno("confirmado"),
+        cancelUrl: retorno("cancelado"),
+        expiredUrl: retorno("expirado"),
+        autoRedirect: true,
       },
     });
 

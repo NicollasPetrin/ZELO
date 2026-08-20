@@ -1,5 +1,6 @@
 import { Check, CreditCard } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
+import { PaymentReturnBanner, type PaymentReturnStatus } from "@/features/billing/payment-return-banner";
 import { PlanCheckoutButton } from "@/features/billing/plan-checkout-button";
 import { SubscriptionStatusCard } from "@/features/billing/subscription-status-card";
 import { CompanySettingsForm } from "@/features/settings/company-settings-form";
@@ -8,8 +9,16 @@ import { prisma } from "@/lib/db/client";
 import { calculateMonthlyPrice, formatPriceCents, getPlanAccess, planDetails, planOrder } from "@/lib/plans";
 import { getActivePlanCode, getSubscriptionWindow } from "@/lib/subscription";
 
-export default async function SettingsPage() {
+const paymentStatuses: PaymentReturnStatus[] = ["confirmado", "cancelado", "expirado"];
+
+export default async function SettingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ pagamento?: string }>;
+}) {
   const user = await requireCompanyManager();
+  const params = await searchParams;
+  const paymentStatus = paymentStatuses.find((estado) => estado === params.pagamento) ?? null;
   const activePlanCode = getActivePlanCode(user.company);
   const subscriptionWindow = getSubscriptionWindow(user.company);
   const activePlan = activePlanCode ? planDetails[activePlanCode] : null;
@@ -54,6 +63,9 @@ export default async function SettingsPage() {
             Criar conta ou iniciar checkout nao ativa assinatura automaticamente.
           </div>
         </div>
+        {paymentStatus ? (
+          <PaymentReturnBanner status={paymentStatus} planActive={Boolean(activePlanCode)} />
+        ) : null}
         <div className="mb-5">
           <SubscriptionStatusCard window={subscriptionWindow} />
         </div>

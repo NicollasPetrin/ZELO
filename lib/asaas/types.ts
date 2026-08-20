@@ -121,6 +121,12 @@ export type AsaasCheckoutInput = {
     successUrl: string;
     cancelUrl: string;
     expiredUrl: string;
+    /**
+     * true leva a pessoa de volta ao site sozinha depois de pagar; false so
+     * mostra um botao. O padrao do Asaas ja e true, mas deixamos explicito
+     * para que mudar de ideia seja uma edicao aqui, e nao um efeito colateral.
+     */
+    autoRedirect: boolean;
   };
 };
 
