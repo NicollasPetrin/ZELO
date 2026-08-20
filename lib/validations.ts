@@ -40,6 +40,14 @@ export const loginSchema = z.object({
 export const signupSchema = z
   .object({
     companyName: z.string().trim().min(2, "Informe o nome da empresa."),
+    // Opcional no cadastro para nao travar quem so quer conhecer o produto.
+    // Vira obrigatorio na hora de assinar um plano.
+    document: z
+      .string()
+      .trim()
+      .refine((value) => value === "" || isValidDocument(value), "CNPJ ou CPF invalido.")
+      .optional()
+      .or(z.literal("")),
     segment: z.string().trim().optional().or(z.literal("")),
     ownerName: z.string().trim().min(2, "Informe seu nome."),
     email: z.string().email("Informe um e-mail valido.").trim().toLowerCase(),

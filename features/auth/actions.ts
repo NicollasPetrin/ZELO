@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createSession, deleteSession, getCurrentUser } from "@/lib/auth/session";
 import { hashPassword, verifyPassword } from "@/lib/auth/password";
 import { prisma } from "@/lib/db/client";
+import { parseDocument } from "@/lib/document";
 import { assertIpRateLimit, assertRateLimit } from "@/lib/rate-limit";
 import { loginSchema, signupSchema } from "@/lib/validations";
 
@@ -64,6 +65,7 @@ export async function signupAction(formData: FormData) {
 
   const parsed = signupSchema.safeParse({
     companyName: formData.get("companyName"),
+    document: formData.get("document"),
     segment: formData.get("segment"),
     ownerName: formData.get("ownerName"),
     email: formData.get("email"),
@@ -98,10 +100,26 @@ export async function signupAction(formData: FormData) {
     redirect("/signup?error=email");
   }
 
+  const documento = parsed.data.document ? parseDocument(parsed.data.document) : null;
+
+  // O documento e unico por empresa. Conferir antes evita quebrar a transacao
+  // de criacao inteira por causa de um conflito previsivel.
+  if (documento) {
+    const empresaComDocumento = await prisma.company.findUnique({
+      where: { document: documento.digits },
+      select: { id: true },
+    });
+
+    if (empresaComDocumento) {
+      redirect("/signup?error=documento");
+    }
+  }
+
   const userId = await prisma.$transaction(async (tx) => {
     const company = await tx.company.create({
       data: {
         name: parsed.data.companyName,
+        document: documento?.digits ?? null,
         segment: parsed.data.segment || null,
         email: parsed.data.email,
         employeeCount: 1,

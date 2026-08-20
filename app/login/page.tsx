@@ -4,7 +4,7 @@ import { Building2 } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 import { loginAction } from "@/features/auth/actions";
 import { getCurrentUser } from "@/lib/auth/session";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { Input, Label } from "@/components/ui/fields";
 
 const errorMessages: Record<string, string> = {
@@ -68,9 +68,9 @@ export default async function LoginPage({
               <Input name="password" type="password" autoComplete="current-password" required />
             </div>
             {error ? <p className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</p> : null}
-            <Button type="submit" className="w-full">
+            <SubmitButton className="w-full" pendingLabel="Entrando...">
               Entrar no painel
-            </Button>
+            </SubmitButton>
           </form>
 
           <p className="mt-6 text-sm text-slate-600">

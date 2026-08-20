@@ -4,13 +4,14 @@ import { ArrowRight, Building2, LockKeyhole } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 import { signupAction } from "@/features/auth/actions";
 import { getCurrentUser } from "@/lib/auth/session";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { Input, Label } from "@/components/ui/fields";
 
 const errorMessages: Record<string, string> = {
   dados: "Revise os dados. A senha deve ter 10 caracteres, letra maiuscula, minuscula e numero.",
   email: "Este e-mail ja esta cadastrado. Entre na conta ou use outro e-mail.",
   rate: "Muitas tentativas. Aguarde alguns minutos e tente novamente.",
+  documento: "Este CNPJ ou CPF ja esta cadastrado em outra conta.",
 };
 
 export default async function SignupPage({
@@ -65,6 +66,10 @@ export default async function SignupPage({
               <Input name="companyName" placeholder="Nome da empresa" required minLength={2} />
             </div>
             <div className="space-y-1.5">
+              <Label>CNPJ ou CPF</Label>
+              <Input name="document" inputMode="numeric" autoComplete="off" placeholder="Opcional agora, exigido para assinar" />
+            </div>
+            <div className="space-y-1.5">
               <Label>Segmento</Label>
               <Input name="segment" placeholder="Ex.: varejo, clinica, servicos" />
             </div>
@@ -85,10 +90,13 @@ export default async function SignupPage({
               <Input name="confirmPassword" type="password" required minLength={10} autoComplete="new-password" />
             </div>
             {error ? <p className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</p> : null}
-            <Button type="submit" className="w-full">
+            <SubmitButton
+              className="w-full"
+              pendingLabel="Criando sua conta..."
+              icon={<ArrowRight className="h-4 w-4" aria-hidden="true" />}
+            >
               Criar conta e entrar
-              <ArrowRight className="h-4 w-4" aria-hidden="true" />
-            </Button>
+            </SubmitButton>
           </form>
 
           <div className="mt-6 flex items-center gap-2 text-sm text-slate-600">
