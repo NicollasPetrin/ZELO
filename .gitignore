@@ -53,3 +53,6 @@ next-env.d.ts
 
 # credenciais das contas demo (nunca versionar)
 demo-credentials.local.txt
+
+# capturas de pre-visualizacao geradas por ferramentas locais
+preview-screenshot*.png
