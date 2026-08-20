@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { Prisma } from "@prisma/client";
+import { applyPaymentEvent } from "@/features/billing/activate-subscription";
 import { ASAAS_PROVIDER } from "@/lib/asaas/types";
 import {
   ASAAS_WEBHOOK_TOKEN_HEADER,
@@ -43,29 +44,95 @@ export async function POST(request: NextRequest) {
 
   const event = parsed.data;
 
-  try {
-    await prisma.webhookEvent.create({
-      data: {
+  // Reentrega e esperada: o Asaas entrega "at least once". Um evento ja
+  // processado e reconhecido sem ser aplicado de novo, o que evita ativar duas
+  // vezes a mesma assinatura. So o que ficou FAILED e reprocessado.
+  const jaVisto = await prisma.webhookEvent.findUnique({
+    where: {
+      provider_externalId: {
         provider: ASAAS_PROVIDER,
         externalId: event.id,
-        event: event.event,
-        payload: rawBody,
-        // O processamento de fato acontece em etapa separada; aqui apenas
-        // registramos de forma duravel para nao perder nem repetir evento.
-        status: isHandledEvent(event.event) ? "RECEIVED" : "IGNORED",
       },
+    },
+    select: { id: true, status: true },
+  });
+
+  if (jaVisto && jaVisto.status !== "FAILED") {
+    return NextResponse.json({ received: true, duplicate: true }, { headers: noStore });
+  }
+
+  try {
+    const resultado = await prisma.$transaction(async (tx) => {
+      // Gravar e aplicar na mesma transacao: ou o evento fica registrado e
+      // surtiu efeito, ou nada aconteceu e o Asaas reenvia.
+      const outcome = isHandledEvent(event.event)
+        ? await applyPaymentEvent(tx, event)
+        : ({ handled: false, reason: "evento fora do escopo tratado" } as const);
+
+      const status = outcome.handled ? "PROCESSED" : "IGNORED";
+      const error = outcome.handled ? null : outcome.reason;
+
+      if (jaVisto) {
+        await tx.webhookEvent.update({
+          where: { id: jaVisto.id },
+          data: { status, error, processedAt: new Date(), attempts: { increment: 1 } },
+        });
+      } else {
+        await tx.webhookEvent.create({
+          data: {
+            provider: ASAAS_PROVIDER,
+            externalId: event.id,
+            event: event.event,
+            payload: rawBody,
+            status,
+            error,
+            attempts: 1,
+            processedAt: new Date(),
+          },
+        });
+      }
+
+      return outcome;
     });
+
+    return NextResponse.json(
+      { received: true, duplicate: false, handled: resultado.handled },
+      { headers: noStore },
+    );
   } catch (error) {
-    // O Asaas entrega "at least once", entao reentrega e esperada e nao e erro.
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      // Duas entregas do mesmo evento em paralelo: a que perdeu a corrida
+      // apenas confirma, sem aplicar nada.
       return NextResponse.json({ received: true, duplicate: true }, { headers: noStore });
     }
 
-    // Falha nossa: devolvemos 5xx para o Asaas reenviar o evento depois.
-    console.error("[asaas-webhook] falha ao gravar evento:", error);
+    console.error("[asaas-webhook] falha ao processar evento:", error);
 
-    return NextResponse.json({ error: "Falha ao registrar o evento." }, { status: 500, headers: noStore });
+    // Registra a falha fora da transacao que foi revertida, para que a proxima
+    // entrega saiba que este evento precisa ser reprocessado.
+    await prisma.webhookEvent
+      .upsert({
+        where: { provider_externalId: { provider: ASAAS_PROVIDER, externalId: event.id } },
+        create: {
+          provider: ASAAS_PROVIDER,
+          externalId: event.id,
+          event: event.event,
+          payload: rawBody,
+          status: "FAILED",
+          error: error instanceof Error ? error.message : "erro desconhecido",
+          attempts: 1,
+        },
+        update: {
+          status: "FAILED",
+          error: error instanceof Error ? error.message : "erro desconhecido",
+          attempts: { increment: 1 },
+        },
+      })
+      .catch((registroFalhou) => {
+        console.error("[asaas-webhook] falha ao registrar a falha:", registroFalhou);
+      });
+
+    // 5xx faz o Asaas reenviar depois.
+    return NextResponse.json({ error: "Falha ao processar o evento." }, { status: 500, headers: noStore });
   }
-
-  return NextResponse.json({ received: true, duplicate: false }, { headers: noStore });
 }

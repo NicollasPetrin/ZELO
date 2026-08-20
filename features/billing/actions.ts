@@ -3,6 +3,7 @@
 import type { SubscriptionPlan } from "@prisma/client";
 import { actionError } from "@/lib/action-result";
 import { createCheckout } from "@/lib/asaas/client";
+import { encodeCheckoutReference } from "@/lib/asaas/reference";
 import { recordActivity } from "@/lib/audit";
 import { assertCanManageCompany } from "@/lib/auth/guards";
 import { requireUser } from "@/lib/auth/session";
@@ -56,8 +57,9 @@ export async function startPlanCheckoutAction(planCode: SubscriptionPlan) {
       // seguem por assinatura avulsa, com pagamento manual a cada ciclo.
       chargeTypes: ["RECURRENT"],
       minutesToExpire: CHECKOUT_EXPIRATION_MINUTES,
-      // E por aqui que o webhook reencontra a empresa quando o pagamento chega.
-      externalReference: user.companyId,
+      // E por aqui que o webhook reencontra a empresa E o plano comprado
+      // quando o pagamento chega.
+      externalReference: encodeCheckoutReference({ companyId: user.companyId, planCode: parsedPlanCode }),
       items: [
         {
           name: `Plano ${plan.name}`,
