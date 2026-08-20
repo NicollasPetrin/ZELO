@@ -200,6 +200,7 @@ model Company {
   plan            SubscriptionPlan?
   isDemo          Boolean               @default(false)
   asaasCustomerId String?               @unique
+  pendingPlanCode SubscriptionPlan?
   isActive        Boolean               @default(true)
   createdAt       DateTime              @default(now())
   updatedAt       DateTime              @updatedAt

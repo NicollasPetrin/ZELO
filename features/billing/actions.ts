@@ -3,7 +3,7 @@
 import type { SubscriptionPlan } from "@prisma/client";
 import { actionError } from "@/lib/action-result";
 import { createCheckout } from "@/lib/asaas/client";
-import { encodeCheckoutReference } from "@/lib/asaas/reference";
+import { ensureAsaasCustomer } from "@/features/billing/asaas-customer";
 import { recordActivity } from "@/lib/audit";
 import { assertCanManageCompany } from "@/lib/auth/guards";
 import { requireUser } from "@/lib/auth/session";
@@ -48,6 +48,23 @@ export async function startPlanCheckoutAction(planCode: SubscriptionPlan) {
       throw new Error(ASAAS_NOT_CONFIGURED_MESSAGE);
     }
 
+    // O pagamento nao carrega de volta nem a empresa nem o plano, entao os dois
+    // sao amarrados aqui: a empresa pelo cliente do Asaas, e o plano pela
+    // intencao registrada no proprio cadastro dela.
+    const asaasCustomerId = await ensureAsaasCustomer({
+      id: user.company.id,
+      name: user.company.name,
+      document: user.company.document,
+      email: user.company.email,
+      phone: user.company.phone,
+      asaasCustomerId: user.company.asaasCustomerId,
+    });
+
+    await prisma.company.update({
+      where: { id: user.companyId },
+      data: { pendingPlanCode: parsedPlanCode },
+    });
+
     const appUrl = getAppUrl();
     const settingsUrl = `${appUrl}/settings#gerenciamento-assinatura`;
 
@@ -57,9 +74,7 @@ export async function startPlanCheckoutAction(planCode: SubscriptionPlan) {
       // seguem por assinatura avulsa, com pagamento manual a cada ciclo.
       chargeTypes: ["RECURRENT"],
       minutesToExpire: CHECKOUT_EXPIRATION_MINUTES,
-      // E por aqui que o webhook reencontra a empresa E o plano comprado
-      // quando o pagamento chega.
-      externalReference: encodeCheckoutReference({ companyId: user.companyId, planCode: parsedPlanCode }),
+      customer: asaasCustomerId,
       items: [
         {
           name: `Plano ${plan.name}`,

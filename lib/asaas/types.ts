@@ -103,9 +103,10 @@ export type AsaasCheckout = z.infer<typeof asaasCheckoutSchema>;
 
 export type AsaasCheckoutInput = {
   billingTypes: AsaasBillingType[];
+  /** Cliente ja existente no Asaas. E o vinculo que sobrevive ate o pagamento. */
+  customer: string;
   chargeTypes: Array<"DETACHED" | "RECURRENT" | "INSTALLMENT">;
   minutesToExpire: number;
-  externalReference: string;
   items: Array<{
     name: string;
     description?: string;

@@ -1,8 +1,6 @@
 import "server-only";
 import type { Prisma, SubscriptionPlan } from "@prisma/client";
-import { decodeCheckoutReference } from "@/lib/asaas/reference";
 import { ASAAS_PROVIDER, type AsaasWebhookEvent } from "@/lib/asaas/types";
-import { prisma } from "@/lib/db/client";
 
 /** Eventos que liberam o acesso ao plano. */
 const GRANTING_EVENTS = new Set(["PAYMENT_CONFIRMED", "PAYMENT_RECEIVED"]);
@@ -22,21 +20,15 @@ function addOneMonth(from: Date) {
   return end;
 }
 
-async function findPlanCatalogId(planCode: SubscriptionPlan) {
-  const plan = await prisma.planCatalog.findUnique({
-    where: { code: planCode },
-    select: { id: true },
-  });
-
-  return plan?.id ?? null;
-}
-
 /**
  * Traduz um evento de cobranca do Asaas em estado de assinatura da empresa.
  *
+ * A empresa e encontrada pelo cliente do Asaas, e nao pelo externalReference:
+ * o valor informado no checkout nao chega ao pagamento nem a assinatura criada
+ * por ele, entao o cliente e o unico vinculo que sobrevive ate aqui.
+ *
  * Roda dentro da mesma transacao que registra o evento, para que gravar e
- * aplicar sejam uma coisa so: ou o evento fica registrado e aplicado, ou nao
- * acontece nada e o Asaas reenvia.
+ * aplicar sejam uma coisa so.
  */
 export async function applyPaymentEvent(
   tx: Prisma.TransactionClient,
@@ -48,33 +40,38 @@ export async function applyPaymentEvent(
     return { handled: false, reason: "evento sem objeto de cobranca" };
   }
 
-  const reference = decodeCheckoutReference(payment.externalReference);
-
-  if (!reference) {
-    // Cobranca criada fora da Zelo, ou de uma versao anterior do checkout.
-    return { handled: false, reason: "externalReference nao reconhecido" };
-  }
-
   const company = await tx.company.findUnique({
-    where: { id: reference.companyId },
-    select: { id: true },
+    where: { asaasCustomerId: payment.customer },
+    select: { id: true, pendingPlanCode: true },
   });
 
   if (!company) {
-    return { handled: false, reason: "empresa do externalReference nao existe" };
-  }
-
-  const planId = await findPlanCatalogId(reference.planCode);
-
-  if (!planId) {
-    return { handled: false, reason: `plano ${reference.planCode} ausente do catalogo` };
+    // Cobranca de um cliente que a Zelo nunca criou: nada a liberar.
+    return { handled: false, reason: `nenhuma empresa vinculada ao cliente ${payment.customer}` };
   }
 
   const existing = await tx.companySubscription.findFirst({
     where: { companyId: company.id },
     orderBy: { currentPeriodEnd: "desc" },
+    include: { plan: { select: { code: true } } },
+  });
+
+  // Numa compra, o plano vem da intencao registrada no checkout. Numa renovacao
+  // nao ha intencao pendente, entao vale o plano da assinatura que ja existe.
+  const planCode: SubscriptionPlan | null = company.pendingPlanCode ?? existing?.plan.code ?? null;
+
+  if (!planCode) {
+    return { handled: false, reason: "nao foi possivel determinar o plano da cobranca" };
+  }
+
+  const plan = await tx.planCatalog.findUnique({
+    where: { code: planCode },
     select: { id: true },
   });
+
+  if (!plan) {
+    return { handled: false, reason: `plano ${planCode} ausente do catalogo` };
+  }
 
   if (GRANTING_EVENTS.has(event.event)) {
     const paidAt = payment.paymentDate ? new Date(payment.paymentDate) : new Date();
@@ -83,7 +80,7 @@ export async function applyPaymentEvent(
 
     const data = {
       companyId: company.id,
-      planId,
+      planId: plan.id,
       provider: ASAAS_PROVIDER,
       externalId: payment.subscription ?? null,
       status: "ACTIVE" as const,
@@ -96,10 +93,14 @@ export async function applyPaymentEvent(
       ? await tx.companySubscription.update({ where: { id: existing.id }, data })
       : await tx.companySubscription.create({ data });
 
-    // O plano tambem fica na empresa porque varias telas leem dali.
     await tx.company.update({
       where: { id: company.id },
-      data: { plan: reference.planCode },
+      data: {
+        plan: planCode,
+        // A intencao foi consumida: numa renovacao futura o plano vem da
+        // assinatura, nao daqui.
+        pendingPlanCode: null,
+      },
     });
 
     await tx.invoice.upsert({
@@ -117,7 +118,7 @@ export async function applyPaymentEvent(
         paidAt: start,
         periodStart: start,
         periodEnd: end,
-        description: `Plano ${reference.planCode}`,
+        description: `Plano ${planCode}`,
       },
       update: {
         status: "PAID",
@@ -166,7 +167,7 @@ export async function applyPaymentEvent(
         dueDate: new Date(payment.dueDate),
         periodStart: new Date(),
         periodEnd: addOneMonth(new Date()),
-        description: `Plano ${reference.planCode}`,
+        description: `Plano ${planCode}`,
       },
       update: {},
     });
