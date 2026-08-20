@@ -10,7 +10,7 @@ import {
   parseWebhookPayload,
 } from "@/lib/asaas/webhook";
 import { prisma } from "@/lib/db/client";
-import { env } from "@/lib/env";
+import { getAsaasWebhookToken } from "@/lib/env";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -19,7 +19,7 @@ export const maxDuration = 15;
 const noStore = { "Cache-Control": "no-store, max-age=0" } as const;
 
 export async function POST(request: NextRequest) {
-  const expectedToken = env.ASAAS_WEBHOOK_TOKEN;
+  const expectedToken = getAsaasWebhookToken();
 
   // Sem token configurado nao ha como distinguir o Asaas de qualquer outro
   // emissor, entao nada e aceito.

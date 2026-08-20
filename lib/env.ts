@@ -1,15 +1,26 @@
 import "server-only";
 import { z } from "zod";
 
+/**
+ * Tamanho minimo do token de webhook. Nao entra no schema porque um valor curto
+ * nao pode derrubar a aplicacao inteira: e tratado como "webhook nao
+ * configurado" na hora do uso.
+ */
+const WEBHOOK_TOKEN_MIN_LENGTH = 16;
+
 const envSchema = z.object({
+  // Sem estas duas a aplicacao nao funciona de forma alguma, entao aqui falhar e
+  // o comportamento certo.
   DATABASE_URL: z.string().min(1),
   SESSION_SECRET: z.string().min(32),
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+  // As demais sao opcionais e nunca derrubam o build: um erro de digitacao numa
+  // variavel de cobranca deve desligar a cobranca, nao tirar o site do ar.
   ASAAS_API_KEY: z.string().min(1).optional(),
-  ASAAS_ENVIRONMENT: z.enum(["sandbox", "production"]).default("sandbox"),
-  ASAAS_WEBHOOK_TOKEN: z.string().min(16).optional(),
+  ASAAS_ENVIRONMENT: z.enum(["sandbox", "production"]).catch("sandbox").default("sandbox"),
+  ASAAS_WEBHOOK_TOKEN: z.string().optional(),
   ASAAS_USER_AGENT: z.string().min(1).default("Zelo"),
-  APP_URL: z.string().url().optional(),
+  APP_URL: z.string().optional(),
 });
 
 // Uma variavel declarada e vazia no .env chega aqui como "" e nao como undefined,
@@ -20,6 +31,28 @@ function optionalEnv(value: string | undefined) {
   return trimmed ? trimmed : undefined;
 }
 
+/**
+ * Aceita a URL colada do navegador, sem esquema. Exigir "https://" fazia o build
+ * inteiro falhar por causa de um detalhe de digitacao.
+ */
+function normalizeUrl(value: string | undefined) {
+  const trimmed = optionalEnv(value);
+
+  if (!trimmed) {
+    return undefined;
+  }
+
+  const withScheme = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+
+  try {
+    return new URL(withScheme).origin;
+  } catch {
+    console.error("[env] APP_URL invalida, ignorando o valor recebido.");
+
+    return undefined;
+  }
+}
+
 const parsedEnv = envSchema.safeParse({
   DATABASE_URL: process.env.DATABASE_URL,
   SESSION_SECRET: process.env.SESSION_SECRET,
@@ -28,7 +61,7 @@ const parsedEnv = envSchema.safeParse({
   ASAAS_ENVIRONMENT: optionalEnv(process.env.ASAAS_ENVIRONMENT),
   ASAAS_WEBHOOK_TOKEN: optionalEnv(process.env.ASAAS_WEBHOOK_TOKEN),
   ASAAS_USER_AGENT: optionalEnv(process.env.ASAAS_USER_AGENT),
-  APP_URL: optionalEnv(process.env.APP_URL),
+  APP_URL: normalizeUrl(process.env.APP_URL),
 });
 
 // Este modulo e avaliado durante o build, quando o Next carrega os modulos de
@@ -96,19 +129,36 @@ export function getAsaasConfig(): AsaasConfig {
 export const APP_URL_NOT_CONFIGURED_MESSAGE =
   "APP_URL nao configurada. Ela e necessaria para o Asaas devolver o cliente ao site depois do pagamento.";
 
-/** Base publica da aplicacao, usada nos retornos de checkout. */
+/** Base publica da aplicacao, ja normalizada (sem barra final). */
 export function getAppUrl() {
   if (!env.APP_URL) {
     throw new Error(APP_URL_NOT_CONFIGURED_MESSAGE);
   }
 
-  return env.APP_URL.replace(/\/+$/, "");
+  return env.APP_URL;
 }
 
+/**
+ * Token do webhook, ou null quando ausente ou curto demais para ser seguro.
+ *
+ * Devolver null em vez de lancar mantem a falha contida: a rota do webhook
+ * recusa os eventos e o resto da aplicacao continua de pe.
+ */
 export function getAsaasWebhookToken() {
-  if (!env.ASAAS_WEBHOOK_TOKEN) {
-    throw new Error(ASAAS_WEBHOOK_NOT_CONFIGURED_MESSAGE);
+  const token = env.ASAAS_WEBHOOK_TOKEN;
+
+  if (!token) {
+    return null;
   }
 
-  return env.ASAAS_WEBHOOK_TOKEN;
+  if (token.length < WEBHOOK_TOKEN_MIN_LENGTH) {
+    console.error(
+      `[env] ASAAS_WEBHOOK_TOKEN tem menos de ${WEBHOOK_TOKEN_MIN_LENGTH} caracteres. ` +
+        "O webhook fica desligado ate que seja corrigido.",
+    );
+
+    return null;
+  }
+
+  return token;
 }
