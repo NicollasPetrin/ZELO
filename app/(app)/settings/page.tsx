@@ -1,15 +1,17 @@
 import { Check, CreditCard } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { PlanCheckoutButton } from "@/features/billing/plan-checkout-button";
+import { SubscriptionStatusCard } from "@/features/billing/subscription-status-card";
 import { CompanySettingsForm } from "@/features/settings/company-settings-form";
 import { requireCompanyManager } from "@/lib/auth/guards";
 import { prisma } from "@/lib/db/client";
 import { calculateMonthlyPrice, formatPriceCents, getPlanAccess, planDetails, planOrder } from "@/lib/plans";
-import { getActivePlanCode } from "@/lib/subscription";
+import { getActivePlanCode, getSubscriptionWindow } from "@/lib/subscription";
 
 export default async function SettingsPage() {
   const user = await requireCompanyManager();
   const activePlanCode = getActivePlanCode(user.company);
+  const subscriptionWindow = getSubscriptionWindow(user.company);
   const activePlan = activePlanCode ? planDetails[activePlanCode] : null;
   const access = getPlanAccess(activePlanCode);
   const activeUserCount = await prisma.user.count({
@@ -51,6 +53,9 @@ export default async function SettingsPage() {
             O acesso as funcionalidades e liberado somente quando o pagamento do plano for confirmado pela processadora.
             Criar conta ou iniciar checkout nao ativa assinatura automaticamente.
           </div>
+        </div>
+        <div className="mb-5">
+          <SubscriptionStatusCard window={subscriptionWindow} />
         </div>
         <div className="grid gap-5 lg:grid-cols-[0.75fr_1.25fr] lg:items-start">
           <div>

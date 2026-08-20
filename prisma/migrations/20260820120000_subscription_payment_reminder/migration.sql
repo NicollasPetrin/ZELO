@@ -1,0 +1,3 @@
+-- AlterEnum
+ALTER TYPE "NotificationType" ADD VALUE 'SUBSCRIPTION_PAYMENT_DUE';
+

@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db/client";
 import { getSessionSecret } from "@/lib/env";
+import { GRACE_PERIOD_DAYS } from "@/lib/subscription";
 
 const COOKIE_NAME = "zelo_session";
 const SESSION_DAYS = 3;
@@ -130,9 +131,15 @@ export const getCurrentUser = cache(async function getCurrentUser() {
             include: {
               subscriptions: {
                 where: {
-                  status: "ACTIVE",
+                  status: {
+                    in: ["ACTIVE", "PAST_DUE"],
+                  },
+                  // Assinaturas vencidas ha pouco continuam sendo carregadas: e
+                  // getSubscriptionWindow quem decide se ainda ha acesso, para que
+                  // a tolerancia exista em um lugar so. Filtrar por "gte: agora"
+                  // aqui cortaria o acesso no instante do vencimento.
                   currentPeriodEnd: {
-                    gte: new Date(),
+                    gte: new Date(Date.now() - GRACE_PERIOD_DAYS * 24 * 60 * 60 * 1000),
                   },
                 },
                 include: {

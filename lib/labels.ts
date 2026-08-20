@@ -64,6 +64,7 @@ export const goalStatusLabels: Record<GoalStatus, string> = {
 };
 
 export const notificationLabels: Record<NotificationType, string> = {
+  SUBSCRIPTION_PAYMENT_DUE: "Pagamento da assinatura",
   TASK_ASSIGNED: "Tarefa atribuida",
   TASK_DUE_SOON: "Prazo proximo",
   TASK_OVERDUE: "Tarefa atrasada",

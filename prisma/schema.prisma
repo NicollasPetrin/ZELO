@@ -74,6 +74,7 @@ enum GoalStatus {
 }
 
 enum NotificationType {
+  SUBSCRIPTION_PAYMENT_DUE
   TASK_ASSIGNED
   TASK_DUE_SOON
   TASK_OVERDUE
