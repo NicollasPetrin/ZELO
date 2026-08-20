@@ -44,9 +44,14 @@ export async function POST(request: NextRequest) {
 
   const event = parsed.data;
 
-  // Reentrega e esperada: o Asaas entrega "at least once". Um evento ja
-  // processado e reconhecido sem ser aplicado de novo, o que evita ativar duas
-  // vezes a mesma assinatura. So o que ficou FAILED e reprocessado.
+  // Reentrega e esperada: o Asaas entrega "at least once". Um evento ja aplicado
+  // e reconhecido sem rodar de novo, o que evita ativar duas vezes a mesma
+  // assinatura.
+  //
+  // RECEIVED e FAILED significam "chegou mas nao surtiu efeito" — o primeiro
+  // porque foi gravado por uma versao que so registrava, o segundo porque a
+  // aplicacao falhou. Ambos precisam ser reprocessados, senao um pagamento
+  // legitimo fica preso nesse estado para sempre.
   const jaVisto = await prisma.webhookEvent.findUnique({
     where: {
       provider_externalId: {
@@ -57,7 +62,9 @@ export async function POST(request: NextRequest) {
     select: { id: true, status: true },
   });
 
-  if (jaVisto && jaVisto.status !== "FAILED") {
+  const pendente = jaVisto?.status === "FAILED" || jaVisto?.status === "RECEIVED";
+
+  if (jaVisto && !pendente) {
     return NextResponse.json({ received: true, duplicate: true }, { headers: noStore });
   }
 
