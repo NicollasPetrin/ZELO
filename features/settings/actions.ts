@@ -11,10 +11,12 @@ import { maskDocument, parseDocument } from "@/lib/document";
 import { assertUserActionRateLimit } from "@/lib/rate-limit";
 import { companySettingsSchema } from "@/lib/validations";
 
-export const DOCUMENT_LOCKED_MESSAGE =
+// Nao exportadas: um arquivo "use server" so pode exportar funcoes async, e
+// exportar constantes aqui quebra o build sem que o TypeScript reclame.
+const DOCUMENT_LOCKED_MESSAGE =
   "O documento nao pode ser alterado depois que a assinatura foi iniciada. Fale com o suporte para corrigir o cadastro.";
 
-export const DOCUMENT_TAKEN_MESSAGE = "Este CNPJ ou CPF ja esta cadastrado em outra empresa.";
+const DOCUMENT_TAKEN_MESSAGE = "Este CNPJ ou CPF ja esta cadastrado em outra empresa.";
 
 export async function saveCompanySettingsAction(values: unknown) {
   try {
