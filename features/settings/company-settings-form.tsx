@@ -17,6 +17,8 @@ export function CompanySettingsForm({
 }: {
   company: {
     name: string;
+    document: string | null;
+    documentLocked: boolean;
     segment: string | null;
     employeeCount: number | null;
     isActive: boolean;
@@ -33,6 +35,7 @@ export function CompanySettingsForm({
     resolver: zodResolver(companySettingsSchema) as Resolver<CompanySettingsValues>,
     defaultValues: {
       name: company.name,
+      document: company.document ?? "",
       segment: company.segment ?? "",
       employeeCount: company.employeeCount ?? "",
       isActive: company.isActive,
@@ -59,6 +62,23 @@ export function CompanySettingsForm({
           <Label>Nome da empresa</Label>
           <Input {...register("name")} />
           <FieldError message={errors.name?.message} />
+        </div>
+        <div className="space-y-1.5">
+          <Label>CNPJ ou CPF</Label>
+          <Input
+            inputMode="numeric"
+            autoComplete="off"
+            placeholder="Somente numeros"
+            readOnly={company.documentLocked}
+            aria-describedby="ajuda-documento"
+            {...register("document")}
+          />
+          <FieldError message={errors.document?.message} />
+          <p id="ajuda-documento" className="text-xs leading-5 text-slate-600">
+            {company.documentLocked
+              ? "Bloqueado porque a assinatura ja foi iniciada. Fale com o suporte para corrigir."
+              : "Necessario para assinar um plano. A processadora exige o documento para emitir a cobranca."}
+          </p>
         </div>
         <div className="space-y-1.5">
           <Label>Segmento</Label>

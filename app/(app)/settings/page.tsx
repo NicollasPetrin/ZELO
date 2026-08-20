@@ -179,6 +179,10 @@ export default async function SettingsPage() {
       <CompanySettingsForm
         company={{
           name: user.company.name,
+          document: user.company.document,
+          // Depois que existe cadastro na processadora, o documento vira somente
+          // leitura para nao desalinhar os dois lados.
+          documentLocked: Boolean(user.company.asaasCustomerId),
           segment: user.company.segment,
           employeeCount: user.company.employeeCount,
           isActive: user.company.isActive,

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isValidDocument } from "@/lib/document";
 
 export const userRoles = ["OWNER", "MANAGER", "EMPLOYEE"] as const;
 export const subscriptionPlans = ["BASIC", "MANAGEMENT", "COMPLETE"] as const;
@@ -142,6 +143,13 @@ export const goalSchema = z.object({
 
 export const companySettingsSchema = z.object({
   name: z.string().trim().min(2, "Informe o nome da empresa."),
+  // Vazio e permitido: so vira obrigatorio na hora de assinar um plano.
+  document: z
+    .string()
+    .trim()
+    .refine((value) => value === "" || isValidDocument(value), "CNPJ ou CPF invalido.")
+    .optional()
+    .or(z.literal("")),
   segment: z.string().trim().optional().or(z.literal("")),
   employeeCount: z.coerce.number().min(0).optional().or(z.literal("")),
   isActive: z.boolean().default(true),
