@@ -91,7 +91,7 @@ export function ProductCarousel() {
               onClick={() => setActive(index)}
               onKeyDown={onTabKeyDown}
               className={cn(
-                "inline-flex h-9 items-center gap-2 rounded-md px-3 text-sm font-medium transition-colors",
+                "inline-flex h-11 items-center gap-2 rounded-md px-3 text-sm font-medium transition-colors lg:h-9",
                 "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
                 selected
                   ? "bg-white text-slate-950"
@@ -133,7 +133,7 @@ export function ProductCarousel() {
         <button
           type="button"
           onClick={() => go(active - 1)}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-white/15 text-slate-300 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          className="inline-flex h-11 w-11 items-center justify-center rounded-md border lg:h-9 lg:w-9 border-white/15 text-slate-300 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
         >
           <ChevronLeft className="h-4 w-4" aria-hidden="true" />
           <span className="sr-only">Tela anterior</span>
@@ -141,7 +141,7 @@ export function ProductCarousel() {
         <button
           type="button"
           onClick={() => go(active + 1)}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-white/15 text-slate-300 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          className="inline-flex h-11 w-11 items-center justify-center rounded-md border lg:h-9 lg:w-9 border-white/15 text-slate-300 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
         >
           <ChevronRight className="h-4 w-4" aria-hidden="true" />
           <span className="sr-only">Proxima tela</span>

@@ -117,26 +117,34 @@ export function MobileNavigation({
   const visibleItems = navItems.filter((item) => item.roles.includes(role) && (hasActiveSubscription || item.href === "/settings"));
 
   return (
-    <nav className="sticky top-16 z-10 border-b border-slate-200 bg-white/95 px-3 py-2 backdrop-blur lg:hidden" aria-label="Navegacao principal">
-      <div className="flex gap-2 overflow-x-auto pb-1">
-        {visibleItems.map((item) => {
-          const Icon = item.icon;
-          const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+    <nav className="sticky top-14 z-10 border-b border-slate-200 bg-white/95 backdrop-blur lg:hidden" aria-label="Navegacao principal">
+      <div className="relative">
+        <div className="flex gap-2 overflow-x-auto px-3 py-2">
+          {visibleItems.map((item) => {
+            const Icon = item.icon;
+            const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
 
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex h-11 min-w-20 shrink-0 flex-col items-center justify-center gap-1 rounded-md px-3 text-[11px] font-medium transition-colors",
-                active ? "bg-slate-950 text-white" : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-950",
-              )}
-            >
-              <Icon className="h-4 w-4" aria-hidden="true" />
-              <span className="max-w-20 truncate">{item.label}</span>
-            </Link>
-          );
-        })}
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={active ? "page" : undefined}
+                className={cn(
+                  // Rotulo inteiro e sem truncar: "Tarefas da Equipe" cortado em
+                  // "Tarefas d..." obriga a adivinhar para onde o item leva.
+                  "flex h-11 shrink-0 items-center gap-2 whitespace-nowrap rounded-md px-3 text-xs font-medium transition-colors",
+                  active ? "bg-slate-950 text-white" : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-950",
+                )}
+              >
+                <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                {item.label}
+              </Link>
+            );
+          })}
+        </div>
+
+        {/* A fila passa da largura da tela: sem essa borda esmaecida, nada indica que ha mais itens a direita. */}
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-white to-transparent" aria-hidden="true" />
       </div>
     </nav>
   );

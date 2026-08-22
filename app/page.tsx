@@ -77,12 +77,12 @@ export default function Home() {
             <a href="#demonstracao" className="hover:text-white">Demonstracao</a>
             <a href="#planos" className="hover:text-white">Planos</a>
           </nav>
-          <Link href="/login" className={buttonClassName("secondary", "sm")}>
+          <Link href="/login" className={buttonClassName("secondary", "sm") + " min-h-10 lg:min-h-0"}>
             Entrar
           </Link>
         </header>
 
-        <div className="relative z-10 mx-auto flex max-w-7xl flex-col justify-center px-4 pb-20 pt-14 lg:min-h-[calc(88vh-80px)] lg:px-8 lg:pt-20">
+        <div className="relative z-10 mx-auto flex max-w-7xl flex-col justify-center px-4 pb-14 pt-10 lg:min-h-[calc(88vh-80px)] lg:px-8 lg:pb-20 lg:pt-20">
           <div className="max-w-2xl">
             <div className="inline-flex items-center gap-2 rounded-md border border-white/20 bg-white/10 px-3 py-2 text-xs font-medium text-slate-100">
               <Sparkles className="h-4 w-4" aria-hidden="true" />
@@ -124,7 +124,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="produto" className="border-b border-slate-200 bg-white px-4 py-16 lg:px-8">
+      <section id="produto" className="border-b border-slate-200 bg-white px-4 py-12 lg:px-8 lg:py-16">
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
             <div>
@@ -154,7 +154,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="demonstracao" className="bg-slate-950 px-4 py-16 text-white lg:px-8">
+      <section id="demonstracao" className="bg-slate-950 px-4 py-12 text-white lg:px-8 lg:py-16">
         <div className="mx-auto max-w-7xl">
           <div className="max-w-3xl">
             <p className="text-sm font-semibold uppercase tracking-normal text-emerald-400">Demonstracao</p>
@@ -172,7 +172,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="bg-slate-50 px-4 py-16 lg:px-8">
+      <section className="bg-slate-50 px-4 py-12 lg:px-8 lg:py-16">
         <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-3">
           {[
             { icon: UsersRound, title: "Onboarding no produto", text: "Guias por aba mostram ao gestor como configurar setores, funcionarios, tarefas e metas dentro da plataforma." },
@@ -196,7 +196,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="planos" className="bg-white px-4 py-16 lg:px-8">
+      <section id="planos" className="bg-white px-4 py-12 lg:px-8 lg:py-16">
         <div className="mx-auto max-w-7xl">
           <div className="max-w-3xl">
             <p className="text-sm font-semibold uppercase tracking-normal text-emerald-700">Planos</p>
@@ -278,7 +278,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="bg-white px-4 py-16 lg:px-8">
+      <section className="bg-white px-4 py-12 lg:px-8 lg:py-16">
         <div className="mx-auto flex max-w-7xl flex-col gap-6 rounded-md border border-slate-200 bg-slate-950 p-8 text-white shadow-sm md:flex-row md:items-center md:justify-between">
           <div>
             <h2 className="text-2xl font-semibold">Comece a organizar sua equipe.</h2>
