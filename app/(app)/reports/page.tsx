@@ -1,20 +1,21 @@
 import Link from "next/link";
-import { AlertTriangle, BarChart3, Building2, CheckCircle2, Clock, Crown, ListChecks, Target, Users } from "lucide-react";
-import { DataTable, Td, Th } from "@/components/data-table";
+import { AlertTriangle, BarChart3, CheckCircle2, Clock, Crown, ListChecks, Target, Users } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
 import { LockedFeatureCard } from "@/components/locked-feature-card";
 import { PageHeader } from "@/components/page-header";
-import { PriorityBadge } from "@/components/priority-badge";
 import { ProgressBar } from "@/components/progress-bar";
+import { CriticalTaskList } from "@/components/reports/critical-task-list";
+import { DepartmentMetricsTable } from "@/components/reports/department-metrics-table";
+import { EmployeeMetricsTable } from "@/components/reports/employee-metrics-table";
 import { StatCard } from "@/components/stat-card";
-import { StatusBadge } from "@/components/status-badge";
+import { StatusDistribution } from "@/components/status-distribution";
 import { SubscriptionRequiredCard } from "@/components/subscription-required-card";
 import { Badge } from "@/components/ui/badge";
 import { buttonClassName } from "@/components/ui/button";
 import { getPremiumWorkspaceData } from "@/features/premium/data";
 import { requireTeamArea } from "@/lib/auth/guards";
-import { formatDate, formatGoalValue, getGoalProgress, isTaskLate } from "@/lib/format";
-import { goalStatusLabels, priorityLabels, statusLabels } from "@/lib/labels";
+import { formatGoalValue, getGoalProgress } from "@/lib/format";
+import { goalStatusLabels, priorityLabels } from "@/lib/labels";
 import { canManageCompany } from "@/lib/permissions";
 import { getPlanAccess } from "@/lib/plans";
 import { getActivePlanCode } from "@/lib/subscription";
@@ -85,99 +86,25 @@ export default async function ReportsPage() {
         <section className="grid gap-4 xl:grid-cols-2">
           <div className="space-y-3">
             <h2 className="text-lg font-semibold text-slate-950">Resumo por setor</h2>
-            <DataTable>
-              <table className="min-w-full divide-y divide-slate-200">
-                <thead className="bg-slate-50">
-                  <tr>
-                    <Th>Setor</Th>
-                    <Th>Abertas</Th>
-                    <Th>Atrasadas</Th>
-                    <Th>Conclusao</Th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 bg-white">
-                  {report.departmentMetrics.map((department) => (
-                    <tr key={department.id}>
-                      <Td>
-                        <div className="flex items-center gap-2">
-                          <Building2 className="h-4 w-4 text-slate-400" aria-hidden="true" />
-                          <span className="font-medium text-slate-950">{department.name}</span>
-                        </div>
-                      </Td>
-                      <Td>{department.openTasks}</Td>
-                      <Td>{department.overdueTasks}</Td>
-                      <Td>{department.completionRate}%</Td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </DataTable>
+            <DepartmentMetricsTable departments={report.departmentMetrics} />
           </div>
 
           <div className="space-y-3">
             <h2 className="text-lg font-semibold text-slate-950">Resumo por responsavel</h2>
-            <DataTable>
-              <table className="min-w-full divide-y divide-slate-200">
-                <thead className="bg-slate-50">
-                  <tr>
-                    <Th>Responsavel</Th>
-                    <Th>Setor</Th>
-                    <Th>Abertas</Th>
-                    <Th>Atrasadas</Th>
-                    <Th>Conclusao</Th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 bg-white">
-                  {report.employeeMetrics.map((employee) => (
-                    <tr key={employee.id}>
-                      <Td><span className="font-medium text-slate-950">{employee.name}</span></Td>
-                      <Td>{employee.department}</Td>
-                      <Td>{employee.openTasks}</Td>
-                      <Td>{employee.overdueTasks}</Td>
-                      <Td>{employee.completionRate}%</Td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </DataTable>
+            <EmployeeMetricsTable employees={report.employeeMetrics} />
           </div>
         </section>
 
         <section className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
           <div className="rounded-md border border-slate-200 bg-white p-4 shadow-sm">
             <h2 className="text-base font-semibold text-slate-950">Distribuicao por status</h2>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              {report.statusDistribution.map((item) => (
-                <div key={item.status} className="rounded-md bg-slate-50 p-3">
-                  <p className="text-xs font-medium uppercase tracking-normal text-slate-400">{statusLabels[item.status]}</p>
-                  <p className="mt-2 text-2xl font-semibold text-slate-950">{item.count}</p>
-                  <p className="mt-1 text-xs text-slate-500">{item.percent}% do total</p>
-                </div>
-              ))}
-            </div>
+            <StatusDistribution items={report.statusDistribution} />
           </div>
 
           <div className="rounded-md border border-slate-200 bg-white p-4 shadow-sm">
             <h2 className="text-base font-semibold text-slate-950">Tarefas que pedem atencao</h2>
-            <div className="mt-4 space-y-3">
-              {report.criticalTasks.length ? (
-                report.criticalTasks.map((task) => (
-                  <Link key={task.id} href={`/tasks/${task.id}`} className="grid gap-3 rounded-md border border-slate-100 p-3 hover:bg-slate-50 md:grid-cols-[1fr_auto]">
-                    <div>
-                      <p className="font-medium text-slate-950">{task.title}</p>
-                      <p className="mt-1 text-sm text-slate-500">
-                        {task.assignee.name} - {task.department.name} - {formatDate(task.dueDate)}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <PriorityBadge priority={task.priority} />
-                      <StatusBadge status={task.status} late={isTaskLate(task.status, task.dueDate)} />
-                    </div>
-                  </Link>
-                ))
-              ) : (
-                <EmptyState title="Sem tarefas criticas" description="Nao ha tarefas atrasadas ou urgentes abertas neste momento." />
-              )}
+            <div className="mt-4">
+              <CriticalTaskList tasks={report.criticalTasks} />
             </div>
           </div>
         </section>
@@ -247,90 +174,20 @@ export default async function ReportsPage() {
       <section className="grid gap-4 xl:grid-cols-2">
         <div className="space-y-3">
           <h2 className="text-lg font-semibold text-slate-950">Gargalos por setor</h2>
-          <DataTable>
-            <table className="min-w-full divide-y divide-slate-200">
-              <thead className="bg-slate-50">
-                <tr>
-                  <Th>Setor</Th>
-                  <Th>Abertas</Th>
-                  <Th>Atrasadas</Th>
-                  <Th>Metas em risco</Th>
-                  <Th>Conclusao</Th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 bg-white">
-                {report.departmentMetrics.map((department) => (
-                  <tr key={department.id}>
-                    <Td>
-                      <div className="flex items-center gap-2">
-                        <Building2 className="h-4 w-4 text-slate-400" aria-hidden="true" />
-                        <span className="font-medium text-slate-950">{department.name}</span>
-                      </div>
-                    </Td>
-                    <Td>{department.openTasks}</Td>
-                    <Td>{department.overdueTasks}</Td>
-                    <Td>{department.goalsAtRisk}</Td>
-                    <Td>{department.completionRate}%</Td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </DataTable>
+          <DepartmentMetricsTable departments={report.departmentMetrics} showGoalsAtRisk />
         </div>
 
         <div className="space-y-3">
           <h2 className="text-lg font-semibold text-slate-950">Carga por responsavel</h2>
-          <DataTable>
-            <table className="min-w-full divide-y divide-slate-200">
-              <thead className="bg-slate-50">
-                <tr>
-                  <Th>Responsavel</Th>
-                  <Th>Setor</Th>
-                  <Th>Abertas</Th>
-                  <Th>Atrasadas</Th>
-                  <Th>Conclusao</Th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 bg-white">
-                {report.employeeMetrics.map((employee) => (
-                  <tr key={employee.id}>
-                    <Td>
-                      <span className="font-medium text-slate-950">{employee.name}</span>
-                    </Td>
-                    <Td>{employee.department}</Td>
-                    <Td>{employee.openTasks}</Td>
-                    <Td>{employee.overdueTasks}</Td>
-                    <Td>{employee.completionRate}%</Td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </DataTable>
+          <EmployeeMetricsTable employees={report.employeeMetrics} />
         </div>
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
         <div className="rounded-md border border-slate-200 bg-white p-4 shadow-sm">
           <h2 className="text-base font-semibold text-slate-950">Tarefas criticas</h2>
-          <div className="mt-4 space-y-3">
-            {report.criticalTasks.length ? (
-              report.criticalTasks.map((task) => (
-                <Link key={task.id} href={`/tasks/${task.id}`} className="grid gap-3 rounded-md border border-slate-100 p-3 hover:bg-slate-50 md:grid-cols-[1fr_auto]">
-                  <div>
-                    <p className="font-medium text-slate-950">{task.title}</p>
-                    <p className="mt-1 text-sm text-slate-500">
-                      {task.assignee.name} - {task.department.name} - {formatDate(task.dueDate)}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <PriorityBadge priority={task.priority} />
-                    <StatusBadge status={task.status} late={isTaskLate(task.status, task.dueDate)} />
-                  </div>
-                </Link>
-              ))
-            ) : (
-              <EmptyState title="Sem tarefas criticas" description="Nao ha tarefas atrasadas ou urgentes abertas neste momento." />
-            )}
+          <div className="mt-4">
+            <CriticalTaskList tasks={report.criticalTasks} />
           </div>
         </div>
 
@@ -373,15 +230,7 @@ export default async function ReportsPage() {
 
       <section className="rounded-md border border-slate-200 bg-white p-4 shadow-sm">
         <h2 className="text-base font-semibold text-slate-950">Distribuicao por status</h2>
-        <div className="mt-4 grid gap-3 md:grid-cols-3 xl:grid-cols-6">
-          {report.statusDistribution.map((item) => (
-            <div key={item.status} className="rounded-md bg-slate-50 p-3">
-              <p className="text-xs font-medium uppercase tracking-normal text-slate-400">{statusLabels[item.status]}</p>
-              <p className="mt-2 text-2xl font-semibold text-slate-950">{item.count}</p>
-              <p className="mt-1 text-xs text-slate-500">{item.percent}% do total</p>
-            </div>
-          ))}
-        </div>
+        <StatusDistribution items={report.statusDistribution} />
       </section>
     </div>
   );

@@ -12,6 +12,10 @@ export function Th({ children }: { children: ReactNode }) {
   return <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-normal text-slate-500">{children}</th>;
 }
 
-export function Td({ children }: { children: ReactNode }) {
-  return <td className="px-4 py-3 align-top text-sm text-slate-700">{children}</td>;
+export function Td({ children, colSpan }: { children: ReactNode; colSpan?: number }) {
+  return (
+    <td className="px-4 py-3 align-top text-sm text-slate-700" colSpan={colSpan}>
+      {children}
+    </td>
+  );
 }
