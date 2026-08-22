@@ -8,6 +8,8 @@ import {
   CheckCircle2,
   Clock3,
   Layers3,
+  LayoutDashboard,
+  ListChecks,
   ShieldCheck,
   Sparkles,
   Star,
@@ -46,6 +48,35 @@ const features = [
   },
 ];
 
+const productShots = [
+  {
+    icon: LayoutDashboard,
+    src: "/demo/painel.webp",
+    alt: "Painel da Zelo com contadores de tarefas pendentes, atrasadas, concluidas, em andamento e urgentes, alem de proximos prazos, metas e desempenho por equipe.",
+    title: "Painel do gestor",
+    description:
+      "Pendentes, atrasadas, concluidas e urgencias em uma unica tela, com proximos prazos, metas e desempenho por equipe e por setor.",
+  },
+  {
+    icon: ListChecks,
+    src: "/demo/tarefas-equipe.webp",
+    alt: "Tela de tarefas da equipe da Zelo com filtros de status, prioridade, setor e responsavel, e o formulario de nova tarefa aberto ao lado da lista.",
+    title: "Tarefas da equipe",
+    description:
+      "Filtros por status, prioridade, setor e responsavel, com criacao de tarefa sem precisar sair da lista.",
+  },
+  {
+    icon: BarChart3,
+    src: "/demo/relatorios.webp",
+    alt: "Tela de relatorios da Zelo com score de saude operacional, taxa de conclusao, distribuicao de status, desempenho por setor e metas em risco.",
+    title: "Relatorios e indicadores",
+    description:
+      "Saude operacional, distribuicao de status, desempenho por setor e metas em risco para a leitura executiva.",
+  },
+];
+
+const [featuredShot, ...secondaryShots] = productShots;
+
 const plans = planOrder.map((plan) => planDetails[plan]);
 
 export default function Home() {
@@ -73,6 +104,7 @@ export default function Home() {
           </Link>
           <nav className="hidden items-center gap-7 text-sm text-slate-200 md:flex">
             <a href="#produto" className="hover:text-white">Produto</a>
+            <a href="#demonstracao" className="hover:text-white">Demonstracao</a>
             <a href="#planos" className="hover:text-white">Planos</a>
           </nav>
           <Link href="/login" className={buttonClassName("secondary", "sm")}>
@@ -146,6 +178,68 @@ export default function Home() {
                   <h3 className="mt-5 text-base font-semibold text-slate-950">{feature.title}</h3>
                   <p className="mt-3 text-sm leading-6 text-slate-600">{feature.description}</p>
                 </article>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      <section id="demonstracao" className="bg-slate-950 px-4 py-16 text-white lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="max-w-3xl">
+            <p className="text-sm font-semibold uppercase tracking-normal text-emerald-400">Demonstracao</p>
+            <h2 className="mt-3 text-3xl font-semibold leading-tight text-white md:text-4xl">
+              Veja a Zelo por dentro.
+            </h2>
+            <p className="mt-4 text-base leading-8 text-slate-300">
+              As telas que o gestor usa no dia a dia: acompanhamento da operacao, organizacao das tarefas da equipe e leitura dos indicadores.
+            </p>
+          </div>
+
+          <figure className="mt-10">
+            <div className="overflow-hidden rounded-md border border-white/10 shadow-[0_24px_60px_rgba(2,6,23,0.55)]">
+              <Image
+                src={featuredShot.src}
+                alt={featuredShot.alt}
+                width={1672}
+                height={941}
+                className="h-auto w-full"
+                sizes="(min-width: 1024px) 1216px, 100vw"
+              />
+            </div>
+            <figcaption className="mt-4 flex gap-3">
+              <featuredShot.icon className="mt-0.5 h-5 w-5 shrink-0 text-emerald-400" aria-hidden="true" />
+              <span>
+                <span className="block font-semibold text-white">{featuredShot.title}</span>
+                <span className="mt-1 block max-w-2xl text-sm leading-6 text-slate-400">{featuredShot.description}</span>
+              </span>
+            </figcaption>
+          </figure>
+
+          <div className="mt-10 grid gap-8 lg:grid-cols-2">
+            {secondaryShots.map((shot) => {
+              const Icon = shot.icon;
+
+              return (
+                <figure key={shot.src}>
+                  <div className="overflow-hidden rounded-md border border-white/10 shadow-[0_24px_60px_rgba(2,6,23,0.55)]">
+                    <Image
+                      src={shot.src}
+                      alt={shot.alt}
+                      width={1672}
+                      height={941}
+                      className="h-auto w-full"
+                      sizes="(min-width: 1024px) 600px, 100vw"
+                    />
+                  </div>
+                  <figcaption className="mt-4 flex gap-3">
+                    <Icon className="mt-0.5 h-5 w-5 shrink-0 text-emerald-400" aria-hidden="true" />
+                    <span>
+                      <span className="block font-semibold text-white">{shot.title}</span>
+                      <span className="mt-1 block text-sm leading-6 text-slate-400">{shot.description}</span>
+                    </span>
+                  </figcaption>
+                </figure>
               );
             })}
           </div>
