@@ -14,6 +14,7 @@ import {
   UsersRound,
 } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
+import { ProductCarousel } from "@/components/product-carousel";
 import { buttonClassName } from "@/components/ui/button";
 import { planDetails, planDifferences, planOrder } from "@/lib/plans";
 
@@ -73,6 +74,7 @@ export default function Home() {
           </Link>
           <nav className="hidden items-center gap-7 text-sm text-slate-200 md:flex">
             <a href="#produto" className="hover:text-white">Produto</a>
+            <a href="#demonstracao" className="hover:text-white">Demonstracao</a>
             <a href="#planos" className="hover:text-white">Planos</a>
           </nav>
           <Link href="/login" className={buttonClassName("secondary", "sm")}>
@@ -148,6 +150,24 @@ export default function Home() {
                 </article>
               );
             })}
+          </div>
+        </div>
+      </section>
+
+      <section id="demonstracao" className="bg-slate-950 px-4 py-16 text-white lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="max-w-3xl">
+            <p className="text-sm font-semibold uppercase tracking-normal text-emerald-400">Demonstracao</p>
+            <h2 className="mt-3 text-3xl font-semibold leading-tight text-white md:text-4xl">
+              Veja a Zelo por dentro.
+            </h2>
+            <p className="mt-4 text-base leading-8 text-slate-300">
+              As telas que o gestor usa no dia a dia: acompanhamento da operacao, organizacao das tarefas da equipe e leitura dos indicadores.
+            </p>
+          </div>
+
+          <div className="mt-10">
+            <ProductCarousel />
           </div>
         </div>
       </section>
