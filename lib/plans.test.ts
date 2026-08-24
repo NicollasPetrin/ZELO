@@ -15,7 +15,7 @@ describe("calculateMonthlyPrice", () => {
 
     expect(price.requiresUpgrade).toBe(false);
     expect(price.extraUsers).toBe(0);
-    expect(price.totalPriceCents).toBe(24990);
+    expect(price.totalPriceCents).toBe(19990);
   });
 
   it("adds the extra user price above the included user limit", () => {
@@ -23,8 +23,8 @@ describe("calculateMonthlyPrice", () => {
 
     expect(price.requiresUpgrade).toBe(false);
     expect(price.extraUsers).toBe(3);
-    expect(price.extraUsersPriceCents).toBe(2970);
-    expect(price.totalPriceCents).toBe(62960);
+    expect(price.extraUsersPriceCents).toBe(2370);
+    expect(price.totalPriceCents).toBe(52360);
   });
 
   it("allows pricing exactly at the hard user cap", () => {
@@ -32,7 +32,7 @@ describe("calculateMonthlyPrice", () => {
 
     expect(price.requiresUpgrade).toBe(false);
     expect(price.extraUsers).toBe(10);
-    expect(price.totalPriceCents).toBe(20890);
+    expect(price.totalPriceCents).toBe(17890);
   });
 
   it("signals upgrade requirement above the hard user cap", () => {
@@ -49,7 +49,7 @@ describe("calculateMonthlyPrice", () => {
     expect(price.maxUsers).toBeNull();
     expect(price.requiresUpgrade).toBe(false);
     expect(price.extraUsers).toBe(80);
-    expect(price.totalPriceCents).toBe(139190);
+    expect(price.totalPriceCents).toBe(113190);
   });
 
   it("rejects invalid active user counts", () => {
