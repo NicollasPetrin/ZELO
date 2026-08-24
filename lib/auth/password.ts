@@ -20,6 +20,29 @@ export function hashPassword(password: string) {
   return `${PREFIX}$${SCRYPT_PARAMS.N}$${SCRYPT_PARAMS.r}$${SCRYPT_PARAMS.p}$${salt}$${hash}`;
 }
 
+/**
+ * Se o hash guardado esta em um formato mais fraco do que o atual. O caminho
+ * legado e um SHA-256 sem sal: rapido de calcular e vulneravel a tabela
+ * pre-computada, entao um vazamento do banco entrega essas senhas. Como
+ * `verifyPassword` ainda aceita esse formato para nao trancar ninguem para
+ * fora, sem uma migracao no login o hash fraco fica no banco para sempre.
+ */
+export function needsRehash(passwordHash: string) {
+  if (!passwordHash.startsWith(`${PREFIX}$`)) {
+    return true;
+  }
+
+  const parts = passwordHash.split("$");
+
+  if (parts.length < 6) {
+    return true;
+  }
+
+  const [, n, r, p] = parts;
+
+  return Number(n) !== SCRYPT_PARAMS.N || Number(r) !== SCRYPT_PARAMS.r || Number(p) !== SCRYPT_PARAMS.p;
+}
+
 export function verifyPassword(password: string, passwordHash: string) {
   if (passwordHash.startsWith(`${PREFIX}$`)) {
     const parts = passwordHash.split("$");

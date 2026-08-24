@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createSession, deleteSession, getCurrentUser } from "@/lib/auth/session";
-import { hashPassword, verifyPassword } from "@/lib/auth/password";
+import { hashPassword, needsRehash, verifyPassword } from "@/lib/auth/password";
 import { prisma } from "@/lib/db/client";
 import { parseDocument } from "@/lib/document";
 import { assertIpRateLimit, assertRateLimit } from "@/lib/rate-limit";
@@ -50,6 +50,21 @@ export async function loginAction(formData: FormData) {
 
   if (!user || !user.isActive || !user.company.isActive || !passwordIsValid) {
     redirect("/login?error=credenciais");
+  }
+
+  // O login e o unico momento em que a senha em claro existe aqui, entao e a
+  // unica chance de reescrever um hash em formato fraco. Sem isto, uma conta
+  // antiga guarda para sempre um SHA-256 sem sal. Falhar a reescrita nao pode
+  // impedir a entrada de quem acertou a senha.
+  if (needsRehash(user.passwordHash)) {
+    try {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { passwordHash: hashPassword(parsed.data.password) },
+      });
+    } catch (error) {
+      console.error("[auth] falha ao atualizar o hash da senha:", error);
+    }
   }
 
   await createSession(user.id);

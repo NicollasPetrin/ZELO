@@ -13,11 +13,42 @@ const globalForRateLimit = globalThis as typeof globalThis & {
 const store = globalForRateLimit.zeloRateLimitStore ?? new Map<string, Bucket>();
 globalForRateLimit.zeloRateLimitStore = store;
 
+/** No maximo uma limpeza por minuto: varrer o mapa a cada requisicao seria O(n) no caminho quente. */
+const SWEEP_INTERVAL_MS = 60_000;
+let lastSweep = Date.now();
+
+/**
+ * Sem isto o mapa so cresce: uma chave expirada nunca e removida, apenas
+ * sobrescrita se a mesma chave voltar. Como a chave inclui valor vindo do
+ * cliente (e-mail e IP), basta variar o e-mail a cada tentativa para criar
+ * entradas eternas e consumir a memoria do processo.
+ */
+function sweepExpired(now: number) {
+  if (now - lastSweep < SWEEP_INTERVAL_MS) {
+    return;
+  }
+
+  lastSweep = now;
+
+  for (const [key, bucket] of store) {
+    if (bucket.resetAt <= now) {
+      store.delete(key);
+    }
+  }
+}
+
 export async function getClientIp() {
   const headerStore = await headers();
-  const forwardedFor = headerStore.get("x-forwarded-for")?.split(",")[0]?.trim();
 
-  return forwardedFor || headerStore.get("x-real-ip") || "unknown";
+  // A ultima entrada do X-Forwarded-For, nao a primeira. O cliente pode mandar
+  // o proprio cabecalho, e o proxy da borda acrescenta o IP real ao final da
+  // lista: confiar na primeira entrada deixaria qualquer um forjar um IP novo a
+  // cada tentativa e passar por baixo do limite.
+  const forwarded = headerStore.get("x-forwarded-for");
+  const chain = forwarded?.split(",").map((part) => part.trim()).filter(Boolean) ?? [];
+  const closestProxyValue = chain.at(-1);
+
+  return closestProxyValue || headerStore.get("x-real-ip") || "unknown";
 }
 
 export async function assertRateLimit({
@@ -32,6 +63,9 @@ export async function assertRateLimit({
   message?: string;
 }) {
   const now = Date.now();
+
+  sweepExpired(now);
+
   const bucket = store.get(key);
 
   if (!bucket || bucket.resetAt <= now) {
