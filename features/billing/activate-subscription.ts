@@ -1,6 +1,7 @@
 import "server-only";
 import type { Prisma, SubscriptionPlan } from "@prisma/client";
 import { ASAAS_PROVIDER, type AsaasWebhookEvent } from "@/lib/asaas/types";
+import { addOneMonth, nextPeriod } from "@/lib/billing-period";
 
 /** Eventos que liberam o acesso ao plano. */
 const GRANTING_EVENTS = new Set(["PAYMENT_CONFIRMED", "PAYMENT_RECEIVED"]);
@@ -11,14 +12,6 @@ const REVOKING_EVENTS = new Set(["PAYMENT_REFUNDED", "PAYMENT_CHARGEBACK_REQUEST
 export type ProcessOutcome =
   | { handled: true; action: "granted" | "past_due" | "revoked" | "invoice_opened"; companyId: string }
   | { handled: false; reason: string };
-
-/** Um ciclo mensal a partir da data de pagamento. */
-function addOneMonth(from: Date) {
-  const end = new Date(from);
-  end.setMonth(end.getMonth() + 1);
-
-  return end;
-}
 
 /**
  * Traduz um evento de cobranca do Asaas em estado de assinatura da empresa.
@@ -75,8 +68,21 @@ export async function applyPaymentEvent(
 
   if (GRANTING_EVENTS.has(event.event)) {
     const paidAt = payment.paymentDate ? new Date(payment.paymentDate) : new Date();
-    const start = Number.isNaN(paidAt.getTime()) ? new Date() : paidAt;
-    const end = addOneMonth(start);
+    const paidAtValido = Number.isNaN(paidAt.getTime()) ? new Date() : paidAt;
+
+    // Uma mesma cobranca no cartao gera dois eventos: CONFIRMED quando e
+    // autorizada e RECEIVED cerca de um mes depois, quando o dinheiro cai.
+    // Ambos liberam acesso, entao sem esta verificacao a mesma cobranca
+    // estenderia o periodo duas vezes e daria um mes de graca por ciclo.
+    const faturaExistente = await tx.invoice.findUnique({
+      where: { externalId: payment.id },
+      select: { id: true, status: true, periodStart: true, periodEnd: true },
+    });
+    const cobrancaJaLiberou = faturaExistente?.status === "PAID";
+
+    const { start, end } = cobrancaJaLiberou
+      ? { start: faturaExistente.periodStart, end: faturaExistente.periodEnd }
+      : nextPeriod(existing?.currentPeriodEnd ?? null, paidAtValido);
 
     const data = {
       companyId: company.id,
