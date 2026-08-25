@@ -598,6 +598,17 @@ model SupportTicket {
   @@index([requesterId])
 }
 
+/// Contador de limite de requisicoes, compartilhado entre instancias.
+/// Em memoria cada instancia tinha o proprio contador, entao o limite real era
+/// multiplicado pelo numero de instancias rodando.
+model RateLimit {
+  key     String   @id
+  count   Int
+  resetAt DateTime
+
+  @@index([resetAt])
+}
+
 model WebhookEvent {
   id          String             @id @default(cuid())
   provider    String
