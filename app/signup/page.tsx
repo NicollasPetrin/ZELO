@@ -6,6 +6,7 @@ import { signupAction } from "@/features/auth/actions";
 import { getCurrentUser } from "@/lib/auth/session";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { Input, Label } from "@/components/ui/fields";
+import { BillingAddressFields } from "@/features/billing/billing-address-fields";
 import { planDetails, planOrder } from "@/lib/plans";
 
 const errorMessages: Record<string, string> = {
@@ -100,30 +101,7 @@ export default async function SignupPage({
                   <Label>Telefone</Label>
                   <Input name="phone" inputMode="tel" autoComplete="tel" placeholder="(11) 98765-4321" required />
                 </div>
-                <div className="grid gap-4 sm:grid-cols-[1fr_1fr]">
-                  <div className="space-y-1.5">
-                    <Label>CEP</Label>
-                    <Input name="postalCode" inputMode="numeric" autoComplete="postal-code" placeholder="01310-100" required />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label>Numero</Label>
-                    <Input name="addressNumber" placeholder="1000" required />
-                  </div>
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Logradouro</Label>
-                  <Input name="address" autoComplete="address-line1" placeholder="Avenida Paulista" required />
-                </div>
-                <div className="grid gap-4 sm:grid-cols-[1fr_1fr]">
-                  <div className="space-y-1.5">
-                    <Label>Bairro</Label>
-                    <Input name="province" placeholder="Bela Vista" required />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label>Complemento</Label>
-                    <Input name="addressComplement" placeholder="Sala 12 (opcional)" />
-                  </div>
-                </div>
+                <BillingAddressFields />
               </>
             ) : null}
             <div className="space-y-1.5">

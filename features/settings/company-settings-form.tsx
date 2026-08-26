@@ -6,6 +6,7 @@ import { useForm, type Resolver } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { FieldError, Input, Label } from "@/components/ui/fields";
+import { CEP_MENSAGENS, lookupCep, onlyDigits } from "@/lib/cep";
 import { FormMessage } from "@/components/form-message";
 import { saveCompanySettingsAction } from "@/features/settings/actions";
 import { companySettingsSchema } from "@/lib/validations";
@@ -33,9 +34,16 @@ export function CompanySettingsForm({
   const [message, setMessage] = useState<string>();
   const [error, setError] = useState<string>();
   const [isPending, startTransition] = useTransition();
+  const [cepEstado, setCepEstado] = useState<"parado" | "buscando" | "preenchido" | "naoEncontrado" | "indisponivel">(
+    "parado",
+  );
+  // Estado em vez de ref: ler ref.current dentro de um callback passado ao
+  // register() acontece durante a renderizacao, o que o React desaconselha.
+  const [ultimoCepBuscado, setUltimoCepBuscado] = useState("");
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<CompanySettingsValues>({
     resolver: zodResolver(companySettingsSchema) as Resolver<CompanySettingsValues>,
@@ -53,6 +61,31 @@ export function CompanySettingsForm({
       isActive: company.isActive,
     },
   });
+
+  // O endereco vem do CEP, mas quem guarda o valor aqui e o react-hook-form:
+  // escrever direto no campo nao atualizaria o estado dele, e o formulario
+  // enviaria vazio.
+  async function buscarCep(valor: string) {
+    const digitos = onlyDigits(valor);
+
+    if (digitos.length !== 8 || digitos === ultimoCepBuscado) {
+      return;
+    }
+
+    setUltimoCepBuscado(digitos);
+    setCepEstado("buscando");
+
+    const resultado = await lookupCep(digitos);
+
+    if (!resultado.ok) {
+      setCepEstado(resultado.motivo === "naoEncontrado" ? "naoEncontrado" : "indisponivel");
+      return;
+    }
+
+    setValue("address", resultado.address, { shouldValidate: true });
+    setValue("province", resultado.province, { shouldValidate: true });
+    setCepEstado("preenchido");
+  }
 
   const onSubmit = handleSubmit((values) => {
     setMessage(undefined);
@@ -102,8 +135,26 @@ export function CompanySettingsForm({
         </div>
         <div className="space-y-1.5">
           <Label>CEP</Label>
-          <Input inputMode="numeric" autoComplete="postal-code" placeholder="01310-100" {...register("postalCode")} />
+          <Input
+            inputMode="numeric"
+            autoComplete="postal-code"
+            placeholder="01310-100"
+            maxLength={9}
+            {...register("postalCode", {
+              onChange: (event) => buscarCep(event.target.value),
+              onBlur: (event) => buscarCep(event.target.value),
+            })}
+          />
           <FieldError message={errors.postalCode?.message} />
+          {cepEstado !== "parado" ? (
+            <p
+              className={`text-xs leading-5 ${cepEstado === "preenchido" ? "text-emerald-700" : "text-slate-600"}`}
+              role="status"
+              aria-live="polite"
+            >
+              {CEP_MENSAGENS[cepEstado]}
+            </p>
+          ) : null}
         </div>
         <div className="space-y-1.5">
           <Label>Logradouro</Label>
