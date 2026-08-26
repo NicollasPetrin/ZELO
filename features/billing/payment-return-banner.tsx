@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CircleCheck, Loader2, TriangleAlert } from "lucide-react";
 
-export type PaymentReturnStatus = "confirmado" | "cancelado" | "expirado";
+export type PaymentReturnStatus = "confirmado" | "cancelado" | "expirado" | "indisponivel";
 
 /** Quantas vezes recarregar antes de desistir e pedir para a pessoa aguardar. */
 const MAX_TENTATIVAS = 10;
@@ -41,6 +41,18 @@ export function PaymentReturnBanner({
 
     return () => clearTimeout(id);
   }, [aguardando, tentativas, router]);
+
+  if (status === "indisponivel") {
+    return (
+      <div className="mb-5 flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm leading-6 text-amber-950">
+        <TriangleAlert className="mt-1 h-4 w-4 shrink-0" aria-hidden="true" />
+        <p>
+          Sua conta foi criada, mas nao conseguimos abrir o pagamento agora. Nada foi cobrado. Escolha o plano
+          abaixo para tentar de novo.
+        </p>
+      </div>
+    );
+  }
 
   if (status === "cancelado" || status === "expirado") {
     return (

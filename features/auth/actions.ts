@@ -1,6 +1,12 @@
 "use server";
 
+import type { SubscriptionPlan } from "@prisma/client";
 import { redirect } from "next/navigation";
+import { ensureAsaasCustomer } from "@/features/billing/asaas-customer";
+import { createCheckout } from "@/lib/asaas/client";
+import { getAppUrl } from "@/lib/env";
+import { parsePhone } from "@/lib/phone";
+import { planDetails } from "@/lib/plans";
 import { createSession, deleteSession, getCurrentUser } from "@/lib/auth/session";
 import { hashPassword, needsRehash, verifyPassword } from "@/lib/auth/password";
 import { prisma } from "@/lib/db/client";
@@ -81,11 +87,18 @@ export async function signupAction(formData: FormData) {
   const parsed = signupSchema.safeParse({
     companyName: formData.get("companyName"),
     document: formData.get("document"),
+    phone: formData.get("phone"),
+    postalCode: formData.get("postalCode"),
+    address: formData.get("address"),
+    addressNumber: formData.get("addressNumber"),
+    addressComplement: formData.get("addressComplement"),
+    province: formData.get("province"),
     segment: formData.get("segment"),
     ownerName: formData.get("ownerName"),
     email: formData.get("email"),
     password: formData.get("password"),
     confirmPassword: formData.get("confirmPassword"),
+    plan: formData.get("plan"),
   });
 
   if (!parsed.success) {
@@ -116,6 +129,7 @@ export async function signupAction(formData: FormData) {
   }
 
   const documento = parsed.data.document ? parseDocument(parsed.data.document) : null;
+  const telefone = parsed.data.phone ? parsePhone(parsed.data.phone) : null;
 
   // O documento e unico por empresa. Conferir antes evita quebrar a transacao
   // de criacao inteira por causa de um conflito previsivel.
@@ -135,6 +149,12 @@ export async function signupAction(formData: FormData) {
       data: {
         name: parsed.data.companyName,
         document: documento?.digits ?? null,
+        phone: telefone?.digits ?? null,
+        postalCode: parsed.data.postalCode ? parsed.data.postalCode.replace(/\D/g, "") : null,
+        address: parsed.data.address || null,
+        addressNumber: parsed.data.addressNumber || null,
+        addressComplement: parsed.data.addressComplement || null,
+        province: parsed.data.province || null,
         segment: parsed.data.segment || null,
         email: parsed.data.email,
         employeeCount: 1,
@@ -187,7 +207,88 @@ export async function signupAction(formData: FormData) {
   });
 
   await createSession(userId);
-  redirect("/settings?welcome=1");
+
+  if (!parsed.data.plan) {
+    redirect("/settings?welcome=1");
+  }
+
+  // Conta criada e sessao aberta: daqui em diante qualquer falha ainda deixa a
+  // pessoa dentro do produto, com o plano a um clique. Perder a conta por causa
+  // de um erro da processadora seria bem pior.
+  //
+  // O redirecionamento fica fora do try de proposito: redirect() sinaliza por
+  // excecao, e chamado aqui dentro seria confundido com falha do checkout.
+  let checkoutUrl: string | null = null;
+
+  try {
+    checkoutUrl = await startSignupCheckout(userId, parsed.data.plan);
+  } catch (error) {
+    console.error("[signup] conta criada, mas o checkout falhou:", error);
+  }
+
+  if (!checkoutUrl) {
+    redirect("/settings?pagamento=indisponivel");
+  }
+
+  redirect(checkoutUrl);
+}
+
+/** Cria o cliente na processadora e devolve o link de pagamento do plano. */
+async function startSignupCheckout(userId: string, plan: SubscriptionPlan) {
+  const user = await prisma.user.findUniqueOrThrow({
+    where: { id: userId },
+    include: { company: true },
+  });
+
+  const asaasCustomerId = await ensureAsaasCustomer({
+    id: user.company.id,
+    name: user.company.name,
+    document: user.company.document,
+    email: user.company.email,
+    phone: user.company.phone,
+    postalCode: user.company.postalCode,
+    address: user.company.address,
+    addressNumber: user.company.addressNumber,
+    addressComplement: user.company.addressComplement,
+    province: user.company.province,
+    asaasCustomerId: user.company.asaasCustomerId,
+  });
+
+  await prisma.company.update({
+    where: { id: user.company.id },
+    data: { pendingPlanCode: plan },
+  });
+
+  const detalhes = planDetails[plan];
+  const appUrl = getAppUrl();
+  const retorno = (estado: string) => `${appUrl}/settings?pagamento=${estado}`;
+
+  const checkout = await createCheckout({
+    billingTypes: ["CREDIT_CARD"],
+    customer: asaasCustomerId,
+    chargeTypes: ["RECURRENT"],
+    minutesToExpire: 60,
+    items: [
+      {
+        name: `Plano ${detalhes.name}`,
+        description: "Assinatura mensal da Zelo.",
+        quantity: 1,
+        value: detalhes.priceCents / 100,
+      },
+    ],
+    subscription: {
+      cycle: "MONTHLY",
+      nextDueDate: new Date().toISOString().slice(0, 10),
+    },
+    callback: {
+      successUrl: retorno("confirmado"),
+      cancelUrl: retorno("cancelado"),
+      expiredUrl: retorno("expirado"),
+      autoRedirect: true,
+    },
+  });
+
+  return checkout.link;
 }
 
 export async function logoutAction() {

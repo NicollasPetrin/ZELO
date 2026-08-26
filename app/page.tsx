@@ -235,14 +235,14 @@ export default function Home() {
                   ))}
                 </ul>
                 <Link
-                  href="/signup"
+                  href={`/signup?plano=${plan.code}`}
                   className={
                     plan.highlight
                       ? buttonClassName("light") + " mt-7 w-full"
                       : buttonClassName("secondary") + " mt-7 w-full"
                   }
                 >
-                  Criar conta
+                  Assinar Plano {plan.name}
                 </Link>
               </article>
             ))}

@@ -9,7 +9,7 @@ import { prisma } from "@/lib/db/client";
 import { calculateMonthlyPrice, formatPriceCents, getPlanAccess, planDetails, planOrder } from "@/lib/plans";
 import { getActivePlanCode, getSubscriptionWindow } from "@/lib/subscription";
 
-const paymentStatuses: PaymentReturnStatus[] = ["confirmado", "cancelado", "expirado"];
+const paymentStatuses: PaymentReturnStatus[] = ["confirmado", "cancelado", "expirado", "indisponivel"];
 
 export default async function SettingsPage({
   searchParams,

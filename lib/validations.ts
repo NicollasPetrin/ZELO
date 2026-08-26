@@ -37,26 +37,62 @@ export const loginSchema = z.object({
   password: z.string().min(1, "Informe a senha."),
 });
 
+/** Campos que o Asaas exige do pagador para aceitar o checkout. */
+const camposDeCobranca = ["document", "phone", "postalCode", "address", "addressNumber", "province"] as const;
+
 export const signupSchema = z
   .object({
     companyName: z.string().trim().min(2, "Informe o nome da empresa."),
-    // Opcional no cadastro para nao travar quem so quer conhecer o produto.
-    // Vira obrigatorio na hora de assinar um plano.
+    // Opcionais quando a pessoa so quer conhecer o produto. Viram obrigatorios
+    // assim que um plano e escolhido, porque sem eles o Asaas recusa o checkout.
     document: z
       .string()
       .trim()
       .refine((value) => value === "" || isValidDocument(value), "CNPJ ou CPF invalido.")
       .optional()
       .or(z.literal("")),
+    phone: z
+      .string()
+      .trim()
+      .refine((value) => value === "" || isValidPhone(value), "Telefone invalido. Use DDD + numero.")
+      .optional()
+      .or(z.literal("")),
+    postalCode: z
+      .string()
+      .trim()
+      .refine((value) => value === "" || value.replace(/\D/g, "").length === 8, "CEP invalido.")
+      .optional()
+      .or(z.literal("")),
+    address: z.string().trim().optional().or(z.literal("")),
+    addressNumber: z.string().trim().optional().or(z.literal("")),
+    addressComplement: z.string().trim().optional().or(z.literal("")),
+    province: z.string().trim().optional().or(z.literal("")),
     segment: z.string().trim().optional().or(z.literal("")),
     ownerName: z.string().trim().min(2, "Informe seu nome."),
     email: z.string().email("Informe um e-mail valido.").trim().toLowerCase(),
     password: strongPasswordSchema,
     confirmPassword: z.string().min(1, "Confirme a senha."),
+    /** Vazio quando a pessoa cria conta sem assinar agora. */
+    plan: z.enum(subscriptionPlans).optional().or(z.literal("")),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "As senhas nao conferem.",
     path: ["confirmPassword"],
+  })
+  .superRefine((data, ctx) => {
+    if (!data.plan) {
+      return;
+    }
+
+    for (const campo of camposDeCobranca) {
+      if (!data[campo]) {
+        ctx.addIssue({
+          code: "custom",
+          path: [campo],
+          message: "Obrigatorio para assinar um plano.",
+        });
+      }
+    }
   });
 
 export const departmentSchema = z.object({

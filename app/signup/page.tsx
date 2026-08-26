@@ -6,18 +6,20 @@ import { signupAction } from "@/features/auth/actions";
 import { getCurrentUser } from "@/lib/auth/session";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { Input, Label } from "@/components/ui/fields";
+import { planDetails, planOrder } from "@/lib/plans";
 
 const errorMessages: Record<string, string> = {
   dados: "Revise os dados. A senha deve ter 10 caracteres, letra maiuscula, minuscula e numero.",
   email: "Este e-mail ja esta cadastrado. Entre na conta ou use outro e-mail.",
   rate: "Muitas tentativas. Aguarde alguns minutos e tente novamente.",
   documento: "Este CNPJ ou CPF ja esta cadastrado em outra conta.",
+  dadosCobranca: "Complete os dados de cobranca para assinar o plano.",
 };
 
 export default async function SignupPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; plano?: string }>;
 }) {
   const user = await getCurrentUser();
 
@@ -27,6 +29,10 @@ export default async function SignupPage({
 
   const params = await searchParams;
   const error = params.error ? errorMessages[params.error] : null;
+  // Plano escolhido na landing. Sem ele o cadastro segue como antes, so criando
+  // a conta — quem quer conhecer o produto nao e obrigado a pagar na porta.
+  const planCode = planOrder.find((code) => code === params.plano) ?? null;
+  const plan = planCode ? planDetails[planCode] : null;
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-100 px-4 py-10">
       <div className="grid w-full max-w-5xl overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm lg:grid-cols-[1fr_440px]">
@@ -53,12 +59,26 @@ export default async function SignupPage({
         <section className="p-8">
           <div className="mb-8 flex items-center gap-2 text-sm font-medium text-slate-500">
             <Building2 className="h-4 w-4" aria-hidden="true" />
-            Cadastro sem cobranca automatica
+            {plan ? "Criar conta e assinar" : "Cadastro sem cobranca automatica"}
           </div>
-          <h2 className="text-2xl font-semibold text-slate-950">Criar conta</h2>
-          <p className="mt-2 text-sm leading-6 text-slate-600">
-            Os dados cadastrados ficam salvos por empresa. As funcionalidades sao liberadas somente apos uma assinatura ativa.
-          </p>
+          <h2 className="text-2xl font-semibold text-slate-950">
+            {plan ? `Assinar Plano ${plan.name}` : "Criar conta"}
+          </h2>
+          {plan ? (
+            <div className="mt-3 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm leading-6 text-emerald-900">
+              <strong>
+                {plan.price}/mes
+              </strong>{" "}
+              — {plan.includedUsers} usuarios incluidos. Ao concluir, voce vai direto para o pagamento.{" "}
+              <Link href="/signup" className="font-semibold underline">
+                Prefiro so criar a conta
+              </Link>
+            </div>
+          ) : (
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              Os dados cadastrados ficam salvos por empresa. As funcionalidades sao liberadas somente apos uma assinatura ativa.
+            </p>
+          )}
 
           <form action={signupAction} className="mt-8 space-y-4">
             <div className="space-y-1.5">
@@ -73,6 +93,39 @@ export default async function SignupPage({
               <Label>Segmento</Label>
               <Input name="segment" placeholder="Ex.: varejo, clinica, servicos" />
             </div>
+            {plan ? (
+              <>
+                <input type="hidden" name="plan" value={plan.code} />
+                <div className="space-y-1.5">
+                  <Label>Telefone</Label>
+                  <Input name="phone" inputMode="tel" autoComplete="tel" placeholder="(11) 98765-4321" required />
+                </div>
+                <div className="grid gap-4 sm:grid-cols-[1fr_1fr]">
+                  <div className="space-y-1.5">
+                    <Label>CEP</Label>
+                    <Input name="postalCode" inputMode="numeric" autoComplete="postal-code" placeholder="01310-100" required />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Numero</Label>
+                    <Input name="addressNumber" placeholder="1000" required />
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Logradouro</Label>
+                  <Input name="address" autoComplete="address-line1" placeholder="Avenida Paulista" required />
+                </div>
+                <div className="grid gap-4 sm:grid-cols-[1fr_1fr]">
+                  <div className="space-y-1.5">
+                    <Label>Bairro</Label>
+                    <Input name="province" placeholder="Bela Vista" required />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Complemento</Label>
+                    <Input name="addressComplement" placeholder="Sala 12 (opcional)" />
+                  </div>
+                </div>
+              </>
+            ) : null}
             <div className="space-y-1.5">
               <Label>Seu nome</Label>
               <Input name="ownerName" placeholder="Nome completo" required minLength={2} />
@@ -92,10 +145,10 @@ export default async function SignupPage({
             {error ? <p className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</p> : null}
             <SubmitButton
               className="w-full"
-              pendingLabel="Criando sua conta..."
+              pendingLabel={plan ? "Levando ao pagamento..." : "Criando sua conta..."}
               icon={<ArrowRight className="h-4 w-4" aria-hidden="true" />}
             >
-              Criar conta e entrar
+              {plan ? "Criar conta e pagar" : "Criar conta e entrar"}
             </SubmitButton>
           </form>
 
