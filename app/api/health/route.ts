@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/client";
+import { getAsaasConfig, isAsaasConfigured } from "@/lib/env";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -24,6 +25,32 @@ function deployedCommit() {
   return sha ? sha.slice(0, 7) : "desconhecido";
 }
 
+/**
+ * Estado da configuracao de cobranca, sem expor segredo nenhum: apenas se ha
+ * chave, para qual ambiente ela aponta e se as variaveis concordam entre si.
+ *
+ * Sem isto, descobrir que a chave e o ambiente estao desalinhados exigia clicar
+ * em comprar um plano e ler o erro — dentro da area logada, onde nao da para
+ * verificar de fora.
+ */
+function billingStatus() {
+  if (!isAsaasConfigured()) {
+    return { configured: false as const };
+  }
+
+  try {
+    const config = getAsaasConfig();
+
+    return { configured: true as const, environment: config.environment, consistent: true as const };
+  } catch (error) {
+    return {
+      configured: true as const,
+      consistent: false as const,
+      problem: error instanceof Error ? error.message : "configuracao invalida",
+    };
+  }
+}
+
 export async function GET() {
   const startedAt = performance.now();
 
@@ -35,6 +62,7 @@ export async function GET() {
         status: "ok",
         database: "reachable",
         commit: deployedCommit(),
+        billing: billingStatus(),
         responseTimeMs: Math.round(performance.now() - startedAt),
       },
       { headers: noStore },
