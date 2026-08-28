@@ -10,7 +10,11 @@ const GRANTING_EVENTS = new Set(["PAYMENT_CONFIRMED", "PAYMENT_RECEIVED"]);
 const REVOKING_EVENTS = new Set(["PAYMENT_REFUNDED", "PAYMENT_CHARGEBACK_REQUESTED"]);
 
 export type ProcessOutcome =
-  | { handled: true; action: "granted" | "past_due" | "revoked" | "invoice_opened"; companyId: string }
+  | {
+      handled: true;
+      action: "granted" | "past_due" | "revoked" | "invoice_opened" | "trial_started";
+      companyId: string;
+    }
   | { handled: false; reason: string };
 
 /**
@@ -159,6 +163,56 @@ export async function applyPaymentEvent(
   }
 
   if (event.event === "PAYMENT_CREATED") {
+    const vencimento = new Date(payment.dueDate);
+    const venceNoFuturo = !Number.isNaN(vencimento.getTime()) && vencimento.getTime() > Date.now();
+
+    // Primeira cobranca da empresa, datada para frente: e um teste gratuito. O
+    // cartao ja foi validado no checkout, nada foi cobrado ainda, e o acesso
+    // vale ate a data em que a cobranca vence.
+    //
+    // Numa renovacao comum tambem chega PAYMENT_CREATED com vencimento futuro,
+    // mas ai ja existe assinatura — por isso a condicao exige que nao exista.
+    if (!existing && venceNoFuturo) {
+      const trial = await tx.companySubscription.create({
+        data: {
+          companyId: company.id,
+          planId: plan.id,
+          provider: ASAAS_PROVIDER,
+          externalId: payment.subscription ?? null,
+          status: "TRIALING",
+          currentPeriodStart: new Date(),
+          currentPeriodEnd: vencimento,
+          trialEndsAt: vencimento,
+        },
+      });
+
+      await tx.company.update({
+        where: { id: company.id },
+        data: { plan: planCode, pendingPlanCode: null },
+      });
+
+      await tx.invoice.upsert({
+        where: { externalId: payment.id },
+        create: {
+          companyId: company.id,
+          subscriptionId: trial.id,
+          number: payment.id,
+          provider: ASAAS_PROVIDER,
+          externalId: payment.id,
+          checkoutUrl: payment.invoiceUrl ?? null,
+          status: "OPEN",
+          amountCents: Math.round(payment.value * 100),
+          dueDate: vencimento,
+          periodStart: new Date(),
+          periodEnd: vencimento,
+          description: `Plano ${planCode} - teste gratuito`,
+        },
+        update: {},
+      });
+
+      return { handled: true, action: "trial_started", companyId: company.id };
+    }
+
     await tx.invoice.upsert({
       where: { externalId: payment.id },
       create: {

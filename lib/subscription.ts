@@ -12,6 +12,9 @@ export const REMINDER_WINDOW_DAYS = 5;
 /** Quantos dias de atraso sao tolerados antes de suspender o acesso. */
 export const GRACE_PERIOD_DAYS = 2;
 
+/** Duracao do teste gratuito. A primeira cobranca cai no fim dele. */
+export const TRIAL_DAYS = 30;
+
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 export type SubscriptionPhase =
@@ -28,6 +31,8 @@ export type SubscriptionPhase =
 
 export type SubscriptionWindow = {
   phase: SubscriptionPhase;
+  /** Periodo de teste gratuito, ainda sem nenhuma cobranca paga. */
+  isTrial: boolean;
   endsAt: Date | null;
   /** Dias inteiros ate o vencimento. Null quando ja venceu ou nao ha assinatura. */
   daysRemaining: number | null;
@@ -41,6 +46,7 @@ export type SubscriptionWindow = {
 
 type SubscriptionShape = {
   currentPeriodEnd: Date | string;
+  status?: string;
   plan: {
     code: SubscriptionPlan;
   };
@@ -52,6 +58,7 @@ type ActivePlanCompany = {
 
 const noSubscription: SubscriptionWindow = {
   phase: "none",
+  isTrial: false,
   endsAt: null,
   daysRemaining: null,
   daysOverdue: null,
@@ -76,6 +83,7 @@ export function getSubscriptionWindow(company: ActivePlanCompany, now: Date = ne
     return noSubscription;
   }
 
+  const isTrial = subscription.status === "TRIALING";
   const diffMs = endsAt.getTime() - now.getTime();
 
   if (diffMs > 0) {
@@ -84,6 +92,7 @@ export function getSubscriptionWindow(company: ActivePlanCompany, now: Date = ne
 
     return {
       phase: daysRemaining <= REMINDER_WINDOW_DAYS ? "expiring" : "active",
+      isTrial,
       endsAt,
       daysRemaining,
       daysOverdue: null,
@@ -98,6 +107,7 @@ export function getSubscriptionWindow(company: ActivePlanCompany, now: Date = ne
 
   return {
     phase: suspended ? "suspended" : "grace",
+    isTrial,
     endsAt,
     daysRemaining: null,
     daysOverdue,
@@ -158,6 +168,15 @@ export type ReminderContent = {
 export function buildReminderContent(window: SubscriptionWindow, planName: string): ReminderContent | null {
   if (!window.shouldRemind) {
     return null;
+  }
+
+  if (window.isTrial && window.daysRemaining !== null) {
+    return {
+      title: `Seu teste gratuito termina em ${pluralizeDays(window.daysRemaining)}`,
+      message:
+        `Depois disso a primeira cobranca do Plano ${planName} entra automaticamente e o acesso continua. ` +
+        "Se preferir nao seguir, cancele antes do fim do teste.",
+    };
   }
 
   if (window.phase === "expiring" && window.daysRemaining !== null) {

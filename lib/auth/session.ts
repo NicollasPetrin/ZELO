@@ -132,7 +132,7 @@ export const getCurrentUser = cache(async function getCurrentUser() {
               subscriptions: {
                 where: {
                   status: {
-                    in: ["ACTIVE", "PAST_DUE"],
+                    in: ["TRIALING", "ACTIVE", "PAST_DUE"],
                   },
                   // Assinaturas vencidas ha pouco continuam sendo carregadas: e
                   // getSubscriptionWindow quem decide se ainda ha acesso, para que

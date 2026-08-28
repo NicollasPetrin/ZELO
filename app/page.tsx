@@ -235,14 +235,20 @@ export default function Home() {
                   ))}
                 </ul>
                 <Link
-                  href={`/signup?plano=${plan.code}`}
+                  href={`/signup?plano=${plan.code}&teste=1`}
                   className={
                     plan.highlight
                       ? buttonClassName("light") + " mt-7 w-full"
                       : buttonClassName("secondary") + " mt-7 w-full"
                   }
                 >
-                  Assinar Plano {plan.name}
+                  Testar 30 dias gratis
+                </Link>
+                <Link
+                  href={`/signup?plano=${plan.code}`}
+                  className={`mt-2 block text-center text-xs ${plan.highlight ? "text-slate-300 hover:text-white" : "text-slate-500 hover:text-slate-800"}`}
+                >
+                  Assinar direto, sem teste
                 </Link>
               </article>
             ))}

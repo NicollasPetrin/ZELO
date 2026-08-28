@@ -7,6 +7,7 @@ import { createCheckout } from "@/lib/asaas/client";
 import { getAppUrl } from "@/lib/env";
 import { parsePhone } from "@/lib/phone";
 import { planDetails } from "@/lib/plans";
+import { TRIAL_DAYS } from "@/lib/subscription";
 import { createSession, deleteSession, getCurrentUser } from "@/lib/auth/session";
 import { hashPassword, needsRehash, verifyPassword } from "@/lib/auth/password";
 import { prisma } from "@/lib/db/client";
@@ -99,6 +100,7 @@ export async function signupAction(formData: FormData) {
     password: formData.get("password"),
     confirmPassword: formData.get("confirmPassword"),
     plan: formData.get("plan"),
+    trial: formData.get("trial"),
   });
 
   if (!parsed.success) {
@@ -221,7 +223,7 @@ export async function signupAction(formData: FormData) {
   let checkoutUrl: string | null = null;
 
   try {
-    checkoutUrl = await startSignupCheckout(userId, parsed.data.plan);
+    checkoutUrl = await startSignupCheckout(userId, parsed.data.plan, parsed.data.trial === "1");
   } catch (error) {
     console.error("[signup] conta criada, mas o checkout falhou:", error);
   }
@@ -234,7 +236,7 @@ export async function signupAction(formData: FormData) {
 }
 
 /** Cria o cliente na processadora e devolve o link de pagamento do plano. */
-async function startSignupCheckout(userId: string, plan: SubscriptionPlan) {
+async function startSignupCheckout(userId: string, plan: SubscriptionPlan, comTeste: boolean) {
   const user = await prisma.user.findUniqueOrThrow({
     where: { id: userId },
     include: { company: true },
@@ -271,14 +273,21 @@ async function startSignupCheckout(userId: string, plan: SubscriptionPlan) {
     items: [
       {
         name: `Plano ${detalhes.name}`,
-        description: "Assinatura mensal da Zelo.",
+        description: comTeste
+          ? `Assinatura mensal da Zelo. Primeiros ${TRIAL_DAYS} dias gratuitos.`
+          : "Assinatura mensal da Zelo.",
         quantity: 1,
         value: detalhes.priceCents / 100,
       },
     ],
     subscription: {
       cycle: "MONTHLY",
-      nextDueDate: new Date().toISOString().slice(0, 10),
+      // No teste gratuito o cartao e validado agora e a primeira cobranca so cai
+      // no fim do periodo. O Asaas gera essa cobranca futura na hora, e e o
+      // evento dela que libera o acesso do teste.
+      nextDueDate: new Date(Date.now() + (comTeste ? TRIAL_DAYS : 0) * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .slice(0, 10),
     },
     callback: {
       successUrl: retorno("confirmado"),

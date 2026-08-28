@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildReminderContent,
   GRACE_PERIOD_DAYS,
   REMINDER_WINDOW_DAYS,
   assertCompanyHasActivePlan,
@@ -134,5 +135,59 @@ describe("assertCompanyHasActivePlan", () => {
 
   it("falls back to the missing-plan message when there is no subscription", () => {
     expect(() => assertCompanyHasActivePlan({ subscriptions: [] }, now)).toThrowError(/nao possui assinatura/i);
+  });
+});
+
+describe("teste gratuito", () => {
+  function emTeste(diasRestantes: number) {
+    return {
+      subscriptions: [
+        {
+          currentPeriodEnd: new Date(now.getTime() + diasRestantes * DAY_MS),
+          status: "TRIALING",
+          plan: { code: "MANAGEMENT" as const },
+        },
+      ],
+    };
+  }
+
+  it("marks the window as a trial", () => {
+    const window = getSubscriptionWindow(emTeste(30), now);
+
+    expect(window.isTrial).toBe(true);
+    expect(window.hasAccess).toBe(true);
+    expect(window.daysRemaining).toBe(30);
+  });
+
+  it("unlocks the chosen plan during the trial", () => {
+    expect(getActivePlanCode(emTeste(30), now)).toBe("MANAGEMENT");
+  });
+
+  it("reminds near the end, like any other subscription", () => {
+    const window = getSubscriptionWindow(emTeste(3), now);
+
+    expect(window.shouldRemind).toBe(true);
+    expect(window.isTrial).toBe(true);
+  });
+
+  it("says the trial is ending instead of asking for a late payment", () => {
+    const conteudo = buildReminderContent(getSubscriptionWindow(emTeste(3), now), "Gestao");
+
+    expect(conteudo?.title).toMatch(/teste gratuito/i);
+    expect(conteudo?.message).not.toMatch(/atrasad/i);
+  });
+
+  it("is not a trial when the subscription is already paid", () => {
+    const window = getSubscriptionWindow(
+      {
+        subscriptions: [
+          { currentPeriodEnd: new Date(now.getTime() + 30 * DAY_MS), status: "ACTIVE", plan: { code: "BASIC" } },
+        ],
+      },
+      now,
+    );
+
+    expect(window.isTrial).toBe(false);
+    expect(buildReminderContent(getSubscriptionWindow({ subscriptions: [{ currentPeriodEnd: new Date(now.getTime() + 3 * DAY_MS), status: "ACTIVE", plan: { code: "BASIC" } }] }, now), "Basico")?.title).toMatch(/vence em/i);
   });
 });

@@ -50,6 +50,19 @@ function buildEstilo(window: SubscriptionWindow): Estilo {
     };
   }
 
+  if (window.isTrial && window.daysRemaining !== null) {
+    const acabando = window.daysRemaining <= 5;
+
+    return {
+      container: acabando ? "border-amber-200 bg-amber-50" : "border-emerald-200 bg-emerald-50",
+      destaque: acabando ? "text-amber-900" : "text-emerald-800",
+      icone: acabando ? AlertTriangle : CircleCheck,
+      rotulo: "Teste gratuito",
+      titulo: `${pluralizeDays(window.daysRemaining)} restantes`,
+      detalhe: "Ao terminar, a primeira cobranca entra automaticamente e o acesso continua.",
+    };
+  }
+
   if (window.phase === "expiring" && window.daysRemaining !== null) {
     return {
       container: "border-amber-200 bg-amber-50",

@@ -74,6 +74,8 @@ export const signupSchema = z
     confirmPassword: z.string().min(1, "Confirme a senha."),
     /** Vazio quando a pessoa cria conta sem assinar agora. */
     plan: z.enum(subscriptionPlans).optional().or(z.literal("")),
+    /** "1" quando a assinatura comeca com o mes de teste. */
+    trial: z.literal("1").optional().or(z.literal("")),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "As senhas nao conferem.",
