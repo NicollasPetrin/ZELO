@@ -87,7 +87,11 @@ export default async function SignupPage({
             </div>
           ) : (
             <p className="mt-2 text-sm leading-6 text-slate-600">
-              Os dados cadastrados ficam salvos por empresa. As funcionalidades sao liberadas somente apos uma assinatura ativa.
+              Os dados cadastrados ficam salvos por empresa. As funcionalidades sao liberadas somente apos uma assinatura
+              ativa.{" "}
+              <Link href="/#planos" className="font-semibold text-emerald-700 underline hover:text-emerald-800">
+                Ver planos e testar 30 dias gratis
+              </Link>
             </p>
           )}
 

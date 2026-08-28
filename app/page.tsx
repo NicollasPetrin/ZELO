@@ -48,6 +48,11 @@ const features = [
 ];
 
 const plans = planOrder.map((plan) => planDetails[plan]);
+// Plano de entrada dos botoes principais. Sem plano na URL, o cadastro mostra o
+// formulario curto e a pessoa nao chega ao pagamento — era por isso que os CTAs
+// levavam a uma tela sem saida.
+const planoDestaque = plans.find((plan) => plan.highlight) ?? plans[0];
+const inicioDoTeste = `/signup?plano=${planoDestaque.code}&teste=1`;
 
 export default function Home() {
   return (
@@ -103,8 +108,8 @@ export default function Home() {
               Organize tarefas, prazos, setores, metas e visibilidade da equipe em uma plataforma simples, profissional e feita para donos e gerentes de microempresa.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link href="/signup" className={buttonClassName("light")}>
-                Criar conta
+              <Link href={inicioDoTeste} className={buttonClassName("light")}>
+                Testar 30 dias gratis
                 <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </Link>
               <a href="#planos" className={buttonClassName("secondary") + " border-white/25 bg-white/10 text-white hover:bg-white/15"}>
@@ -290,8 +295,8 @@ export default function Home() {
             <h2 className="text-2xl font-semibold">Comece a organizar sua equipe.</h2>
             <p className="mt-2 text-sm leading-6 text-slate-300">Crie uma conta, cadastre sua empresa e mantenha tarefas, metas e setores salvos em um unico lugar.</p>
           </div>
-          <Link href="/signup" className={buttonClassName("light")}>
-            Criar conta
+          <Link href={inicioDoTeste} className={buttonClassName("light")}>
+            Testar 30 dias gratis
             <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </Link>
         </div>
