@@ -113,9 +113,45 @@ export function isAsaasConfigured() {
   return Boolean(env.ASAAS_API_KEY);
 }
 
+/**
+ * Ambiente que a propria chave declara: as de homologacao comecam com
+ * $aact_hmlg_ e as de producao com $aact_prod_.
+ *
+ * Devolve null para formatos que nao reconhecemos, para que uma mudanca no
+ * padrao do Asaas nao passe a bloquear cobranca que estava funcionando.
+ */
+function environmentFromKey(apiKey: string): "sandbox" | "production" | null {
+  if (apiKey.startsWith("$aact_hmlg_")) {
+    return "sandbox";
+  }
+
+  if (apiKey.startsWith("$aact_prod_")) {
+    return "production";
+  }
+
+  return null;
+}
+
 export function getAsaasConfig(): AsaasConfig {
   if (!env.ASAAS_API_KEY) {
     throw new Error(ASAAS_NOT_CONFIGURED_MESSAGE);
+  }
+
+  const doTipoDaChave = environmentFromKey(env.ASAAS_API_KEY);
+
+  // Trocar a chave e esquecer o ambiente (ou o contrario) faz a aplicacao
+  // chamar a URL errada, e o Asaas responde apenas "a chave nao pertence a este
+  // ambiente" — sem dizer qual das duas variaveis corrigir. Preferimos falhar
+  // aqui, dizendo o que ajustar.
+  //
+  // Nao adotamos o ambiente da chave silenciosamente: uma chave de producao com
+  // ASAAS_ENVIRONMENT=sandbox passaria a cobrar de verdade justamente de quem
+  // acreditava estar testando.
+  if (doTipoDaChave && doTipoDaChave !== env.ASAAS_ENVIRONMENT) {
+    throw new Error(
+      `A ASAAS_API_KEY e do ambiente "${doTipoDaChave}", mas ASAAS_ENVIRONMENT esta como ` +
+        `"${env.ASAAS_ENVIRONMENT}". Ajuste uma das duas para que fiquem iguais.`,
+    );
   }
 
   return {
