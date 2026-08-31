@@ -132,78 +132,87 @@ export function ProductCarousel() {
         </div>
       </div>
 
-      {shots.map((shot, index) => (
-        <div
-          key={shot.id}
-          role="tabpanel"
-          id={`demo-panel-${shot.id}`}
-          aria-labelledby={`demo-tab-${shot.id}`}
-          hidden={index !== active}
-          className="mt-8"
-        >
-          {/* A chave inclui o indice ativo para o bloco remontar a cada troca e
-              a animacao de entrada rodar de novo. */}
-          <figure
-            key={`${shot.id}-${active}`}
-            className="demo-entra grid items-center gap-8 lg:grid-cols-12 lg:gap-10"
-          >
-            {/* Texto ao lado da captura, e nao abaixo dela: empilhado, o bloco
-                ficava com quase o dobro da altura para o mesmo conteudo. */}
-            <figcaption className="lg:col-span-4">
-              <p className="text-sm font-semibold uppercase tracking-[0.08em] text-emerald-400">{shot.tab}</p>
-              <p className="mt-2 text-2xl font-semibold leading-tight text-white">{shot.title}</p>
-              <p className="mt-3 text-base leading-7 text-slate-300">{shot.description}</p>
+      <div className="mt-8 grid items-center gap-8 lg:grid-cols-2 lg:gap-12">
+        {/* Texto: so o da tela ativa aparece, com entrada suave. Fica fora do
+            trilho porque deslizar texto junto com a imagem embaralha a leitura. */}
+        <div key={`texto-${active}`} className="demo-entra">
+          <p className="text-sm font-semibold uppercase tracking-[0.08em] text-emerald-400">{shots[active].tab}</p>
+          <p className="mt-2 text-2xl font-semibold leading-tight text-white">{shots[active].title}</p>
+          <p className="mt-3 text-base leading-7 text-slate-300">{shots[active].description}</p>
 
-              <ul className="mt-5 space-y-2.5">
-                {shot.highlights.map((item) => (
-                  <li key={item} className="flex items-start gap-2.5 text-sm leading-6 text-slate-200">
-                    <Check className="mt-1 h-4 w-4 shrink-0 text-emerald-400" aria-hidden="true" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </figcaption>
-
-            <div className="relative lg:col-span-8">
-              {/* Brilho por tras da moldura: sem ele a captura clara fica colada
-                  no fundo escuro, como se estivesse recortada e solta. */}
-              <div
-                className="pointer-events-none absolute -inset-6 rounded-full bg-emerald-500/10 blur-3xl"
-                aria-hidden="true"
-              />
-
-              {/* Moldura de janela com borda em degrade: a borda chapada deixava
-                  a peca com cara de caixa. O padding de 1px revela a borda. */}
-              <div className="relative rounded-2xl bg-gradient-to-b from-white/20 via-white/10 to-transparent p-px shadow-[0_40px_90px_rgba(2,6,23,0.7)]">
-                <div className="rounded-2xl bg-slate-950/80 p-1.5 backdrop-blur-sm">
-                  <div className="flex items-center gap-2 px-2.5 py-2">
-                    <span className="flex gap-1.5" aria-hidden="true">
-                      <span className="h-2.5 w-2.5 rounded-full bg-white/20" />
-                      <span className="h-2.5 w-2.5 rounded-full bg-white/20" />
-                      <span className="h-2.5 w-2.5 rounded-full bg-white/20" />
-                    </span>
-                    <span className="ml-1 truncate text-xs text-slate-400">
-                      usezelogestao.com.br
-                      <span className="text-slate-500">/{shot.id}</span>
-                    </span>
-                  </div>
-
-                  <div className="overflow-hidden rounded-xl border border-white/10 bg-slate-900">
-                    <Image
-                      src={shot.src}
-                      alt={shot.alt}
-                      width={1672}
-                      height={941}
-                      className="h-auto w-full"
-                      sizes="(min-width: 1024px) 800px, 100vw"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </figure>
+          <ul className="mt-5 space-y-2.5">
+            {shots[active].highlights.map((item) => (
+              <li key={item} className="flex items-start gap-2.5 text-sm leading-6 text-slate-200">
+                <Check className="mt-1 h-4 w-4 shrink-0 text-emerald-400" aria-hidden="true" />
+                {item}
+              </li>
+            ))}
+          </ul>
         </div>
-      ))}
+
+        {/* min-w-0 e obrigatorio: item de grid nao encolhe abaixo da largura
+            natural do conteudo, e o trilho com tres telas lado a lado media o
+            triplo da tela. Sem isto a captura aparecia cortada no celular. */}
+        <div className="relative min-w-0">
+          {/* Brilho por tras da moldura: sem ele a captura clara fica colada no
+              fundo escuro, como se estivesse recortada e solta. */}
+          <div
+            className="pointer-events-none absolute -inset-6 rounded-full bg-emerald-500/10 blur-3xl"
+            aria-hidden="true"
+          />
+
+          {/* Trilho: as telas ficam lado a lado e o conjunto desliza. A troca
+              deixa de ser um corte seco e passa a mostrar de onde veio. */}
+          <div className="relative overflow-hidden rounded-2xl">
+            <div
+              className="flex transition-transform duration-500 ease-out motion-reduce:transition-none"
+              style={{ transform: `translateX(-${active * 100}%)` }}
+            >
+              {shots.map((shot, index) => (
+                <figure
+                  key={shot.id}
+                  role="tabpanel"
+                  id={`demo-panel-${shot.id}`}
+                  aria-labelledby={`demo-tab-${shot.id}`}
+                  // As telas fora de foco continuam no trilho para poderem
+                  // deslizar, mas saem da leitura e da navegacao por teclado.
+                  aria-hidden={index !== active}
+                  inert={index !== active}
+                  className="w-full shrink-0"
+                >
+                  <div className="rounded-2xl bg-gradient-to-b from-white/20 via-white/10 to-transparent p-px shadow-[0_30px_70px_rgba(2,6,23,0.65)]">
+                    <div className="rounded-2xl bg-slate-950/80 p-1.5 backdrop-blur-sm">
+                      <div className="flex items-center gap-2 px-2.5 py-1.5">
+                        <span className="flex gap-1.5" aria-hidden="true">
+                          <span className="h-2 w-2 rounded-full bg-white/20" />
+                          <span className="h-2 w-2 rounded-full bg-white/20" />
+                          <span className="h-2 w-2 rounded-full bg-white/20" />
+                        </span>
+                        <span className="ml-1 truncate text-[11px] text-slate-400">
+                          usezelogestao.com.br
+                          <span className="text-slate-500">/{shot.id}</span>
+                        </span>
+                      </div>
+
+                      <div className="overflow-hidden rounded-xl border border-white/10 bg-slate-900">
+                        <Image
+                          src={shot.src}
+                          alt={shot.alt}
+                          width={1672}
+                          height={941}
+                          className="h-auto w-full"
+                          sizes="(min-width: 1024px) 560px, 100vw"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <figcaption className="sr-only">{shot.title}</figcaption>
+                </figure>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
