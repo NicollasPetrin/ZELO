@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import Image from "next/image";
-import { BarChart3, ChevronLeft, ChevronRight, LayoutDashboard, ListChecks } from "lucide-react";
+import { BarChart3, Check, ChevronLeft, ChevronRight, LayoutDashboard, ListChecks } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 /**
@@ -143,67 +143,64 @@ export function ProductCarousel() {
         >
           {/* A chave inclui o indice ativo para o bloco remontar a cada troca e
               a animacao de entrada rodar de novo. */}
-          <figure key={`${shot.id}-${active}`} className="demo-entra relative">
-            {/* Brilho por tras da moldura: sem ele a captura clara fica colada
-                no fundo escuro, como se estivesse recortada e solta. */}
-            <div
-              className="pointer-events-none absolute -inset-x-8 -top-6 bottom-1/3 rounded-full bg-emerald-500/10 blur-3xl"
-              aria-hidden="true"
-            />
+          <figure
+            key={`${shot.id}-${active}`}
+            className="demo-entra grid items-center gap-8 lg:grid-cols-12 lg:gap-10"
+          >
+            {/* Texto ao lado da captura, e nao abaixo dela: empilhado, o bloco
+                ficava com quase o dobro da altura para o mesmo conteudo. */}
+            <figcaption className="lg:col-span-4">
+              <p className="text-sm font-semibold uppercase tracking-[0.08em] text-emerald-400">{shot.tab}</p>
+              <p className="mt-2 text-2xl font-semibold leading-tight text-white">{shot.title}</p>
+              <p className="mt-3 text-base leading-7 text-slate-300">{shot.description}</p>
 
-            {/* Moldura de janela com borda em degrade: a borda chapada deixava
-                a peca com cara de caixa, e o degrade sugere profundidade sem
-                pesar. O padding de 1px e o que revela a borda. */}
-            <div className="relative rounded-2xl bg-gradient-to-b from-white/20 via-white/10 to-transparent p-px shadow-[0_40px_90px_rgba(2,6,23,0.7)]">
-            <div className="relative rounded-2xl bg-slate-950/80 p-1.5 backdrop-blur-sm">
-              <div className="flex items-center gap-2 px-2.5 py-2">
-                <span className="flex gap-1.5" aria-hidden="true">
-                  <span className="h-2.5 w-2.5 rounded-full bg-white/20" />
-                  <span className="h-2.5 w-2.5 rounded-full bg-white/20" />
-                  <span className="h-2.5 w-2.5 rounded-full bg-white/20" />
-                </span>
-                <span className="ml-1 truncate text-xs text-slate-400">
-                  usezelogestao.com.br
-                  <span className="text-slate-500">/{shot.id}</span>
-                </span>
-              </div>
-
-              <div className="overflow-hidden rounded-xl border border-white/10 bg-slate-900">
-                <Image
-                  src={shot.src}
-                  alt={shot.alt}
-                  width={1672}
-                  height={941}
-                  className="h-auto w-full"
-                  sizes="(min-width: 1024px) 1216px, 100vw"
-                />
-              </div>
-            </div>
-            </div>
-
-            {/* Duas colunas: o texto para de ser um paragrafo solto sob a imagem
-                e passa a dividir espaco com o que a tela entrega. */}
-            <figcaption className="relative mt-8 grid gap-8 border-t border-white/10 pt-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
-              <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.08em] text-emerald-400">{shot.tab}</p>
-                <p className="mt-2 text-2xl font-semibold leading-tight text-white">{shot.title}</p>
-                <p className="mt-3 text-base leading-7 text-slate-300">{shot.description}</p>
-              </div>
-
-              <ul className="grid gap-3 sm:grid-cols-3 lg:gap-4">
-                {shot.highlights.map((item, posicao) => (
-                  <li
-                    key={item}
-                    className="rounded-lg border border-white/10 bg-white/[0.03] p-4 transition-colors hover:border-emerald-400/30 hover:bg-white/[0.06]"
-                  >
-                    <span className="text-xs font-semibold tabular-nums text-emerald-400">
-                      {String(posicao + 1).padStart(2, "0")}
-                    </span>
-                    <p className="mt-2 text-sm font-medium leading-6 text-slate-100">{item}</p>
+              <ul className="mt-5 space-y-2.5">
+                {shot.highlights.map((item) => (
+                  <li key={item} className="flex items-start gap-2.5 text-sm leading-6 text-slate-200">
+                    <Check className="mt-1 h-4 w-4 shrink-0 text-emerald-400" aria-hidden="true" />
+                    {item}
                   </li>
                 ))}
               </ul>
             </figcaption>
+
+            <div className="relative lg:col-span-8">
+              {/* Brilho por tras da moldura: sem ele a captura clara fica colada
+                  no fundo escuro, como se estivesse recortada e solta. */}
+              <div
+                className="pointer-events-none absolute -inset-6 rounded-full bg-emerald-500/10 blur-3xl"
+                aria-hidden="true"
+              />
+
+              {/* Moldura de janela com borda em degrade: a borda chapada deixava
+                  a peca com cara de caixa. O padding de 1px revela a borda. */}
+              <div className="relative rounded-2xl bg-gradient-to-b from-white/20 via-white/10 to-transparent p-px shadow-[0_40px_90px_rgba(2,6,23,0.7)]">
+                <div className="rounded-2xl bg-slate-950/80 p-1.5 backdrop-blur-sm">
+                  <div className="flex items-center gap-2 px-2.5 py-2">
+                    <span className="flex gap-1.5" aria-hidden="true">
+                      <span className="h-2.5 w-2.5 rounded-full bg-white/20" />
+                      <span className="h-2.5 w-2.5 rounded-full bg-white/20" />
+                      <span className="h-2.5 w-2.5 rounded-full bg-white/20" />
+                    </span>
+                    <span className="ml-1 truncate text-xs text-slate-400">
+                      usezelogestao.com.br
+                      <span className="text-slate-500">/{shot.id}</span>
+                    </span>
+                  </div>
+
+                  <div className="overflow-hidden rounded-xl border border-white/10 bg-slate-900">
+                    <Image
+                      src={shot.src}
+                      alt={shot.alt}
+                      width={1672}
+                      height={941}
+                      className="h-auto w-full"
+                      sizes="(min-width: 1024px) 800px, 100vw"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
           </figure>
         </div>
       ))}
