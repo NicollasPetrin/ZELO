@@ -39,3 +39,28 @@ textarea {
 summary {
   cursor: pointer;
 }
+
+/*
+  Troca de tela na demonstracao. Sem transicao a imagem simplesmente pisca para
+  outra, e o olho perde a relacao entre a aba clicada e o que mudou.
+*/
+@keyframes demo-entra {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.demo-entra {
+  animation: demo-entra 340ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .demo-entra {
+    animation: none;
+  }
+}

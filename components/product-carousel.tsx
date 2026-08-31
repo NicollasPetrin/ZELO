@@ -19,6 +19,7 @@ const shots = [
     title: "Painel do gestor",
     description:
       "Pendentes, atrasadas, concluidas e urgencias em uma unica tela, com proximos prazos, metas e desempenho por equipe e por setor.",
+    highlights: ["Contadores por status", "Proximos prazos a vencer", "Desempenho por setor"],
   },
   {
     id: "tarefas",
@@ -29,6 +30,7 @@ const shots = [
     title: "Tarefas da equipe",
     description:
       "Filtros por status, prioridade, setor e responsavel, com criacao de tarefa sem precisar sair da lista.",
+    highlights: ["Filtros combinados", "Nova tarefa sem sair da lista", "Responsavel e prazo visiveis"],
   },
   {
     id: "relatorios",
@@ -39,6 +41,7 @@ const shots = [
     title: "Relatorios e indicadores",
     description:
       "Saude operacional, distribuicao de status, desempenho por setor e metas em risco para a leitura executiva.",
+    highlights: ["Score de saude operacional", "Distribuicao de status", "Metas em risco"],
   },
 ];
 
@@ -138,7 +141,9 @@ export function ProductCarousel() {
           hidden={index !== active}
           className="mt-8"
         >
-          <figure className="relative">
+          {/* A chave inclui o indice ativo para o bloco remontar a cada troca e
+              a animacao de entrada rodar de novo. */}
+          <figure key={`${shot.id}-${active}`} className="demo-entra relative">
             {/* Brilho por tras da moldura: sem ele a captura clara fica colada
                 no fundo escuro, como se estivesse recortada e solta. */}
             <div
@@ -146,9 +151,11 @@ export function ProductCarousel() {
               aria-hidden="true"
             />
 
-            {/* Moldura de janela: da a leitura de "isto e o produto rodando",
-                em vez de uma imagem solta sobre o fundo. */}
-            <div className="relative rounded-xl border border-white/10 bg-white/[0.04] p-1.5 shadow-[0_30px_70px_rgba(2,6,23,0.6)] backdrop-blur-sm">
+            {/* Moldura de janela com borda em degrade: a borda chapada deixava
+                a peca com cara de caixa, e o degrade sugere profundidade sem
+                pesar. O padding de 1px e o que revela a borda. */}
+            <div className="relative rounded-2xl bg-gradient-to-b from-white/20 via-white/10 to-transparent p-px shadow-[0_40px_90px_rgba(2,6,23,0.7)]">
+            <div className="relative rounded-2xl bg-slate-950/80 p-1.5 backdrop-blur-sm">
               <div className="flex items-center gap-2 px-2.5 py-2">
                 <span className="flex gap-1.5" aria-hidden="true">
                   <span className="h-2.5 w-2.5 rounded-full bg-white/20" />
@@ -161,7 +168,7 @@ export function ProductCarousel() {
                 </span>
               </div>
 
-              <div className="overflow-hidden rounded-lg border border-white/10 bg-slate-900">
+              <div className="overflow-hidden rounded-xl border border-white/10 bg-slate-900">
                 <Image
                   src={shot.src}
                   alt={shot.alt}
@@ -172,12 +179,30 @@ export function ProductCarousel() {
                 />
               </div>
             </div>
+            </div>
 
-            {/* Mesma hierarquia das outras secoes: rotulo verde, titulo, texto. */}
-            <figcaption className="relative mt-6 max-w-2xl">
-              <p className="text-sm font-semibold uppercase tracking-[0.08em] text-emerald-400">{shot.tab}</p>
-              <p className="mt-2 text-xl font-semibold text-white">{shot.title}</p>
-              <p className="mt-2 text-base leading-7 text-slate-300">{shot.description}</p>
+            {/* Duas colunas: o texto para de ser um paragrafo solto sob a imagem
+                e passa a dividir espaco com o que a tela entrega. */}
+            <figcaption className="relative mt-8 grid gap-8 border-t border-white/10 pt-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.08em] text-emerald-400">{shot.tab}</p>
+                <p className="mt-2 text-2xl font-semibold leading-tight text-white">{shot.title}</p>
+                <p className="mt-3 text-base leading-7 text-slate-300">{shot.description}</p>
+              </div>
+
+              <ul className="grid gap-3 sm:grid-cols-3 lg:gap-4">
+                {shot.highlights.map((item, posicao) => (
+                  <li
+                    key={item}
+                    className="rounded-lg border border-white/10 bg-white/[0.03] p-4 transition-colors hover:border-emerald-400/30 hover:bg-white/[0.06]"
+                  >
+                    <span className="text-xs font-semibold tabular-nums text-emerald-400">
+                      {String(posicao + 1).padStart(2, "0")}
+                    </span>
+                    <p className="mt-2 text-sm font-medium leading-6 text-slate-100">{item}</p>
+                  </li>
+                ))}
+              </ul>
             </figcaption>
           </figure>
         </div>

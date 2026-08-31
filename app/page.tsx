@@ -228,8 +228,14 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="demonstracao" className="bg-slate-950 px-4 py-14 text-white lg:px-8 lg:py-20">
-        <div className="mx-auto max-w-7xl">
+      <section id="demonstracao" className="relative overflow-hidden bg-slate-950 px-4 py-14 text-white lg:px-8 lg:py-20">
+        {/* Luz difusa no topo. O fundo chapado deixava a secao com aparencia de
+            bloco solido; isto da profundidade sem competir com a captura. */}
+        <div
+          className="pointer-events-none absolute inset-x-0 -top-40 h-80 bg-[radial-gradient(60%_100%_at_50%_100%,rgba(16,185,129,0.14),transparent)]"
+          aria-hidden="true"
+        />
+        <div className="relative mx-auto max-w-7xl">
           <div className="max-w-3xl">
             <p className="text-sm font-semibold uppercase tracking-[0.08em] text-emerald-400">Demonstracao</p>
             <h2 className="mt-3 text-3xl font-semibold leading-tight text-white md:text-4xl">
