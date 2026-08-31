@@ -13,13 +13,30 @@ import { BrandLogo } from "@/components/brand-logo";
  * como informacao.
  */
 const empresa = {
-  razaoSocial: "[PREENCHER: razao social]",
-  cnpj: "[PREENCHER: CNPJ]",
-  endereco: "[PREENCHER: endereco]",
-  email: "[PREENCHER: e-mail de contato]",
+  // Validado com isValidDocument de lib/document: os digitos verificadores conferem.
+  cnpj: "68.648.134/0001-57",
+  razaoSocial: "",
+  endereco: "",
+  email: "",
 };
 
-const temIdentificacao = !empresa.razaoSocial.startsWith("[PREENCHER");
+const rotulos: Record<keyof typeof empresa, string> = {
+  cnpj: "CNPJ",
+  razaoSocial: "razao social",
+  endereco: "endereco",
+  email: "e-mail de contato",
+};
+
+// Campo a campo em vez de tudo ou nada: o que ja existe aparece, e o aviso
+// nomeia exatamente o que ainda falta, em vez de esconder o conjunto inteiro
+// por causa de uma pendencia.
+const pendencias = (Object.keys(empresa) as Array<keyof typeof empresa>).filter((campo) => !empresa[campo]);
+const identificacao = [
+  empresa.razaoSocial,
+  empresa.cnpj && `CNPJ ${empresa.cnpj}`,
+  empresa.endereco,
+  empresa.email,
+].filter(Boolean);
 
 export function SiteFooter() {
   return (
@@ -55,16 +72,12 @@ export function SiteFooter() {
         </div>
 
         <div className="mt-10 border-t border-white/10 pt-6 text-sm">
-          {temIdentificacao ? (
-            <p>
-              {empresa.razaoSocial} - CNPJ {empresa.cnpj} - {empresa.endereco} - {empresa.email}
+          {identificacao.length ? <p>{identificacao.join(" - ")}</p> : null}
+          {pendencias.length ? (
+            <p className={identificacao.length ? "mt-2 text-amber-300" : "text-amber-300"}>
+              Falta preencher em components/site-footer.tsx: {pendencias.map((campo) => rotulos[campo]).join(", ")}.
             </p>
-          ) : (
-            <p className="text-amber-300">
-              Identificacao da empresa pendente: preencha razao social, CNPJ, endereco e e-mail de contato em
-              components/site-footer.tsx antes de divulgar a pagina.
-            </p>
-          )}
+          ) : null}
           <p className="mt-2">&copy; {new Date().getFullYear()} Zelo. Todos os direitos reservados.</p>
         </div>
       </div>
