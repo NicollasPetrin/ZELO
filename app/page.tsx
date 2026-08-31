@@ -15,13 +15,29 @@ import {
 } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 import { ProductCarousel } from "@/components/product-carousel";
+import { SiteFooter } from "@/components/site-footer";
 import { buttonClassName } from "@/components/ui/button";
 import { planDetails, planDifferences, planOrder } from "@/lib/plans";
+import { TRIAL_DAYS } from "@/lib/subscription";
 
-const marketProof = [
-  { value: "12 mil+", label: "tarefas organizadas por mes" },
-  { value: "98%", label: "dos gestores entendem o painel no primeiro acesso" },
-  { value: "7 dias", label: "para tirar a rotina do improviso" },
+/*
+  Antes havia tres numeros de mercado aqui: "12 mil+ tarefas organizadas por
+  mes", "98% dos gestores entendem o painel no primeiro acesso" e "7 dias para
+  tirar a rotina do improviso". Nenhum vinha de medicao, e o de 98% descrevia
+  uma pesquisa que nao existe. Estatistica inventada em pagina de venda e
+  afirmacao falsa ao consumidor, nao licenca de marketing.
+
+  No lugar entram fatos que o proprio codigo sustenta: o teste vem de
+  TRIAL_DAYS, os papeis de lib/permissions e os usuarios incluidos de
+  lib/plans. Se um dia mudarem la, mudam aqui.
+*/
+const productFacts = [
+  { value: `${TRIAL_DAYS} dias`, label: "de teste antes da primeira cobranca" },
+  { value: "3 papeis", label: "dono, gerente e funcionario, cada um com seu acesso" },
+  {
+    value: `${planDetails.BASIC.includedUsers} usuarios`,
+    label: "ja inclusos no plano de entrada",
+  },
 ];
 
 const features = [
@@ -92,7 +108,7 @@ export default function Home() {
 
         <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-4 py-5 lg:px-8">
           <Link href="/" className="flex items-center gap-3">
-            <BrandLogo variant="iconDark" decorative className="h-10 w-10" priority />
+            <BrandLogo variant="iconDark" decorative className="h-10 w-10" preload />
             <span>
               <span className="block text-base font-semibold">Zelo</span>
               <span className="block text-xs text-slate-300">Gestao simples da operacao</span>
@@ -115,23 +131,27 @@ export default function Home() {
               <Sparkles className="h-4 w-4" aria-hidden="true" />
               Plataforma SaaS para microempresas em crescimento
             </div>
-            <h1 className="mt-6 text-5xl font-semibold leading-tight text-white md:text-6xl">
-              <span className="sr-only">Zelo</span>
-              <span className="inline-flex" aria-hidden="true">
-                <BrandLogo
-                  variant="fullDark"
-                  className="h-auto w-[300px] max-w-full drop-shadow-[0_18px_36px_rgba(0,0,0,0.45)] sm:w-[420px]"
-                  priority
-                  decorative
-                />
-              </span>
+            {/*
+              A logomarca era o h1, com um sr-only escrito "Zelo". Para busca e
+              para leitor de tela, o titulo da pagina era uma palavra sem
+              proposta nenhuma. Ela continua igual na tela, agora como imagem
+              decorativa, e o h1 passa a dizer o que o produto faz.
+            */}
+            <BrandLogo
+              variant="fullDark"
+              className="mt-6 h-auto w-[300px] max-w-full drop-shadow-[0_18px_36px_rgba(0,0,0,0.45)] sm:w-[420px]"
+              preload
+              decorative
+            />
+            <h1 className="mt-6 text-4xl font-semibold leading-tight text-white md:text-5xl">
+              Organize tarefas, prazos e equipe em um lugar so.
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-8 text-slate-200">
-              Organize tarefas, prazos, setores, metas e visibilidade da equipe em uma plataforma simples, profissional e feita para donos e gerentes de microempresa.
+              A Zelo e a plataforma de gestao da operacao para microempresas que cresceram rapido e precisam sair do improviso.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link href={inicioDoTeste} className={buttonClassName("light")}>
-                Testar 30 dias gratis
+                Testar {TRIAL_DAYS} dias gratis
                 <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </Link>
               <a href="#planos" className={buttonClassName("secondary") + " border-white/25 bg-white/10 text-white hover:bg-white/15"}>
@@ -141,7 +161,7 @@ export default function Home() {
           </div>
 
           <div className="mt-14 grid max-w-4xl gap-3 sm:grid-cols-3">
-            {marketProof.map((item) => (
+            {productFacts.map((item) => (
               <div key={item.label} className="border-l border-white/25 pl-4">
                 <p className="text-2xl font-semibold text-white">{item.value}</p>
                 <p className="mt-1 text-sm leading-5 text-slate-300">{item.label}</p>
@@ -303,11 +323,12 @@ export default function Home() {
                       : buttonClassName("secondary") + " mt-7 w-full"
                   }
                 >
-                  Testar 30 dias gratis
+                  Testar {TRIAL_DAYS} dias gratis
                 </Link>
                 <Link
                   href={`/signup?plano=${plan.code}`}
-                  className={`mt-2 block text-center text-xs ${plan.highlight ? "text-slate-300 hover:text-white" : "text-slate-500 hover:text-slate-800"}`}
+                  // py-2 nao muda a aparencia e leva o alvo de 16px para 32px: no dedo, 16px e menor que a ponta que precisa acerta-lo.
+                  className={`mt-1 block py-2 text-center text-xs ${plan.highlight ? "text-slate-300 hover:text-white" : "text-slate-500 hover:text-slate-800"}`}
                 >
                   Assinar direto, sem teste
                 </Link>
@@ -352,11 +373,12 @@ export default function Home() {
             <p className="mt-4 text-lg leading-8 text-slate-300">Crie uma conta, cadastre sua empresa e mantenha tarefas, metas e setores salvos em um unico lugar.</p>
           </div>
           <Link href={inicioDoTeste} className={buttonClassName("light")}>
-            Testar 30 dias gratis
+            Testar {TRIAL_DAYS} dias gratis
             <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </Link>
         </div>
       </section>
+      <SiteFooter />
     </main>
   );
 }

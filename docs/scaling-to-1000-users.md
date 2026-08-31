@@ -22,17 +22,19 @@ Metas iniciais de operacao:
 - Relatorios com selecao reduzida de colunas e calculo linear por tarefa.
 - Indices compostos para empresa, usuario ativo, responsavel, status, setor e prazo.
 - Indices GIN/trigram para busca por titulo e descricao de tarefas.
-- Vercel Fluid Compute habilitado e funcao em `iad1`, proxima ao banco Neon em US East.
+- Aplicacao no Railway em US East (Virginia), proxima ao banco Neon em US East.
 - Endpoint `GET /api/health` para monitorar aplicacao e banco.
 - Teste de carga com rampa, limites automaticos e massa sintetica de staging.
 
 ## Infraestrutura necessaria
 
-### Vercel
+### Railway
 
-Para uso comercial, o plano Hobby nao serve: os termos atuais o restringem a uso pessoal ou nao comercial. Use no minimo Pro, mantenha Fluid Compute habilitado e acompanhe invocacoes, memoria, CPU e transferencia. A Vercel recomenda executar funcoes perto da fonte de dados; `iad1` combina com o Neon em N. Virginia.
+A aplicacao roda no Railway. Execute o servico o mais perto possivel do banco: as regioes disponiveis sao US West, US East (Virginia), EU West e Sudeste Asiatico, e nao existe regiao na America do Sul, entao US East e a mais proxima do Brasil e a unica que fica junto do Neon em US East. Servico e banco em regioes diferentes cobram a latencia entre elas em toda consulta, e uma pagina faz varias.
 
-Documentacao: [Fluid Compute](https://vercel.com/docs/fluid-compute), [Vercel Functions](https://vercel.com/docs/functions), [termos do plano Hobby](https://vercel.com/legal/terms).
+A regiao se troca em Settings do servico, sem downtime enquanto nao houver volume anexado.
+
+Documentacao: [regioes de deploy](https://docs.railway.com/reference/deployment-regions), [variaveis de ambiente](https://docs.railway.com/reference/variables).
 
 ### Neon
 
@@ -46,21 +48,21 @@ Documentacao: [pool de conexoes](https://neon.com/docs/connect/connection-poolin
 
 Estas partes dependem de conta, credencial ou decisao comercial e nao podem ser ativadas apenas pelo repositorio:
 
-- rate limit compartilhado em Redis/Upstash ou Vercel Firewall; o limitador atual em memoria protege uma instancia, nao o conjunto inteiro;
+- monitoramento do scale to zero do Neon: no plano gratuito o compute suspende apos 5 minutos parado e a primeira consulta seguinte paga o tempo de religar, que domina a percepcao de lentidao; desligar exige plano pago;
 - monitoramento de erros e desempenho com Sentry, Axiom, Datadog ou equivalente;
 - monitor de uptime chamando `/api/health` a cada 1 a 5 minutos;
 - alertas para erro acima de 1%, p95 acima da meta, conexoes aguardando e banco acima de 70% de CPU por varios minutos;
-- storage externo para anexos, como Vercel Blob, S3 ou Cloudflare R2;
+- storage externo para anexos, como S3, Cloudflare R2 ou equivalente;
 - provedor de e-mail transacional para convites, redefinicao de senha e alertas;
 - backup/restauracao testados e politica de retencao compativel com a LGPD.
 
 ## Processo de validacao
 
-1. Crie uma branch de staging no Neon e um ambiente Preview/Staging na Vercel.
+1. Crie uma branch de staging no Neon e um ambiente separado no Railway.
 2. Aplique `npm run db:deploy` nessa branch.
 3. Gere a massa com `LOAD_SEED_CONFIRM=ZELO_STAGING` e `npm run db:load-seed -- --users 1000 --tasks 20000`.
 4. Rode primeiro a rampa publica e depois `auth-read` com a conta de carga.
-5. Observe ao mesmo tempo Vercel e Neon. O primeiro recurso que saturar define o proximo ajuste.
+5. Observe ao mesmo tempo Railway e Neon. O primeiro recurso que saturar define o proximo ajuste.
 6. Repita com 50.000 e 100.000 tarefas antes de afirmar capacidade em contrato ou material comercial.
 
 ## Proximo limite tecnico

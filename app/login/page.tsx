@@ -33,7 +33,7 @@ export default async function LoginPage({
         <section className="flex min-h-[520px] flex-col justify-between bg-slate-950 p-8 text-white">
           <div>
             <Link href="/" className="flex items-center gap-3">
-              <BrandLogo variant="iconDark" decorative className="h-11 w-11" priority />
+              <BrandLogo variant="iconDark" decorative className="h-11 w-11" preload />
               <div>
                 <h1 className="text-xl font-semibold">Zelo</h1>
                 <p className="text-sm text-slate-300">Rotina da equipe em um lugar visivel.</p>

@@ -13,11 +13,12 @@ const brandLogos: Record<BrandLogoVariant, { src: string; width: number; height:
 type BrandLogoProps = {
   variant: BrandLogoVariant;
   className?: string;
-  priority?: boolean;
+  /** O Next 16 depreciou `priority` em favor de `preload`, que diz o que a propriedade faz. */
+  preload?: boolean;
   decorative?: boolean;
 };
 
-export function BrandLogo({ variant, className, priority = false, decorative = false }: BrandLogoProps) {
+export function BrandLogo({ variant, className, preload = false, decorative = false }: BrandLogoProps) {
   const logo = brandLogos[variant];
 
   return (
@@ -27,7 +28,7 @@ export function BrandLogo({ variant, className, priority = false, decorative = f
       aria-hidden={decorative || undefined}
       width={logo.width}
       height={logo.height}
-      priority={priority}
+      preload={preload}
       className={cn("shrink-0 object-contain", className)}
     />
   );
