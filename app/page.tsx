@@ -86,7 +86,8 @@ export default function Home() {
           className="object-cover object-center"
           sizes="100vw"
         />
-        <div className="absolute inset-0 bg-slate-950/70" />
+        {/* Dois veus empilhados apagavam a foto quase por completo. O escurecimento chapado cede, e o gradiente segue garantindo o contraste do texto, que fica na metade esquerda. */}
+        <div className="absolute inset-0 bg-slate-950/55" />
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(2,6,23,0.96)_0%,rgba(15,23,42,0.88)_34%,rgba(15,23,42,0.34)_72%,rgba(15,23,42,0.12)_100%)]" />
 
         <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-4 py-5 lg:px-8">
@@ -150,16 +151,14 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="produto" className="border-b border-slate-200 bg-white px-4 py-12 lg:px-8 lg:py-16">
+      <section id="produto" className="bg-white px-4 py-14 lg:px-8 lg:py-20">
         <div className="mx-auto max-w-7xl">
-          <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-normal text-emerald-700">Produto</p>
-              <h2 className="mt-3 text-3xl font-semibold leading-tight text-slate-950 md:text-4xl">
-                O controle que uma microempresa precisa, sem virar uma ferramenta complicada.
-              </h2>
-            </div>
-            <p className="text-lg leading-8 text-slate-600">
+          <div className="max-w-3xl">
+            <p className="text-sm font-semibold uppercase tracking-[0.08em] text-emerald-700">Produto</p>
+            <h2 className="mt-3 text-3xl font-semibold leading-tight text-slate-950 md:text-4xl">
+              O controle que uma microempresa precisa, sem virar uma ferramenta complicada.
+            </h2>
+            <p className="mt-4 text-lg leading-8 text-slate-600">
               A Zelo foi desenhada para operacoes que cresceram rapido e precisam sair do improviso. A experiencia e direta: o gestor acompanha a empresa, o gerente organiza a rotina e o funcionario ve exatamente suas tarefas.
             </p>
           </div>
@@ -183,25 +182,25 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="como-funciona" className="border-b border-slate-200 bg-white px-4 py-12 lg:px-8 lg:py-16">
+      <section id="como-funciona" className="bg-slate-50 px-4 py-14 lg:px-8 lg:py-20">
         <div className="mx-auto max-w-7xl">
           <div className="max-w-3xl">
-            <p className="text-sm font-semibold uppercase tracking-normal text-emerald-700">Como funciona</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.08em] text-emerald-700">Como funciona</p>
             <h2 className="mt-3 text-3xl font-semibold leading-tight text-slate-950 md:text-4xl">
               Do cadastro a equipe organizada em tres passos.
             </h2>
           </div>
 
-          <ol className="mt-10 grid gap-4 md:grid-cols-3">
+          {/*
+            Sem a casca de cartao de proposito: com a mesma moldura dos recursos
+            logo acima, tres passos viravam mais uma grade de caixas. O filete no
+            topo e o numeral grande fazem a sequencia ser lida como sequencia.
+          */}
+          <ol className="mt-10 grid gap-8 md:grid-cols-3 md:gap-6">
             {steps.map((step, index) => (
-              <li
-                key={step.title}
-                className="rounded-xl bg-white p-6 shadow-[0_10px_30px_-12px_rgba(15,23,42,0.18)] ring-1 ring-slate-900/5"
-              >
-                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-950 text-sm font-semibold text-white">
-                  {index + 1}
-                </span>
-                <h3 className="mt-5 text-base font-semibold text-slate-950">{step.title}</h3>
+              <li key={step.title} className="border-t-2 border-emerald-600/25 pt-5">
+                <span className="text-3xl font-bold text-emerald-700">{`0${index + 1}`}</span>
+                <h3 className="mt-3 text-base font-semibold text-slate-950">{step.title}</h3>
                 <p className="mt-3 text-sm leading-6 text-slate-600">{step.description}</p>
               </li>
             ))}
@@ -209,10 +208,10 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="demonstracao" className="bg-slate-950 px-4 py-12 text-white lg:px-8 lg:py-16">
+      <section id="demonstracao" className="bg-slate-950 px-4 py-14 text-white lg:px-8 lg:py-20">
         <div className="mx-auto max-w-7xl">
           <div className="max-w-3xl">
-            <p className="text-sm font-semibold uppercase tracking-normal text-emerald-400">Demonstracao</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.08em] text-emerald-400">Demonstracao</p>
             <h2 className="mt-3 text-3xl font-semibold leading-tight text-white md:text-4xl">
               Veja a Zelo por dentro.
             </h2>
@@ -227,7 +226,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="bg-slate-50 px-4 py-12 lg:px-8 lg:py-16">
+      <section className="bg-white px-4 py-14 lg:px-8 lg:py-20">
         <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-3">
           {[
             { icon: UsersRound, title: "Onboarding no produto", text: "Guias por aba mostram ao gestor como configurar setores, funcionarios, tarefas e metas dentro da plataforma." },
@@ -238,7 +237,7 @@ export default function Home() {
 
             return (
               <div key={item.title} className="flex gap-4">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-slate-950 text-white">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/15">
                   <Icon className="h-5 w-5" aria-hidden="true" />
                 </div>
                 <div>
@@ -251,10 +250,10 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="planos" className="bg-white px-4 py-12 lg:px-8 lg:py-16">
+      <section id="planos" className="bg-slate-50 px-4 py-14 lg:px-8 lg:py-20">
         <div className="mx-auto max-w-7xl">
           <div className="max-w-3xl">
-            <p className="text-sm font-semibold uppercase tracking-normal text-emerald-700">Planos</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.08em] text-emerald-700">Planos</p>
             <h2 className="mt-3 text-3xl font-semibold text-slate-950 md:text-4xl">Planos para cada fase da operacao.</h2>
             <p className="mt-4 text-lg leading-8 text-slate-600">
               O Basico organiza a entrada, o Gestao concentra o melhor equilibrio entre preco e valor, e o Completo libera relatorios executivos e controles avancados para operacoes maiores.
@@ -346,11 +345,11 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="bg-white px-4 py-12 lg:px-8 lg:py-16">
-        <div className="mx-auto flex max-w-7xl flex-col gap-6 rounded-xl bg-slate-950 p-8 text-white shadow-[0_24px_50px_-18px_rgba(15,23,42,0.55)] md:flex-row md:items-center md:justify-between">
-          <div>
-            <h2 className="text-2xl font-semibold">Comece a organizar sua equipe.</h2>
-            <p className="mt-2 text-sm leading-6 text-slate-300">Crie uma conta, cadastre sua empresa e mantenha tarefas, metas e setores salvos em um unico lugar.</p>
+      <section className="bg-slate-950 px-4 py-14 lg:px-8 lg:py-20">
+        <div className="mx-auto flex max-w-7xl flex-col gap-8 text-white md:flex-row md:items-center md:justify-between">
+          <div className="max-w-2xl">
+            <h2 className="text-3xl font-semibold leading-tight md:text-4xl">Comece a organizar sua equipe.</h2>
+            <p className="mt-4 text-lg leading-8 text-slate-300">Crie uma conta, cadastre sua empresa e mantenha tarefas, metas e setores salvos em um unico lugar.</p>
           </div>
           <Link href={inicioDoTeste} className={buttonClassName("light")}>
             Testar 30 dias gratis
