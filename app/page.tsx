@@ -47,6 +47,26 @@ const features = [
   },
 ];
 
+// Descricoes conferidas no proprio produto: os setores padrao vem de
+// DEFAULT_DEPARTMENTS no cadastro, e os papeis, de lib/permissions.
+const steps = [
+  {
+    title: "Crie a conta da empresa",
+    description:
+      "A empresa ja nasce com os setores Gestao, Operacao e Atendimento, e voce ajusta a estrutura para o jeito real de trabalhar.",
+  },
+  {
+    title: "Cadastre a equipe e distribua",
+    description:
+      "Cada tarefa recebe dono, prazo e setor. Dono, gerente e funcionario veem fluxos diferentes, com os dados administrativos protegidos.",
+  },
+  {
+    title: "Acompanhe pelo painel",
+    description:
+      "Pendencias, atrasos, urgencias e metas aparecem em uma tela so, e os relatorios mostram o desempenho por setor e por responsavel.",
+  },
+];
+
 const plans = planOrder.map((plan) => planDetails[plan]);
 // Plano de entrada dos botoes principais. Sem plano na URL, o cadastro mostra o
 // formulario curto e a pessoa nao chega ao pagamento — era por isso que os CTAs
@@ -79,6 +99,7 @@ export default function Home() {
           </Link>
           <nav className="hidden items-center gap-7 text-sm text-slate-200 md:flex">
             <a href="#produto" className="hover:text-white">Produto</a>
+            <a href="#como-funciona" className="hover:text-white">Como funciona</a>
             <a href="#demonstracao" className="hover:text-white">Demonstracao</a>
             <a href="#planos" className="hover:text-white">Planos</a>
           </nav>
@@ -138,7 +159,7 @@ export default function Home() {
                 O controle que uma microempresa precisa, sem virar uma ferramenta complicada.
               </h2>
             </div>
-            <p className="text-base leading-8 text-slate-600">
+            <p className="text-lg leading-8 text-slate-600">
               A Zelo foi desenhada para operacoes que cresceram rapido e precisam sair do improviso. A experiencia e direta: o gestor acompanha a empresa, o gerente organiza a rotina e o funcionario ve exatamente suas tarefas.
             </p>
           </div>
@@ -148,7 +169,10 @@ export default function Home() {
               const Icon = feature.icon;
 
               return (
-                <article key={feature.title} className="rounded-md border border-slate-200 bg-white p-5 shadow-sm">
+                <article
+                  key={feature.title}
+                  className="rounded-xl bg-white p-6 shadow-[0_10px_30px_-12px_rgba(15,23,42,0.18)] ring-1 ring-slate-900/5 transition-shadow hover:shadow-[0_16px_40px_-12px_rgba(15,23,42,0.22)]"
+                >
                   <Icon className="h-6 w-6 text-emerald-700" aria-hidden="true" />
                   <h3 className="mt-5 text-base font-semibold text-slate-950">{feature.title}</h3>
                   <p className="mt-3 text-sm leading-6 text-slate-600">{feature.description}</p>
@@ -159,6 +183,32 @@ export default function Home() {
         </div>
       </section>
 
+      <section id="como-funciona" className="border-b border-slate-200 bg-white px-4 py-12 lg:px-8 lg:py-16">
+        <div className="mx-auto max-w-7xl">
+          <div className="max-w-3xl">
+            <p className="text-sm font-semibold uppercase tracking-normal text-emerald-700">Como funciona</p>
+            <h2 className="mt-3 text-3xl font-semibold leading-tight text-slate-950 md:text-4xl">
+              Do cadastro a equipe organizada em tres passos.
+            </h2>
+          </div>
+
+          <ol className="mt-10 grid gap-4 md:grid-cols-3">
+            {steps.map((step, index) => (
+              <li
+                key={step.title}
+                className="rounded-xl bg-white p-6 shadow-[0_10px_30px_-12px_rgba(15,23,42,0.18)] ring-1 ring-slate-900/5"
+              >
+                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-950 text-sm font-semibold text-white">
+                  {index + 1}
+                </span>
+                <h3 className="mt-5 text-base font-semibold text-slate-950">{step.title}</h3>
+                <p className="mt-3 text-sm leading-6 text-slate-600">{step.description}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
       <section id="demonstracao" className="bg-slate-950 px-4 py-12 text-white lg:px-8 lg:py-16">
         <div className="mx-auto max-w-7xl">
           <div className="max-w-3xl">
@@ -166,7 +216,7 @@ export default function Home() {
             <h2 className="mt-3 text-3xl font-semibold leading-tight text-white md:text-4xl">
               Veja a Zelo por dentro.
             </h2>
-            <p className="mt-4 text-base leading-8 text-slate-300">
+            <p className="mt-4 text-lg leading-8 text-slate-300">
               As telas que o gestor usa no dia a dia: acompanhamento da operacao, organizacao das tarefas da equipe e leitura dos indicadores.
             </p>
           </div>
@@ -206,7 +256,7 @@ export default function Home() {
           <div className="max-w-3xl">
             <p className="text-sm font-semibold uppercase tracking-normal text-emerald-700">Planos</p>
             <h2 className="mt-3 text-3xl font-semibold text-slate-950 md:text-4xl">Planos para cada fase da operacao.</h2>
-            <p className="mt-4 text-base leading-8 text-slate-600">
+            <p className="mt-4 text-lg leading-8 text-slate-600">
               O Basico organiza a entrada, o Gestao concentra o melhor equilibrio entre preco e valor, e o Completo libera relatorios executivos e controles avancados para operacoes maiores.
             </p>
           </div>
@@ -215,7 +265,11 @@ export default function Home() {
             {plans.map((plan) => (
               <article
                 key={plan.name}
-                className={`rounded-md border p-6 shadow-sm ${plan.highlight ? "border-slate-950 bg-slate-950 text-white" : "border-slate-200 bg-white text-slate-950"}`}
+                className={`rounded-xl p-7 lg:p-8 ${
+                  plan.highlight
+                    ? "bg-slate-950 text-white shadow-[0_24px_50px_-18px_rgba(15,23,42,0.55)]"
+                    : "bg-white text-slate-950 shadow-[0_10px_30px_-12px_rgba(15,23,42,0.18)] ring-1 ring-slate-900/5"
+                }`}
               >
                 <div
                   className={`mb-5 inline-flex items-center gap-2 rounded-md px-3 py-1 text-xs font-semibold ${
@@ -228,7 +282,10 @@ export default function Home() {
                 <h3 className="text-xl font-semibold">{plan.name}</h3>
                 <p className={`mt-3 text-sm leading-6 ${plan.highlight ? "text-slate-300" : "text-slate-600"}`}>{plan.description}</p>
                 <div className="mt-6 flex items-end gap-1">
-                  <span className="text-4xl font-semibold">{plan.price}</span>
+                  {/* O preco e o que a pessoa vem comparar: com o mesmo peso do resto do cartao, ela precisa procurar. */}
+                  <span className={`text-5xl font-bold ${plan.highlight ? "text-emerald-300" : "text-emerald-700"}`}>
+                    {plan.price}
+                  </span>
                   <span className={plan.highlight ? "pb-1 text-sm text-slate-300" : "pb-1 text-sm text-slate-500"}>/mes</span>
                 </div>
                 <ul className="mt-6 space-y-3 text-sm">
@@ -259,7 +316,7 @@ export default function Home() {
             ))}
           </div>
 
-          <div className="mt-10 overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm">
+          <div className="mt-10 overflow-hidden rounded-xl bg-white shadow-[0_10px_30px_-12px_rgba(15,23,42,0.18)] ring-1 ring-slate-900/5">
             <div className="border-b border-slate-200 bg-slate-50 px-4 py-3">
               <h3 className="text-base font-semibold text-slate-950">Diferencas principais entre os planos</h3>
             </div>
@@ -290,7 +347,7 @@ export default function Home() {
       </section>
 
       <section className="bg-white px-4 py-12 lg:px-8 lg:py-16">
-        <div className="mx-auto flex max-w-7xl flex-col gap-6 rounded-md border border-slate-200 bg-slate-950 p-8 text-white shadow-sm md:flex-row md:items-center md:justify-between">
+        <div className="mx-auto flex max-w-7xl flex-col gap-6 rounded-xl bg-slate-950 p-8 text-white shadow-[0_24px_50px_-18px_rgba(15,23,42,0.55)] md:flex-row md:items-center md:justify-between">
           <div>
             <h2 className="text-2xl font-semibold">Comece a organizar sua equipe.</h2>
             <p className="mt-2 text-sm leading-6 text-slate-300">Crie uma conta, cadastre sua empresa e mantenha tarefas, metas e setores salvos em um unico lugar.</p>

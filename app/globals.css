@@ -8,14 +8,24 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-manrope);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-manrope), ui-sans-serif, system-ui, Arial, sans-serif;
+}
+
+/*
+  Titulo grande com espacamento padrao fica frouxo: quanto maior o corpo, mais
+  o olho enxerga o vao entre as letras. O aperto vale so para h1 e h2, onde o
+  texto e grande; paragrafo continua com o espacamento normal, que e o que
+  mantem a leitura corrida confortavel.
+*/
+h1,
+h2 {
+  letter-spacing: -0.015em;
 }
 
 button,
