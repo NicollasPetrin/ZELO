@@ -1,5 +1,6 @@
 import { Check, CreditCard } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
+import { CancelSubscriptionPanel } from "@/features/billing/cancel-subscription-panel";
 import { PaymentReturnBanner, type PaymentReturnStatus } from "@/features/billing/payment-return-banner";
 import { PlanCheckoutButton } from "@/features/billing/plan-checkout-button";
 import { SubscriptionStatusCard } from "@/features/billing/subscription-status-card";
@@ -143,10 +144,15 @@ export default async function SettingsPage({
               const targetDoesNotFit = planPrice.requiresUpgrade || planPrice.totalPriceCents === null;
               const planIndex = planOrder.indexOf(planCode);
               const activePlanIndex = activePlanCode ? planOrder.indexOf(activePlanCode) : -1;
+              // Quem cancelou continua vendo o plano atual como "atual", mas o
+              // botao precisa deixar voltar atras: sem isso o unico caminho de
+              // volta seria esperar o acesso acabar.
               const checkoutLabel = !activePlanCode
                 ? "Comprar plano"
                 : isCurrent
-                  ? "Plano atual"
+                  ? subscriptionWindow.cancelAtPeriodEnd
+                    ? "Reativar plano"
+                    : "Plano atual"
                   : planIndex > activePlanIndex
                     ? "Aprimorar plano"
                     : "Trocar plano";
@@ -178,7 +184,7 @@ export default async function SettingsPage({
                   <PlanCheckoutButton
                     planCode={planCode}
                     label={checkoutLabel}
-                    disabled={isCurrent || targetDoesNotFit}
+                    disabled={(isCurrent && !subscriptionWindow.cancelAtPeriodEnd) || targetDoesNotFit}
                     disabledReason={disabledReason}
                   />
                 </article>
@@ -186,6 +192,13 @@ export default async function SettingsPage({
             })}
           </div>
         </div>
+        {activePlan && subscriptionWindow.hasAccess && !subscriptionWindow.cancelAtPeriodEnd ? (
+          <CancelSubscriptionPanel
+            planName={activePlan.name}
+            endsAt={subscriptionWindow.endsAt}
+            isTrial={subscriptionWindow.isTrial}
+          />
+        ) : null}
       </section>
 
       <CompanySettingsForm

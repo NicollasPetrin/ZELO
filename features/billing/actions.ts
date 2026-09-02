@@ -1,8 +1,10 @@
 "use server";
 
 import type { SubscriptionPlan } from "@prisma/client";
+import { revalidatePath } from "next/cache";
 import { actionError } from "@/lib/action-result";
-import { createCheckout } from "@/lib/asaas/client";
+import { AsaasError, createCheckout, deleteSubscription } from "@/lib/asaas/client";
+import { ASAAS_PROVIDER } from "@/lib/asaas/types";
 import { ensureAsaasCustomer } from "@/features/billing/asaas-customer";
 import { recordActivity } from "@/lib/audit";
 import { assertCanManageCompany } from "@/lib/auth/guards";
@@ -14,6 +16,10 @@ import { assertUserActionRateLimit } from "@/lib/rate-limit";
 import { subscriptionPlanSchema } from "@/lib/validations";
 
 const CHECKOUT_EXPIRATION_MINUTES = 60;
+
+function formatBrDate(date: Date) {
+  return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" }).format(date);
+}
 
 /** O Asaas espera a data no formato YYYY-MM-DD. */
 function formatDueDate(date: Date) {
@@ -128,5 +134,106 @@ export async function startPlanCheckoutAction(planCode: SubscriptionPlan) {
     } as const;
   } catch (error) {
     return actionError(error, "Nao foi possivel iniciar a compra do plano.");
+  }
+}
+
+/**
+ * Cancela a renovacao da assinatura, mantendo o acesso ate o fim do periodo
+ * que ja foi pago.
+ *
+ * A ordem importa: a renovacao e interrompida no Asaas primeiro e so entao a
+ * empresa e marcada como cancelada. Fazer o contrario abriria a hipotese de
+ * tirar o acesso do cliente e continuar cobrando dele no mes seguinte.
+ */
+export async function cancelSubscriptionAction() {
+  try {
+    const user = await requireUser();
+    assertCanManageCompany(user);
+    await assertUserActionRateLimit(user.id, "billing:cancel-subscription");
+
+    if (user.company.isDemo) {
+      throw new Error("Contas demo nao possuem assinatura real para cancelar.");
+    }
+
+    const subscription = await prisma.companySubscription.findFirst({
+      where: {
+        companyId: user.companyId,
+        status: { in: ["TRIALING", "ACTIVE", "PAST_DUE"] },
+      },
+      orderBy: { currentPeriodEnd: "desc" },
+      include: { plan: { select: { code: true, name: true } } },
+    });
+
+    if (!subscription) {
+      throw new Error("Nao ha assinatura ativa para cancelar.");
+    }
+
+    if (subscription.cancelAtPeriodEnd) {
+      throw new Error("Esta assinatura ja esta cancelada e vale ate o fim do periodo contratado.");
+    }
+
+    if (subscription.provider === ASAAS_PROVIDER && subscription.externalId) {
+      if (!isAsaasConfigured()) {
+        throw new Error(ASAAS_NOT_CONFIGURED_MESSAGE);
+      }
+
+      try {
+        await deleteSubscription(subscription.externalId);
+      } catch (error) {
+        // 404 significa que a assinatura ja nao existe la: o efeito desejado
+        // ja vale, entao seguir e correto. Qualquer outra falha interrompe,
+        // porque marcar como cancelada aqui sem ter cancelado la deixaria a
+        // cobranca correndo.
+        if (!(error instanceof AsaasError) || error.status !== 404) {
+          throw error;
+        }
+      }
+    }
+
+    const agora = new Date();
+
+    await prisma.$transaction([
+      prisma.companySubscription.update({
+        where: { id: subscription.id },
+        data: { cancelAtPeriodEnd: true, canceledAt: agora },
+      }),
+      // Cobranca aberta com vencimento a frente nao vai mais acontecer; deixa-la
+      // em aberto faria a empresa continuar vendo uma fatura a pagar.
+      prisma.invoice.updateMany({
+        where: {
+          subscriptionId: subscription.id,
+          status: "OPEN",
+          dueDate: { gt: agora },
+        },
+        data: { status: "CANCELED" },
+      }),
+    ]);
+
+    await recordActivity({
+      companyId: user.companyId,
+      actorId: user.id,
+      type: "SUBSCRIPTION_CHANGED",
+      entityType: "CompanySubscription",
+      entityId: subscription.id,
+      title: "Assinatura cancelada",
+      description: `Plano ${subscription.plan.name}, acesso ate o fim do periodo contratado`,
+      metadata: {
+        planCode: subscription.plan.code,
+        currentPeriodEnd: subscription.currentPeriodEnd.toISOString(),
+        externalId: subscription.externalId,
+      },
+    });
+
+    revalidatePath("/settings");
+    revalidatePath("/", "layout");
+
+    return {
+      ok: true,
+      message:
+        `Assinatura cancelada. O acesso continua ate ${formatBrDate(subscription.currentPeriodEnd)} ` +
+        "e nenhuma nova cobranca sera feita.",
+    } as const;
+  } catch (error) {
+    return actionError(error, "Nao foi possivel cancelar a assinatura.");
   }
 }

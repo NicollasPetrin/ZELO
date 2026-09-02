@@ -191,3 +191,68 @@ describe("teste gratuito", () => {
     expect(buildReminderContent(getSubscriptionWindow({ subscriptions: [{ currentPeriodEnd: new Date(now.getTime() + 3 * DAY_MS), status: "ACTIVE", plan: { code: "BASIC" } }] }, now), "Basico")?.title).toMatch(/vence em/i);
   });
 });
+
+function companyCanceled(days: number, status: "ACTIVE" | "TRIALING" = "ACTIVE") {
+  return {
+    subscriptions: [
+      {
+        currentPeriodEnd: new Date(now.getTime() + days * DAY_MS),
+        status,
+        cancelAtPeriodEnd: true,
+        plan: { code: "MANAGEMENT" as const },
+      },
+    ],
+  };
+}
+
+describe("assinatura cancelada", () => {
+  it("keeps access until the paid period ends", () => {
+    const window = getSubscriptionWindow(companyCanceled(12), now);
+
+    expect(window.cancelAtPeriodEnd).toBe(true);
+    expect(window.hasAccess).toBe(true);
+    expect(window.daysRemaining).toBe(12);
+    expect(getActivePlanCode(companyCanceled(12), now)).toBe("MANAGEMENT");
+  });
+
+  it("ends access on the date, with no grace period", () => {
+    const window = getSubscriptionWindow(companyCanceled(-0.01), now);
+
+    expect(window.phase).toBe("ended");
+    expect(window.hasAccess).toBe(false);
+    expect(window.daysOverdue).toBeNull();
+    expect(getActivePlanCode(companyCanceled(-0.01), now)).toBeNull();
+  });
+
+  it("does not treat the end as an overdue payment even long after", () => {
+    const window = getSubscriptionWindow(companyCanceled(-40), now);
+
+    expect(window.phase).toBe("ended");
+    expect(window.shouldRemind).toBe(false);
+  });
+
+  it("blocks with a message about cancellation, not about payment", () => {
+    expect(() => assertCompanyHasActivePlan(companyCanceled(-3), now)).toThrow(/cancelada/i);
+  });
+
+  it("warns that access is ending instead of asking for payment", () => {
+    const conteudo = buildReminderContent(getSubscriptionWindow(companyCanceled(3), now), "Gestao");
+
+    expect(conteudo?.title).toMatch(/acesso termina/i);
+    expect(conteudo?.message).not.toMatch(/realize o pagamento/i);
+  });
+
+  it("says the trial was cancelled without charge", () => {
+    const conteudo = buildReminderContent(getSubscriptionWindow(companyCanceled(2, "TRIALING"), now), "Gestao");
+
+    expect(conteudo?.message).toMatch(/nenhuma cobranca/i);
+  });
+
+  it("leaves an ordinary subscription untouched by the new rule", () => {
+    const window = getSubscriptionWindow(companyEndingIn(-1), now);
+
+    expect(window.cancelAtPeriodEnd).toBe(false);
+    expect(window.phase).toBe("grace");
+    expect(window.hasAccess).toBe(true);
+  });
+});

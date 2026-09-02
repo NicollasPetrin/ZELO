@@ -59,6 +59,14 @@ export const asaasPaymentSchema = z.object({
 
 export type AsaasPayment = z.infer<typeof asaasPaymentSchema>;
 
+/** Resposta do Asaas ao remover um recurso. */
+export const asaasDeletedSchema = z.object({
+  id: z.string().min(1),
+  deleted: z.boolean(),
+});
+
+export type AsaasDeleted = z.infer<typeof asaasDeletedSchema>;
+
 export const asaasInvoiceSchema = z.object({
   id: z.string().min(1),
   status: z.string().min(1),

@@ -96,6 +96,9 @@ export async function applyPaymentEvent(
       status: "ACTIVE" as const,
       currentPeriodStart: start,
       currentPeriodEnd: end,
+      // Uma contratacao nova apaga um cancelamento anterior: quem cancelou e
+      // voltou a pagar nao pode continuar com o acesso marcado para terminar.
+      cancelAtPeriodEnd: false,
       canceledAt: null,
     };
 

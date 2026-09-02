@@ -3,10 +3,12 @@ import { getAsaasConfig } from "@/lib/env";
 import {
   asaasCheckoutSchema,
   asaasCustomerSchema,
+  asaasDeletedSchema,
   asaasPaymentSchema,
   type AsaasCheckout,
   type AsaasCheckoutInput,
   type AsaasCustomer,
+  type AsaasDeleted,
   type AsaasPayment,
 } from "@/lib/asaas/types";
 
@@ -110,6 +112,18 @@ export function updateCustomer(customerId: string, input: CustomerInput): Promis
   return asaasRequest(`/customers/${encodeURIComponent(customerId)}`, asaasCustomerSchema, {
     method: "PUT",
     body: input,
+  });
+}
+
+/**
+ * Remove a assinatura no Asaas, interrompendo as cobrancas futuras.
+ *
+ * O acesso do cliente nao termina aqui: ele vale ate o fim do periodo que ja
+ * foi pago. O que se cancela neste ponto e a renovacao.
+ */
+export function deleteSubscription(subscriptionId: string): Promise<AsaasDeleted> {
+  return asaasRequest(`/subscriptions/${encodeURIComponent(subscriptionId)}`, asaasDeletedSchema, {
+    method: "DELETE",
   });
 }
 

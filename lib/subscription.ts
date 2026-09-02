@@ -6,6 +6,9 @@ export const NO_ACTIVE_SUBSCRIPTION_MESSAGE =
 export const SUBSCRIPTION_SUSPENDED_MESSAGE =
   "A assinatura esta suspensa por falta de pagamento. Regularize para liberar as funcionalidades novamente.";
 
+export const SUBSCRIPTION_ENDED_MESSAGE =
+  "A assinatura foi cancelada e o periodo contratado terminou. Contrate um plano para voltar a usar as funcionalidades.";
+
 /** A partir de quantos dias antes do vencimento o cliente comeca a ser lembrado. */
 export const REMINDER_WINDOW_DAYS = 5;
 
@@ -27,12 +30,16 @@ export type SubscriptionPhase =
   /** Vencida, ainda dentro dos dias de tolerancia. */
   | "grace"
   /** Vencida alem da tolerancia: acesso suspenso. */
-  | "suspended";
+  | "suspended"
+  /** Cancelada pelo cliente e com o periodo contratado ja terminado. */
+  | "ended";
 
 export type SubscriptionWindow = {
   phase: SubscriptionPhase;
   /** Periodo de teste gratuito, ainda sem nenhuma cobranca paga. */
   isTrial: boolean;
+  /** Cancelada pelo cliente, ainda valendo ate o fim do periodo ja pago. */
+  cancelAtPeriodEnd: boolean;
   endsAt: Date | null;
   /** Dias inteiros ate o vencimento. Null quando ja venceu ou nao ha assinatura. */
   daysRemaining: number | null;
@@ -47,6 +54,7 @@ export type SubscriptionWindow = {
 type SubscriptionShape = {
   currentPeriodEnd: Date | string;
   status?: string;
+  cancelAtPeriodEnd?: boolean;
   plan: {
     code: SubscriptionPlan;
   };
@@ -59,6 +67,7 @@ type ActivePlanCompany = {
 const noSubscription: SubscriptionWindow = {
   phase: "none",
   isTrial: false,
+  cancelAtPeriodEnd: false,
   endsAt: null,
   daysRemaining: null,
   daysOverdue: null,
@@ -84,6 +93,7 @@ export function getSubscriptionWindow(company: ActivePlanCompany, now: Date = ne
   }
 
   const isTrial = subscription.status === "TRIALING";
+  const cancelAtPeriodEnd = subscription.cancelAtPeriodEnd === true;
   const diffMs = endsAt.getTime() - now.getTime();
 
   if (diffMs > 0) {
@@ -93,11 +103,28 @@ export function getSubscriptionWindow(company: ActivePlanCompany, now: Date = ne
     return {
       phase: daysRemaining <= REMINDER_WINDOW_DAYS ? "expiring" : "active",
       isTrial,
+      cancelAtPeriodEnd,
       endsAt,
       daysRemaining,
       daysOverdue: null,
       hasAccess: true,
       shouldRemind: daysRemaining <= REMINDER_WINDOW_DAYS,
+    };
+  }
+
+  // Quem cancelou nao recebe tolerancia nem cobranca de pagamento: o combinado
+  // era acesso ate o fim do periodo pago, e o fim e o fim. Esticar dois dias e
+  // depois bloquear seria pior do que encerrar na data prometida.
+  if (cancelAtPeriodEnd) {
+    return {
+      phase: "ended",
+      isTrial,
+      cancelAtPeriodEnd,
+      endsAt,
+      daysRemaining: null,
+      daysOverdue: null,
+      hasAccess: false,
+      shouldRemind: false,
     };
   }
 
@@ -108,6 +135,7 @@ export function getSubscriptionWindow(company: ActivePlanCompany, now: Date = ne
   return {
     phase: suspended ? "suspended" : "grace",
     isTrial,
+    cancelAtPeriodEnd,
     endsAt,
     daysRemaining: null,
     daysOverdue,
@@ -145,6 +173,10 @@ export function assertActivePlanCode(plan: SubscriptionPlan | null | undefined):
 export function assertCompanyHasActivePlan(company: ActivePlanCompany, now: Date = new Date()): SubscriptionPlan {
   const window = getSubscriptionWindow(company, now);
 
+  if (window.phase === "ended") {
+    throw new Error(SUBSCRIPTION_ENDED_MESSAGE);
+  }
+
   if (window.phase === "suspended") {
     throw new Error(SUBSCRIPTION_SUSPENDED_MESSAGE);
   }
@@ -168,6 +200,19 @@ export type ReminderContent = {
 export function buildReminderContent(window: SubscriptionWindow, planName: string): ReminderContent | null {
   if (!window.shouldRemind) {
     return null;
+  }
+
+  // O cancelamento vem antes das demais mensagens: quem ja pediu para sair nao
+  // pode continuar recebendo lembrete para pagar.
+  if (window.cancelAtPeriodEnd && window.daysRemaining !== null) {
+    return {
+      title: `Seu acesso termina em ${pluralizeDays(window.daysRemaining)}`,
+      message: window.isTrial
+        ? `O teste do Plano ${planName} foi cancelado e nenhuma cobranca sera feita. ` +
+          "Para continuar usando, contrate um plano antes dessa data."
+        : `A assinatura do Plano ${planName} foi cancelada e nao sera renovada. ` +
+          "Ate la nada muda; depois disso as funcionalidades sao bloqueadas.",
+    };
   }
 
   if (window.isTrial && window.daysRemaining !== null) {

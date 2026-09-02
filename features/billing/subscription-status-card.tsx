@@ -1,4 +1,4 @@
-import { AlertTriangle, CalendarClock, CircleCheck, ShieldOff } from "lucide-react";
+import { AlertTriangle, CalendarClock, CalendarX2, CircleCheck, ShieldOff } from "lucide-react";
 import { GRACE_PERIOD_DAYS, type SubscriptionWindow } from "@/lib/subscription";
 
 function formatDate(date: Date) {
@@ -23,6 +23,33 @@ type Estilo = {
 };
 
 function buildEstilo(window: SubscriptionWindow): Estilo {
+  if (window.phase === "ended") {
+    return {
+      container: "border-slate-300 bg-slate-100",
+      destaque: "text-slate-800",
+      icone: CalendarX2,
+      rotulo: "Assinatura encerrada",
+      titulo: "Funcionalidades bloqueadas",
+      detalhe: "O cancelamento foi concluido e o periodo contratado terminou. Contrate um plano para voltar a usar.",
+    };
+  }
+
+  // Um cancelamento agendado vem antes de qualquer outra leitura: enquanto ele
+  // existe, dizer "assinatura em dia" ou "vencimento proximo" seria mentir
+  // sobre o que acontece na data.
+  if (window.cancelAtPeriodEnd && window.daysRemaining !== null) {
+    return {
+      container: "border-amber-200 bg-amber-50",
+      destaque: "text-amber-900",
+      icone: CalendarX2,
+      rotulo: "Cancelamento agendado",
+      titulo: `${pluralizeDays(window.daysRemaining)} de acesso`,
+      detalhe: window.isTrial
+        ? "O teste foi cancelado e nenhuma cobranca sera feita. Nesta data o acesso termina."
+        : "Nenhuma nova cobranca sera feita. Nesta data o acesso termina.",
+    };
+  }
+
   if (window.phase === "suspended") {
     return {
       container: "border-rose-200 bg-rose-50",
@@ -109,7 +136,14 @@ export function SubscriptionStatusCard({ window }: { window: SubscriptionWindow 
       <p className="mt-1 text-sm leading-6 text-slate-700">{estilo.detalhe}</p>
       {window.endsAt ? (
         <p className="mt-2 text-xs leading-5 text-slate-600">
-          {window.daysRemaining !== null ? "Vence em" : "Venceu em"} {formatDate(window.endsAt)}
+          {window.cancelAtPeriodEnd
+            ? window.daysRemaining !== null
+              ? "Termina em"
+              : "Terminou em"
+            : window.daysRemaining !== null
+              ? "Vence em"
+              : "Venceu em"}{" "}
+          {formatDate(window.endsAt)}
         </p>
       ) : null}
     </div>
