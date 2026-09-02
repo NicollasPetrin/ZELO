@@ -9,6 +9,7 @@ import { findTaskForUser } from "@/features/tasks/data";
 import { prisma } from "@/lib/db/client";
 import { getPlanAccess } from "@/lib/plans";
 import { assertUserActionRateLimit } from "@/lib/rate-limit";
+import { reconcileTaskStatus } from "@/lib/task-status";
 import { assertCompanyHasActivePlan } from "@/lib/subscription";
 import { attachmentSchema, commentSchema, idSchema, taskSchema, taskStatusSchema } from "@/lib/validations";
 
@@ -55,6 +56,10 @@ export async function createTaskAction(values: unknown) {
       throw new Error("Responsavel ou setor invalido.");
     }
 
+    // "Atrasada" vem do prazo, nao da escolha de quem preenche o formulario.
+    const novaData = taskDate(parsed.dueDate);
+    const statusCriacao = reconcileTaskStatus(parsed.status, novaData);
+
     const task = await prisma.task.create({
       data: {
         companyId: user.companyId,
@@ -63,10 +68,10 @@ export async function createTaskAction(values: unknown) {
         creatorId: user.id,
         title: parsed.title,
         description: parsed.description,
-        dueDate: taskDate(parsed.dueDate),
+        dueDate: novaData,
         priority: parsed.priority,
-        status: parsed.status,
-        completedAt: parsed.status === "COMPLETED" ? new Date() : null,
+        status: statusCriacao,
+        completedAt: statusCriacao === "COMPLETED" ? new Date() : null,
       },
     });
 
@@ -151,6 +156,11 @@ export async function updateTaskAction(values: unknown) {
       throw new Error("Responsavel ou setor invalido.");
     }
 
+    // Sem isto, adiar o prazo de uma tarefa atrasada deixava o status como
+    // estava e ela continuava aparecendo atrasada para sempre.
+    const dataAtualizada = taskDate(parsed.dueDate);
+    const statusAtualizado = reconcileTaskStatus(parsed.status, dataAtualizada);
+
     const updateResult = await prisma.task.updateMany({
       where: {
         id: task.id,
@@ -161,10 +171,10 @@ export async function updateTaskAction(values: unknown) {
         assigneeId: parsed.assigneeId,
         title: parsed.title,
         description: parsed.description,
-        dueDate: taskDate(parsed.dueDate),
+        dueDate: dataAtualizada,
         priority: parsed.priority,
-        status: parsed.status,
-        completedAt: parsed.status === "COMPLETED" ? task.completedAt ?? new Date() : null,
+        status: statusAtualizado,
+        completedAt: statusAtualizado === "COMPLETED" ? task.completedAt ?? new Date() : null,
       },
     });
 
@@ -229,14 +239,18 @@ export async function updateTaskStatusAction(values: unknown) {
       throw new Error("Voce nao tem permissao para alterar esta tarefa.");
     }
 
+    // Aqui so o status muda, mas alguem pode marcar "Atrasada" numa tarefa
+    // cujo prazo ainda nem chegou.
+    const statusReconciliado = reconcileTaskStatus(parsed.status, task.dueDate);
+
     const updateResult = await prisma.task.updateMany({
       where: {
         id: task.id,
         companyId: user.companyId,
       },
       data: {
-        status: parsed.status,
-        completedAt: parsed.status === "COMPLETED" ? task.completedAt ?? new Date() : null,
+        status: statusReconciliado,
+        completedAt: statusReconciliado === "COMPLETED" ? task.completedAt ?? new Date() : null,
       },
     });
 
