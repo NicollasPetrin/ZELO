@@ -12,6 +12,7 @@ import {
   Goal,
   ListTodo,
   Settings,
+  Trophy,
   Users,
 } from "lucide-react";
 import type { SubscriptionPlan, UserRole } from "@prisma/client";
@@ -35,6 +36,7 @@ const navItems: NavItem[] = [
   { href: "/departments", label: "Setores", icon: Building2, roles: ["OWNER", "MANAGER"] },
   { href: "/employees", label: "Funcionarios", icon: Users, roles: ["OWNER"] },
   { href: "/goals", label: "Metas", icon: Goal, roles: ["OWNER", "MANAGER", "EMPLOYEE"] },
+  { href: "/pontos", label: "Pontos", icon: Trophy, roles: ["OWNER", "MANAGER", "EMPLOYEE"] },
   { href: "/notifications", label: "Notificacoes", icon: Bell, roles: ["OWNER", "MANAGER", "EMPLOYEE"] },
   { href: "/settings", label: "Configuracoes", icon: Settings, roles: ["OWNER"] },
 ];
