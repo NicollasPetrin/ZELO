@@ -16,6 +16,7 @@ import {
 import { BrandLogo } from "@/components/brand-logo";
 import { ProductCarousel } from "@/components/product-carousel";
 import { SiteFooter } from "@/components/site-footer";
+import { StickyCta } from "@/components/sticky-cta";
 import { buttonClassName } from "@/components/ui/button";
 import { planDetails, planDifferences, planOrder } from "@/lib/plans";
 import { TRIAL_DAYS } from "@/lib/subscription";
@@ -156,7 +157,7 @@ export default function Home() {
             <p className="mt-4 max-w-xl text-base leading-7 text-slate-200 sm:mt-6 sm:text-lg sm:leading-8">
               A Zelo e a plataforma de gestao da operacao para microempresas que cresceram rapido e precisam sair do improviso.
             </p>
-            <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row">
+            <div id="cta-hero" className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row">
               <Link href={inicioDoTeste} className={buttonClassName("light")}>
                 Testar {TRIAL_DAYS} dias gratis
                 <ArrowRight className="h-4 w-4" aria-hidden="true" />
@@ -401,6 +402,8 @@ export default function Home() {
         </div>
       </section>
       <SiteFooter />
+
+      <StickyCta href={inicioDoTeste} label={`Testar ${TRIAL_DAYS} dias gratis`} watchId="cta-hero" />
     </main>
   );
 }
