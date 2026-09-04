@@ -112,7 +112,8 @@ export default function Home() {
             <BrandLogo variant="iconDark" decorative className="h-10 w-10" preload />
             <span>
               <span className="block text-base font-semibold">Zelo</span>
-              <span className="block text-xs text-slate-300">Gestao simples da operacao</span>
+              {/* Quarta variacao da mesma frase; no telefone ela so ocupa a linha. */}
+              <span className="hidden text-xs text-slate-300 sm:block">Gestao simples da operacao</span>
             </span>
           </Link>
           <nav className="hidden items-center gap-7 text-sm text-slate-200 md:flex">
@@ -128,30 +129,27 @@ export default function Home() {
 
         <div className="relative z-10 mx-auto flex max-w-7xl flex-col justify-center px-4 pb-14 pt-10 lg:min-h-[calc(88vh-80px)] lg:px-8 lg:pb-20 lg:pt-20">
           <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 rounded-md border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-medium text-slate-100">
+            {/*
+              No telefone o topo dizia a mesma coisa quatro vezes — subtitulo do
+              cabecalho, selo, titulo e paragrafo, todos alguma variacao de
+              "gestao para microempresa" — e a marca aparecia duas vezes, no
+              cabecalho e repetida logo abaixo. Numa tela de 375px isso e
+              poluicao, nao densidade.
+
+              Selo e logomarca somem so no celular. A partir de sm, onde a
+              largura comporta, o topo continua exatamente como era.
+            */}
+            <div className="hidden items-center gap-2 rounded-md border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-medium text-slate-100 sm:inline-flex">
               <Sparkles className="h-4 w-4" aria-hidden="true" />
               Plataforma SaaS para microempresas em crescimento
             </div>
-            {/*
-              A logomarca era o h1, com um sr-only escrito "Zelo". Para busca e
-              para leitor de tela, o titulo da pagina era uma palavra sem
-              proposta nenhuma. Ela continua igual na tela, agora como imagem
-              decorativa, e o h1 passa a dizer o que o produto faz.
-            */}
-            {/*
-              No celular a marca ja aparece no cabecalho, logo acima. Repetida a
-              300px ela custava 132px de altura e empurrava o botao principal
-              para y=669, abaixo da dobra de um aparelho de 667px: a acao que a
-              pagina inteira existe para provocar so aparecia depois de rolar.
-              Menor no telefone, do tamanho de antes a partir de sm.
-            */}
             <BrandLogo
               variant="fullDark"
-              className="mt-5 h-auto w-[190px] max-w-full drop-shadow-[0_18px_36px_rgba(0,0,0,0.45)] sm:mt-6 sm:w-[420px]"
+              className="mt-6 hidden h-auto w-[420px] max-w-full drop-shadow-[0_18px_36px_rgba(0,0,0,0.45)] sm:block"
               preload
               decorative
             />
-            <h1 className="mt-4 text-[2rem] font-semibold leading-tight text-white sm:mt-6 sm:text-4xl md:text-5xl">
+            <h1 className="text-[2rem] font-semibold leading-tight text-white sm:mt-6 sm:text-4xl md:text-5xl">
               Organize tarefas, prazos e equipe em um lugar so.
             </h1>
             <p className="mt-4 max-w-xl text-base leading-7 text-slate-200 sm:mt-6 sm:text-lg sm:leading-8">
