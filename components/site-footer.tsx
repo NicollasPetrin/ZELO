@@ -2,28 +2,25 @@ import Link from "next/link";
 import { BrandLogo } from "@/components/brand-logo";
 
 /**
- * PREENCHER ANTES DE DIVULGAR A LANDING.
+ * Identificacao de quem vende. O Codigo de Defesa do Consumidor pede que o
+ * fornecedor seja identificavel na oferta, e a LGPD pede um canal por onde o
+ * titular exerce os direitos dele — que aqui e o mesmo e-mail citado nos termos
+ * e na politica de privacidade.
  *
- * Quem vende assinatura recorrente pela internet precisa se identificar: o
- * Codigo de Defesa do Consumidor exige nome, CNPJ e endereco visiveis, e a
- * LGPD exige um canal de contato para o titular exercer os direitos dele.
- *
- * Estes valores nao foram inventados de proposito. Substitua pelos dados reais
- * da empresa; enquanto estiverem assim, aparecem na tela como pendencia, e nao
- * como informacao.
+ * O endereco ainda nao existe e por isso nao aparece: melhor um campo ausente
+ * do que um endereco inventado em pagina de venda. Quando a empresa tiver sede
+ * declarada, basta acrescentar aqui.
  */
 const empresa = {
   // Validado com isValidDocument de lib/document: os digitos verificadores conferem.
   cnpj: "68.648.134/0001-57",
-  razaoSocial: "",
-  endereco: "",
-  email: "",
+  razaoSocial: "Zelo Solucoes Digitais LTDA",
+  email: "zelosolucoesdigitais@gmail.com",
 };
 
 const rotulos: Record<keyof typeof empresa, string> = {
   cnpj: "CNPJ",
   razaoSocial: "razao social",
-  endereco: "endereco",
   email: "e-mail de contato",
 };
 
@@ -31,12 +28,6 @@ const rotulos: Record<keyof typeof empresa, string> = {
 // nomeia exatamente o que ainda falta, em vez de esconder o conjunto inteiro
 // por causa de uma pendencia.
 const pendencias = (Object.keys(empresa) as Array<keyof typeof empresa>).filter((campo) => !empresa[campo]);
-const identificacao = [
-  empresa.razaoSocial,
-  empresa.cnpj && `CNPJ ${empresa.cnpj}`,
-  empresa.endereco,
-  empresa.email,
-].filter(Boolean);
 
 export function SiteFooter() {
   return (
@@ -72,9 +63,24 @@ export function SiteFooter() {
         </div>
 
         <div className="mt-10 border-t border-white/10 pt-6 text-sm">
-          {identificacao.length ? <p>{identificacao.join(" - ")}</p> : null}
+          <p>
+            {empresa.razaoSocial} - CNPJ {empresa.cnpj}
+          </p>
+          {/*
+            mailto e nao texto solto: e por este endereco que se pede
+            cancelamento e se exerce os direitos da LGPD, entao ele precisa
+            abrir o e-mail com um toque, e nao obrigar a copiar a mao.
+          */}
+          <p className="mt-1">
+            <a
+              href={`mailto:${empresa.email}`}
+              className="inline-block py-2 underline underline-offset-2 hover:text-white"
+            >
+              {empresa.email}
+            </a>
+          </p>
           {pendencias.length ? (
-            <p className={identificacao.length ? "mt-2 text-amber-300" : "text-amber-300"}>
+            <p className="mt-2 text-amber-300">
               Falta preencher em components/site-footer.tsx: {pendencias.map((campo) => rotulos[campo]).join(", ")}.
             </p>
           ) : null}
