@@ -127,7 +127,7 @@ export default function Home() {
 
         <div className="relative z-10 mx-auto flex max-w-7xl flex-col justify-center px-4 pb-14 pt-10 lg:min-h-[calc(88vh-80px)] lg:px-8 lg:pb-20 lg:pt-20">
           <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 rounded-md border border-white/20 bg-white/10 px-3 py-2 text-xs font-medium text-slate-100">
+            <div className="inline-flex items-center gap-2 rounded-md border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-medium text-slate-100">
               <Sparkles className="h-4 w-4" aria-hidden="true" />
               Plataforma SaaS para microempresas em crescimento
             </div>
@@ -137,19 +137,26 @@ export default function Home() {
               proposta nenhuma. Ela continua igual na tela, agora como imagem
               decorativa, e o h1 passa a dizer o que o produto faz.
             */}
+            {/*
+              No celular a marca ja aparece no cabecalho, logo acima. Repetida a
+              300px ela custava 132px de altura e empurrava o botao principal
+              para y=669, abaixo da dobra de um aparelho de 667px: a acao que a
+              pagina inteira existe para provocar so aparecia depois de rolar.
+              Menor no telefone, do tamanho de antes a partir de sm.
+            */}
             <BrandLogo
               variant="fullDark"
-              className="mt-6 h-auto w-[300px] max-w-full drop-shadow-[0_18px_36px_rgba(0,0,0,0.45)] sm:w-[420px]"
+              className="mt-5 h-auto w-[190px] max-w-full drop-shadow-[0_18px_36px_rgba(0,0,0,0.45)] sm:mt-6 sm:w-[420px]"
               preload
               decorative
             />
-            <h1 className="mt-6 text-4xl font-semibold leading-tight text-white md:text-5xl">
+            <h1 className="mt-4 text-[2rem] font-semibold leading-tight text-white sm:mt-6 sm:text-4xl md:text-5xl">
               Organize tarefas, prazos e equipe em um lugar so.
             </h1>
-            <p className="mt-6 max-w-xl text-lg leading-8 text-slate-200">
+            <p className="mt-4 max-w-xl text-base leading-7 text-slate-200 sm:mt-6 sm:text-lg sm:leading-8">
               A Zelo e a plataforma de gestao da operacao para microempresas que cresceram rapido e precisam sair do improviso.
             </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row">
               <Link href={inicioDoTeste} className={buttonClassName("light")}>
                 Testar {TRIAL_DAYS} dias gratis
                 <ArrowRight className="h-4 w-4" aria-hidden="true" />
@@ -160,7 +167,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="mt-14 grid max-w-4xl gap-3 sm:grid-cols-3">
+          <div className="mt-10 grid max-w-4xl gap-3 sm:mt-14 sm:grid-cols-3">
             {productFacts.map((item) => (
               <div key={item.label} className="border-l border-white/25 pl-4">
                 <p className="text-2xl font-semibold text-white">{item.value}</p>
@@ -290,7 +297,7 @@ export default function Home() {
             {plans.map((plan) => (
               <article
                 key={plan.name}
-                className={`rounded-xl p-7 lg:p-8 ${
+                className={`rounded-xl p-6 sm:p-7 lg:p-8 ${
                   plan.highlight
                     ? "bg-slate-950 text-white shadow-[0_24px_50px_-18px_rgba(15,23,42,0.55)]"
                     : "bg-white text-slate-950 shadow-[0_10px_30px_-12px_rgba(15,23,42,0.18)] ring-1 ring-slate-900/5"
@@ -342,10 +349,19 @@ export default function Home() {
             ))}
           </div>
 
-          <div className="mt-10 overflow-hidden rounded-xl bg-white shadow-[0_10px_30px_-12px_rgba(15,23,42,0.18)] ring-1 ring-slate-900/5">
-            <div className="border-b border-slate-200 bg-slate-50 px-4 py-3">
-              <h3 className="text-base font-semibold text-slate-950">Diferencas principais entre os planos</h3>
-            </div>
+          {/*
+            No celular esta tabela custava 878px de altura para mostrar quatro
+            colunas que so cabem rolando na horizontal — quase uma tela inteira
+            de rolagem por uma leitura desconfortavel. Recolhida no telefone,
+            continua a um toque de distancia. A classe comparativo devolve o
+            comportamento aberto a partir de lg, onde a largura sobra e a tabela
+            se le de uma vez (ver app/globals.css).
+          */}
+          <details className="mt-10 overflow-hidden rounded-xl bg-white shadow-[0_10px_30px_-12px_rgba(15,23,42,0.18)] ring-1 ring-slate-900/5">
+            <summary className="flex items-center justify-between gap-4 border-b border-slate-200 bg-slate-50 px-4 py-4 text-base font-semibold text-slate-950 marker:content-none">
+              Diferencas principais entre os planos
+              <span className="text-sm font-medium text-emerald-700">Ver</span>
+            </summary>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-slate-200 text-sm">
                 <thead className="bg-white">
@@ -368,7 +384,7 @@ export default function Home() {
                 </tbody>
               </table>
             </div>
-          </div>
+          </details>
         </div>
       </section>
 

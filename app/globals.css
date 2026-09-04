@@ -41,6 +41,19 @@ summary {
 }
 
 /*
+  Tentei abrir o comparativo so a partir de lg escondendo o resumo e forcando o
+  display do conteudo. Nao funciona: o navegador esconde o conteudo de um
+  details fechado pelo pseudo-elemento ::details-content, com
+  content-visibility, e display no filho nao vence isso. Forcar por
+  ::details-content resolveria no Chrome recente e deixaria a tabela invisivel e
+  sem resumo para abrir nos demais navegadores — pior do que o problema.
+
+  O comparativo fica recolhido em qualquer largura, com o resumo sempre
+  visivel. Um toque para abrir em todo navegador vale mais do que um truque que
+  quebra em alguns.
+*/
+
+/*
   Troca de tela na demonstracao. Sem transicao a imagem simplesmente pisca para
   outra, e o olho perde a relacao entre a aba clicada e o que mudou.
 */
