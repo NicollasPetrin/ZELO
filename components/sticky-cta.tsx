@@ -49,6 +49,7 @@ export function StickyCta({ href, label, watchId }: { href: string; label: strin
 
   return (
     <div
+      data-sticky-cta=""
       // inert enquanto escondida: sem isto o botao continua no caminho do
       // teclado, e o foco desaparece atras de uma barra invisivel.
       inert={!visivel}

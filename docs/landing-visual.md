@@ -24,6 +24,17 @@ npm exec vitest run scripts/landing-screenshots.test.tsx
 node scripts/capture-landing.mjs
 ```
 
+Para atualizar somente os detalhes mobile, use:
+
+```powershell
+node scripts/capture-landing.mjs --mobile-only
+```
+
+Os detalhes sao gerados em 2x (780 x 1000), preservando os componentes inteiros.
+A landing mostra a captura completa em todas as larguras, na proporcao 8:5 e
+ocupando a largura disponivel. Os recortes de widgets ficam somente na opcao
+"Detalhe" da ampliacao mobile. O modal abre em "Tela completa" por padrao.
+
 O script requer Playwright e um navegador instalado. `PLAYWRIGHT_MODULE` pode
 apontar para o modulo instalado fora do projeto e `BROWSER_CHANNEL=msedge`
 permite usar o Edge. Sharp ja esta disponivel na arvore de dependencias do Next.
@@ -38,9 +49,12 @@ npx tsc --noEmit
 node scripts/verify-landing.mjs
 ```
 
-A verificacao visual automatizada cobre 1440, 1280, 1920, 768, 390 e 360 px:
+A verificacao visual automatizada cobre 1440, 1280, 1920, 768, 724, 540, 414, 390 e 360 px:
 imagens, overflow, abas por mouse e teclado, ampliacao, comparacao, FAQ,
-enderecos de contratacao e alinhamento dos botoes de planos. As capturas e o
+enderecos de contratacao e alinhamento dos botoes de planos. Tambem verifica
+a imagem responsiva selecionada, proporcoes estaveis entre abas, troca entre
+detalhe e tela completa, bloqueio da rolagem de fundo e retorno do foco.
+As capturas e o
 resultado ficam em `.next/landing-review` (nao versionado).
 
 ## Ambiente local
