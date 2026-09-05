@@ -12,6 +12,7 @@ import { createSession, deleteSession, getCurrentUser } from "@/lib/auth/session
 import { hashPassword, needsRehash, verifyPassword } from "@/lib/auth/password";
 import { prisma } from "@/lib/db/client";
 import { parseDocument } from "@/lib/document";
+import { readText } from "@/lib/form-data";
 import { assertIpRateLimit, assertRateLimit } from "@/lib/rate-limit";
 import { loginSchema, signupSchema } from "@/lib/validations";
 
@@ -26,8 +27,8 @@ export async function loginAction(formData: FormData) {
   }
 
   const parsed = loginSchema.safeParse({
-    email: formData.get("email"),
-    password: formData.get("password"),
+    email: readText(formData, "email"),
+    password: readText(formData, "password"),
   });
 
   if (!parsed.success) {
@@ -86,21 +87,21 @@ export async function signupAction(formData: FormData) {
   }
 
   const parsed = signupSchema.safeParse({
-    companyName: formData.get("companyName"),
-    document: formData.get("document"),
-    phone: formData.get("phone"),
-    postalCode: formData.get("postalCode"),
-    address: formData.get("address"),
-    addressNumber: formData.get("addressNumber"),
-    addressComplement: formData.get("addressComplement"),
-    province: formData.get("province"),
-    segment: formData.get("segment"),
-    ownerName: formData.get("ownerName"),
-    email: formData.get("email"),
-    password: formData.get("password"),
-    confirmPassword: formData.get("confirmPassword"),
-    plan: formData.get("plan"),
-    trial: formData.get("trial"),
+    companyName: readText(formData, "companyName"),
+    document: readText(formData, "document"),
+    phone: readText(formData, "phone"),
+    postalCode: readText(formData, "postalCode"),
+    address: readText(formData, "address"),
+    addressNumber: readText(formData, "addressNumber"),
+    addressComplement: readText(formData, "addressComplement"),
+    province: readText(formData, "province"),
+    segment: readText(formData, "segment"),
+    ownerName: readText(formData, "ownerName"),
+    email: readText(formData, "email"),
+    password: readText(formData, "password"),
+    confirmPassword: readText(formData, "confirmPassword"),
+    plan: readText(formData, "plan"),
+    trial: readText(formData, "trial"),
   });
 
   if (!parsed.success) {
