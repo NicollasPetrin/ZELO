@@ -51,11 +51,47 @@ function billingStatus() {
   }
 }
 
+/**
+ * Ultimo resultado da checagem do banco, reaproveitado por alguns segundos.
+ *
+ * Este endereco e publico, nao exige autenticacao e consulta o banco. Sem
+ * nenhuma contencao, quem quisesse bastava repeti-lo para transformar a
+ * aplicacao em um gerador de consultas — e, num banco que cobra por tempo de
+ * computo e dorme quando ocioso, isso queima cota e mantem o compute acordado.
+ *
+ * Limitar por IP seria a resposta reflexa e aqui e a errada: o limitador grava
+ * no proprio Postgres, entao cada requisicao barrada custaria uma escrita no
+ * lugar de uma leitura. Guardar o resultado resolve pelo outro lado: uma
+ * enxurrada passa a custar memoria, e o monitor de uptime, que chama a cada
+ * minuto, continua recebendo um resultado recente.
+ */
+const PROBE_TTL_MS = 10_000;
+let probe: { at: number; reachable: boolean } | null = null;
+
+async function databaseReachable() {
+  const agora = Date.now();
+
+  if (probe && agora - probe.at < PROBE_TTL_MS) {
+    return probe.reachable;
+  }
+
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    probe = { at: agora, reachable: true };
+  } catch {
+    probe = { at: agora, reachable: false };
+  }
+
+  return probe.reachable;
+}
+
 export async function GET() {
   const startedAt = performance.now();
 
   try {
-    await prisma.$queryRaw`SELECT 1`;
+    if (!(await databaseReachable())) {
+      throw new Error("banco inacessivel");
+    }
 
     return NextResponse.json(
       {

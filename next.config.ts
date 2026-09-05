@@ -2,6 +2,10 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   devIndicators: false,
+  // O cabecalho x-powered-by anunciava "Next.js" em toda resposta. Nao abre
+  // brecha sozinho, mas entrega de graca qual pilha atacar quando sair uma
+  // falha conhecida do framework.
+  poweredByHeader: false,
   async headers() {
     // 'unsafe-eval' so e necessario em desenvolvimento, onde o recarregamento
     // rapido avalia codigo em tempo de execucao. Em producao o build ja esta
