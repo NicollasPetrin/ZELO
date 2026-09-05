@@ -24,10 +24,12 @@ const commonPasswords = new Set([
 
 export const strongPasswordSchema = z
   .string()
-  .min(10, "Use pelo menos 10 caracteres.")
-  .regex(/[a-z]/, "Inclua uma letra minuscula.")
+  .min(8, "Use pelo menos 8 caracteres.")
   .regex(/[A-Z]/, "Inclua uma letra maiuscula.")
-  .regex(/[0-9]/, "Inclua um numero.")
+  // Especial e tudo que nao e letra sem acento nem numero. Listar os simbolos
+  // aceitos rejeitaria teclado que a pessoa usa todo dia, e a lista esquecida
+  // vira senha recusada sem motivo aparente.
+  .regex(/[^A-Za-z0-9]/, "Inclua um caractere especial, como ! @ # ou $.")
   .refine((password) => !commonPasswords.has(password.trim().toLowerCase()), {
     message: "Use uma senha menos comum.",
   });

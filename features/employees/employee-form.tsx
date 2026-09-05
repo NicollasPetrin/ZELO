@@ -136,7 +136,7 @@ export function EmployeeForm({
         </div>
         <div className="space-y-1.5">
           <Label>{initial?.id ? "Nova senha" : "Senha inicial"}</Label>
-          <Input placeholder={initial?.id ? "Deixe em branco para manter" : "Min. 10 caracteres, letra e numero"} type="password" {...register("password")} />
+          <Input placeholder={initial?.id ? "Deixe em branco para manter" : "Min. 8 caracteres, maiuscula e especial"} type="password" {...register("password")} />
           <FieldError message={errors.password?.message} />
         </div>
       </div>

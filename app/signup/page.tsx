@@ -10,7 +10,7 @@ import { BillingAddressFields } from "@/features/billing/billing-address-fields"
 import { planDetails, planOrder } from "@/lib/plans";
 
 const errorMessages: Record<string, string> = {
-  dados: "Revise os dados. A senha deve ter 10 caracteres, letra maiuscula, minuscula e numero.",
+  dados: "Revise os dados. A senha deve ter 8 caracteres, com letra maiuscula e caractere especial.",
   email: "Este e-mail ja esta cadastrado. Entre na conta ou use outro e-mail.",
   rate: "Muitas tentativas. Aguarde alguns minutos e tente novamente.",
   documento: "Este CNPJ ou CPF ja esta cadastrado em outra conta.",
