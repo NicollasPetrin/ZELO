@@ -1,5 +1,6 @@
 import "server-only";
 import { z } from "zod";
+import { parseAdminEmails } from "@/lib/auth/admin-allowlist";
 
 /**
  * Tamanho minimo do token de webhook. Nao entra no schema porque um valor curto
@@ -21,6 +22,11 @@ const envSchema = z.object({
   ASAAS_WEBHOOK_TOKEN: z.string().optional(),
   ASAAS_USER_AGENT: z.string().min(1).default("Zelo"),
   APP_URL: z.string().optional(),
+  // Quem enxerga a plataforma inteira. Fica fora do banco de proposito: o papel
+  // OWNER e dono de uma empresa, e transformar isso em acesso global exigiria
+  // uma coluna que qualquer escrita indevida poderia ligar. Numa variavel de
+  // ambiente, conceder acesso exige entrar no painel de deploy.
+  PLATFORM_ADMIN_EMAILS: z.string().optional(),
 });
 
 // Uma variavel declarada e vazia no .env chega aqui como "" e nao como undefined,
@@ -62,6 +68,7 @@ const parsedEnv = envSchema.safeParse({
   ASAAS_WEBHOOK_TOKEN: optionalEnv(process.env.ASAAS_WEBHOOK_TOKEN),
   ASAAS_USER_AGENT: optionalEnv(process.env.ASAAS_USER_AGENT),
   APP_URL: normalizeUrl(process.env.APP_URL),
+  PLATFORM_ADMIN_EMAILS: optionalEnv(process.env.PLATFORM_ADMIN_EMAILS),
 });
 
 // Este modulo e avaliado durante o build, quando o Next carrega os modulos de
@@ -197,4 +204,14 @@ export function getAsaasWebhookToken() {
   }
 
   return token;
+}
+
+/**
+ * E-mails com acesso ao painel da plataforma, normalizados do mesmo jeito que o
+ * cadastro guarda: minusculas e sem espaco. Lista vazia significa que ninguem
+ * entra — negar por omissao, para uma variavel esquecida nunca virar porta
+ * aberta.
+ */
+export function getPlatformAdminEmails() {
+  return parseAdminEmails(env.PLATFORM_ADMIN_EMAILS);
 }
