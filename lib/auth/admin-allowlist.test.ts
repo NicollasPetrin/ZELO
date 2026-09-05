@@ -10,6 +10,11 @@ describe("parseAdminEmails", () => {
     expect(parseAdminEmails("dono@zelo.com,,")).toEqual(["dono@zelo.com"]);
   });
 
+  it("ignora aspas que vieram coladas do arquivo .env", () => {
+    expect(parseAdminEmails('"dono@zelo.com"')).toEqual(["dono@zelo.com"]);
+    expect(parseAdminEmails("'dono@zelo.com', 'outro@zelo.com'")).toEqual(["dono@zelo.com", "outro@zelo.com"]);
+  });
+
   it("trata variavel ausente como lista vazia", () => {
     expect(parseAdminEmails(undefined)).toEqual([]);
     expect(parseAdminEmails("")).toEqual([]);

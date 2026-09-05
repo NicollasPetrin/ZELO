@@ -8,7 +8,11 @@
 export function parseAdminEmails(raw: string | undefined | null) {
   return (raw ?? "")
     .split(",")
-    .map((email) => email.trim().toLowerCase())
+    // As aspas caem porque num arquivo .env elas delimitam o valor, e no painel
+    // do Railway o valor vai cru. Quem copia a linha do .env.example para o
+    // painel leva as aspas junto, e sem isto entraria com a conta certa e
+    // levaria 404, sem nada indicando o motivo.
+    .map((email) => email.trim().replace(/^["']|["']$/g, "").trim().toLowerCase())
     .filter(Boolean);
 }
 
