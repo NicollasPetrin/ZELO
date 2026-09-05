@@ -53,13 +53,13 @@ export function StickyCta({ href, label, watchId }: { href: string; label: strin
       // teclado, e o foco desaparece atras de uma barra invisivel.
       inert={!visivel}
       aria-hidden={!visivel}
-      className={`fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-slate-950/95 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur transition-transform duration-300 motion-reduce:transition-none lg:hidden ${
+      className={`fixed inset-x-0 bottom-0 z-30 border-t border-emerald-900/10 bg-white/95 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur transition-transform duration-300 motion-reduce:transition-none lg:hidden ${
         visivel ? "translate-y-0" : "translate-y-full"
       }`}
     >
       <Link
         href={href}
-        className="flex h-12 w-full items-center justify-center gap-2 rounded-md bg-white text-sm font-semibold text-slate-950 transition-colors hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400"
+        className="flex h-12 w-full items-center justify-center gap-2 rounded-md bg-[#247451] text-sm font-semibold text-white transition-colors hover:bg-[#1c5c40] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
       >
         {label}
         <ArrowRight className="h-4 w-4" aria-hidden="true" />

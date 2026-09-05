@@ -1,0 +1,37 @@
+.showcase { color: #182620; }
+.tabs { display: flex; justify-content: center; gap: 8px; }
+.tabs button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 42px; padding: 0 20px; border-bottom: 2px solid transparent; color: #58625d; font-size: 13px; font-weight: 650; cursor: pointer; }
+.tabs button[aria-selected="true"] { color: #247451; border-color: #247451; }
+.tabs button:hover { color: #247451; background: #f6f8f7; }
+.description { text-align: center; margin: 12px auto 18px; min-height: 23px; }
+.description h2 { font-size: 17px; font-weight: 650; line-height: 1.5; letter-spacing: 0; }
+.description p { color: #58625d; font-size: 12px; line-height: 1.8; margin-top: 4px; }
+.figure { margin: 0; }
+.windowBar { display: flex; align-items: center; justify-content: space-between; height: 38px; background: #f3f6f4; border: 1px solid #d8e1db; border-bottom: 0; border-radius: 8px 8px 0 0; padding-inline: 13px; font-size: 10px; color: #637167; }
+.windowDots { display: flex; gap: 5px; }
+.windowDots i { width: 7px; height: 7px; border-radius: 50%; background: #c3cfc7; }
+.windowBar button, .dialogHeader button { width: 34px; height: 34px; display: inline-flex; justify-content: center; align-items: center; cursor: pointer; border-radius: 4px; }
+.windowBar button:hover, .dialogHeader button:hover { background: #e1e9e4; color: #172d24; }
+.imageButton { display: block; width: 100%; cursor: zoom-in; border: 1px solid #d8e1db; border-radius: 0 0 8px 8px; overflow: hidden; background: #f8fafc; box-shadow: 0 16px 35px -23px #254c3540; }
+.screenshot { display: block; width: 100%; height: auto; aspect-ratio: 8 / 5; object-fit: cover; object-position: top; }
+.figure figcaption { margin-top: 13px; text-align: center; color: #69756d; font-size: 10px; }
+.dialog { width: min(1440px, calc(100% - 32px)); max-width: none; max-height: calc(100dvh - 32px); padding: 0; margin: auto; border: 1px solid #cdd8d1; border-radius: 8px; background: #fff; color: #182620; }
+.dialog::backdrop { background: #132b20ba; }
+.dialog[open] { display: flex; flex-direction: column; }
+.dialogHeader { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 16px; border-bottom: 1px solid #dce3de; flex-shrink: 0; }
+.dialogHeader h2 { font-size: 14px; font-weight: 650; letter-spacing: 0; }
+.dialogHeader > div { display: flex; gap: 8px; }
+.dialogImage { overflow: auto; overscroll-behavior: contain; }
+.dialogImage img { display: block; width: 100%; height: auto; }
+.zoomed img { width: 1600px; max-width: none; }
+@media (max-width: 767px) {
+  .tabs { gap: 0; }
+  .tabs button { flex: 1; padding-inline: 8px; font-size: 12px; gap: 6px; }
+  .tabs button svg { width: 15px; }
+  .description { margin: 12px auto 17px; min-height: 40px; }
+  .description h2 { font-size: 15px; }
+  .description p { font-size: 11px; max-width: 290px; margin-inline: auto; }
+  .screenshot { aspect-ratio: 390 / 560; }
+  .windowBar { height: 36px; }
+  .figure figcaption { font-size: 9px; }
+}

@@ -31,38 +31,38 @@ const pendencias = (Object.keys(empresa) as Array<keyof typeof empresa>).filter(
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-white/10 bg-slate-950 px-4 py-12 text-slate-400 lg:px-8">
+    <footer className="border-t border-zinc-200 bg-white px-5 py-12 text-zinc-600 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr]">
           <div>
-            <BrandLogo variant="fullDark" decorative className="h-auto w-[150px]" />
+            <BrandLogo variant="full" className="h-auto w-[180px]" />
             <p className="mt-4 max-w-sm text-sm leading-6">
-              Gestao de tarefas, prazos, setores e metas para microempresas que precisam sair do improviso.
+              Gestão de tarefas, prazos, setores e metas. Clareza para a rotina da sua microempresa.
             </p>
           </div>
 
           <nav aria-label="Produto">
-            <h2 className="text-sm font-semibold text-white">Produto</h2>
+            <h2 className="text-sm font-semibold text-zinc-900">Produto</h2>
             <ul className="mt-3 space-y-1 text-sm">
-              <li><Link href="/#produto" className="inline-block py-2 hover:text-white">Recursos</Link></li>
-              <li><Link href="/#como-funciona" className="inline-block py-2 hover:text-white">Como funciona</Link></li>
-              <li><Link href="/#demonstracao" className="inline-block py-2 hover:text-white">Demonstracao</Link></li>
-              <li><Link href="/#planos" className="inline-block py-2 hover:text-white">Planos</Link></li>
+              <li><Link href="/#produto" className="inline-block py-2 hover:text-emerald-700">Recursos</Link></li>
+              <li><Link href="/#como-funciona" className="inline-block py-2 hover:text-emerald-700">Como funciona</Link></li>
+              <li><Link href="/#demonstracao" className="inline-block py-2 hover:text-emerald-700">Plataforma</Link></li>
+              <li><Link href="/#planos" className="inline-block py-2 hover:text-emerald-700">Planos</Link></li>
             </ul>
           </nav>
 
           <nav aria-label="Conta e documentos">
-            <h2 className="text-sm font-semibold text-white">Conta</h2>
+            <h2 className="text-sm font-semibold text-zinc-900">Conta</h2>
             <ul className="mt-3 space-y-1 text-sm">
-              <li><Link href="/login" className="inline-block py-2 hover:text-white">Entrar</Link></li>
-              <li><Link href="/signup" className="inline-block py-2 hover:text-white">Criar conta</Link></li>
-              <li><Link href="/termos" className="inline-block py-2 hover:text-white">Termos de uso</Link></li>
-              <li><Link href="/privacidade" className="inline-block py-2 hover:text-white">Politica de privacidade</Link></li>
+              <li><Link href="/login" className="inline-block py-2 hover:text-emerald-700">Entrar</Link></li>
+              <li><Link href="/signup" className="inline-block py-2 hover:text-emerald-700">Criar conta</Link></li>
+              <li><Link href="/termos" className="inline-block py-2 hover:text-emerald-700">Termos de uso</Link></li>
+              <li><Link href="/privacidade" className="inline-block py-2 hover:text-emerald-700">Política de privacidade</Link></li>
             </ul>
           </nav>
         </div>
 
-        <div className="mt-10 border-t border-white/10 pt-6 text-sm">
+        <div className="mt-10 border-t border-zinc-200 pt-6 text-xs leading-6">
           <p>
             {empresa.razaoSocial} - CNPJ {empresa.cnpj}
           </p>
@@ -74,7 +74,7 @@ export function SiteFooter() {
           <p className="mt-1">
             <a
               href={`mailto:${empresa.email}`}
-              className="inline-block py-2 underline underline-offset-2 hover:text-white"
+              className="inline-block break-all py-2 underline underline-offset-2 hover:text-emerald-700"
             >
               {empresa.email}
             </a>
