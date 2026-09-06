@@ -12,21 +12,28 @@ import styles from "./landing.module.css";
 
 export const metadata: Metadata = {
   title: "Zelo | Gestão de tarefas e equipes para microempresas",
-  description: "Organize tarefas, prazos, setores e metas da sua equipe com a Zelo. Conheça os planos e experimente por 30 dias.",
+  description: `Tarefa com responsável, prazo e setor, painel do que está atrasado e metas por equipe. Teste a Zelo por ${TRIAL_DAYS} dias. A partir de ${formatPriceCents(planDetails.BASIC.priceCents)}/mês.`,
 };
 
 const highlightedPlan = planOrder.find((code) => planDetails[code].highlight) ?? planOrder[0];
 const trialHref = `/signup?plano=${highlightedPlan}&teste=1`;
+const pains = [
+  "Você cobra a mesma coisa três vezes na mesma semana.",
+  "A planilha parou de ser atualizada e ninguém confia mais nela.",
+  "“Achei que era você quem ia fazer.”",
+  "Se você ficar uma semana fora, alguma coisa para.",
+];
 const features = [
-  { icon: ListChecks, title: "Cada tarefa, uma responsabilidade", description: "Defina quem faz, qual é o prazo e o que vem primeiro. Sua equipe encontra a rotina em um só lugar." },
-  { icon: Layers3, title: "Sua empresa, do seu jeito", description: "Organize os setores e acompanhe tarefas e metas com a estrutura que faz sentido para a sua operação." },
-  { icon: BellRing, title: "As atualizações ficam por perto", description: "Atribuições, comentários e mudanças de status chegam pelas notificações internas da plataforma." },
+  { icon: ListChecks, title: "Cada tarefa tem um dono", description: "O quê, quem e até quando, em toda tarefa. Sem responsável e sem data, não é tarefa: é intenção." },
+  { icon: Layers3, title: "Cada setor com a sua fila", description: "Balcão, estoque, financeiro, entrega. O funcionário vê a fila dele, o gerente vê a do setor, você vê a operação inteira." },
+  { icon: BellRing, title: "Você sabe sem precisar perguntar", description: "Atribuição, comentário e mudança de status chegam pelas notificações. O que atrasa aparece no painel." },
 ];
 const steps = [
-  { title: "Escolha o plano e crie sua conta", description: `Selecione o plano para iniciar os ${TRIAL_DAYS} dias de teste e cadastre sua empresa.` },
-  { title: "Organize a rotina da equipe", description: "Ajuste os setores, cadastre as pessoas e distribua tarefas com responsável e prazo." },
-  { title: "Acompanhe o que importa", description: "Veja pendências no painel e acompanhe os indicadores disponíveis no seu plano." },
+  { title: "Escolha o plano e crie a conta", description: `Selecione o plano para iniciar os ${TRIAL_DAYS} dias de teste e cadastre sua empresa.` },
+  { title: "Comece por um setor só", description: "Não cadastre a empresa inteira no primeiro dia. Um setor, três pessoas e as tarefas que se repetem toda semana." },
+  { title: "Abra o painel na segunda de manhã", description: "Antes de falar com qualquer pessoa, você já vê o que atrasou, o que vence hoje e qual setor travou." },
 ];
+const trustPoints = ["Preço na página, sem consultor", "Cancelamento pelo próprio painel", "Não vendemos os dados da sua operação"];
 
 export default function Home() {
   return (
@@ -49,35 +56,46 @@ export default function Home() {
       <main id="conteudo">
         <section className={styles.hero} aria-labelledby="titulo-principal">
           <div className={styles.container}>
-            <p className={styles.eyebrow}>Menos improviso. Mais clareza.</p>
-            <h1 id="titulo-principal">Gestão de equipes para microempresas.</h1>
-            <p className={styles.heroDescription}>Com a Zelo, cada pessoa sabe o que fazer.<br className={styles.desktopBreak} /> Tarefas, prazos e metas em um só lugar.</p>
+            <p className={styles.eyebrow}>Para microempresas que já têm equipe</p>
+            <h1 id="titulo-principal">Ninguém mais pergunta quem ficou de fazer.</h1>
+            <p className={styles.heroDescription}>A Zelo organiza tarefas, prazos, setores e metas da sua equipe.<br className={styles.desktopBreak} /> Cada linha tem um responsável e uma data, e o painel mostra o que atrasou.</p>
             <div id="cta-hero" className={styles.heroActions}>
               <Link href={trialHref} className={styles.primaryButton}>Testar {TRIAL_DAYS} dias grátis <ArrowRight size={18} aria-hidden="true" /></Link>
               <a href="#demonstracao" className={styles.secondaryButton}>Ver a plataforma <ChevronDown size={18} aria-hidden="true" /></a>
             </div>
-            <p className={styles.trialNote}><Check size={15} aria-hidden="true" /> Primeira cobrança após o teste. Cancele antes para não ser cobrado.</p>
+            <p className={styles.trialNote}><Check size={15} aria-hidden="true" /> {TRIAL_DAYS} dias de teste. A primeira cobrança só vem no fim: cancele antes pelo painel e não paga nada.</p>
           </div>
         </section>
         <section id="demonstracao" className={styles.demonstration} aria-label="Conheça a plataforma Zelo">
           <div className={styles.container}><ProductCarousel /></div>
+        </section>
+        <section id="rotina" className={`${styles.section} ${styles.softSection}`}>
+          <div className={styles.container}>
+            <div className={`${styles.sectionHeading} ${styles.centerHeading}`}>
+              <p className={styles.eyebrow}>Antes da Zelo</p>
+              <h2>A rotina não está perdida. Está espalhada.</h2>
+              <p>Uma parte no grupo do WhatsApp, uma parte na planilha, o resto na sua cabeça.</p>
+            </div>
+            <ul className={styles.painList}>{pains.map((pain) => <li key={pain}>{pain}</li>)}</ul>
+            <p className={styles.painAnswer}>Nenhum desses é problema de esforço da equipe. Todos são problema de registro.</p>
+          </div>
         </section>
         <section id="produto" className={styles.section}>
           <div className={styles.container}>
             <div className={styles.sectionHeading}>
               <p className={styles.eyebrow}>A rotina no lugar certo</p>
               <h2>Clareza para quem gerencia.<br />Direção para quem executa.</h2>
-              <p>Do primeiro compromisso à entrega, mantenha as informações junto de quem precisa delas.</p>
+              <p>Do combinado à entrega, a informação fica escrita no lugar onde a equipe já olha.</p>
             </div>
             <div className={styles.featureGrid}>{features.map(({ icon: Icon, title, description }) => (
               <article key={title} className={styles.feature}><Icon size={26} strokeWidth={1.7} aria-hidden="true" /><h3>{title}</h3><p>{description}</p></article>
             ))}</div>
-            <div className={styles.accessNote}><ShieldCheck size={21} aria-hidden="true" /><p><strong>Cada pessoa com seu acesso.</strong> Dono, gerente e funcionário têm permissões diferentes dentro da empresa.</p></div>
+            <div className={styles.accessNote}><ShieldCheck size={21} aria-hidden="true" /><p><strong>Cada pessoa com o seu acesso.</strong> Dono, gerente e funcionário enxergam recortes diferentes da empresa, e ninguém precisa compartilhar senha.</p></div>
           </div>
         </section>
         <section id="como-funciona" className={`${styles.section} ${styles.softSection}`}>
           <div className={styles.container}>
-            <div className={styles.sectionHeading}><p className={styles.eyebrow}>Primeiros passos guiados</p><h2>Comece com a rotina que você já tem.</h2><p>Organize uma etapa de cada vez, com orientações dentro da plataforma.</p></div>
+            <div className={styles.sectionHeading}><p className={styles.eyebrow}>Primeiros passos guiados</p><h2>Comece com a rotina que você já tem.</h2><p>Uma semana é suficiente para o hábito pegar, se você começar pequeno.</p></div>
             <ol className={styles.steps}>{steps.map((step, index) => <li key={step.title}><span className={styles.stepNumber}>0{index + 1}</span><h3>{step.title}</h3><p>{step.description}</p></li>)}</ol>
           </div>
         </section>
@@ -90,6 +108,7 @@ export default function Home() {
               return (
                 <article key={code} className={`${styles.plan} ${plan.highlight ? styles.recommendedPlan : ""}`} data-plan={code}>
                   <div className={styles.planHeading}><h3>{copy.name}</h3>{plan.highlight && <span className={styles.recommended}>Recomendado</span>}</div>
+                  <p className={styles.planBestFor}>{copy.bestFor}</p>
                   <p className={styles.planDescription}>{copy.description}</p>
                   <p className={styles.price}><strong>{formatPriceCents(plan.priceCents)}</strong><span>/mês</span></p>
                   <dl className={styles.planCapacity}>
@@ -105,6 +124,7 @@ export default function Home() {
                 </article>
               );
             })}</div>
+            <ul className={styles.trustRow}>{trustPoints.map((point) => <li key={point}><Check size={14} aria-hidden="true" />{point}</li>)}</ul>
             <details className={styles.comparison}>
               <summary>Comparar todos os recursos <ChevronDown size={20} aria-hidden="true" /></summary>
               <div className={styles.desktopComparison}>
@@ -124,7 +144,7 @@ export default function Home() {
         </section>
         <section className={styles.finalCta}>
           <div className={`${styles.container} ${styles.finalCtaInner}`}>
-            <div><p className={styles.eyebrow}>Zelo. Nada passa batido.</p><h2>O próximo passo é organizar o dia a dia.</h2><p>Traga sua equipe e conheça a plataforma na prática.</p></div>
+            <div><p className={styles.eyebrow}>Zelo. Nada passa batido.</p><h2>Comece por um setor, esta semana.</h2><p>Não precisa cadastrar a empresa inteira. Um setor, três pessoas e as tarefas que se repetem — o resto vem depois.</p></div>
             <Link href={trialHref} className={styles.primaryButton}>Testar {TRIAL_DAYS} dias grátis <ArrowRight size={18} aria-hidden="true" /></Link>
           </div>
         </section>

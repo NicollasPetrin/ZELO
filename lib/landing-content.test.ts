@@ -16,8 +16,14 @@ describe("landing content", () => {
     expect(row).toMatchObject({ BASIC: "Não incluídos", MANAGEMENT: "Básicos", COMPLETE: "Completos, com leitura executiva" });
   });
   it("states the actual trial and cancellation conditions", () => {
-    expect(landingFaqs[0].question).toContain(String(TRIAL_DAYS));
-    expect(landingFaqs[0].answer).toContain("primeira cobrança");
-    expect(landingFaqs[0].answer).toContain("cancele antes");
+    const trialFaq = landingFaqs.find((faq) => faq.question.includes(String(TRIAL_DAYS)));
+    expect(trialFaq?.answer).toContain("primeira cobrança");
+    expect(trialFaq?.answer).toContain("cancele antes");
+    const cancelFaq = landingFaqs.find((faq) => faq.question.includes("cancelamento"));
+    expect(cancelFaq?.answer).toContain("pelo próprio painel");
+  });
+  it.each(planOrder)("says who the %s plan is for", (code) => {
+    expect(landingPlanCopy[code].bestFor.length).toBeGreaterThan(0);
+    expect(landingPlanCopy[code].description.length).toBeGreaterThan(0);
   });
 });

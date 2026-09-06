@@ -103,8 +103,9 @@ export default function TermosPage() {
         <section className="mt-8">
           <h2 className="text-xl font-semibold">Encerramento</h2>
           <p className="mt-3 leading-7 text-slate-700">
-            O encerramento da assinatura e solicitado pelo e-mail de contato indicado no rodape. Podemos suspender uma
-            conta que descumpra estes termos, com aviso previo sempre que possivel.
+            O dono da empresa cancela a assinatura pelo proprio painel, nas configuracoes da assinatura. O acesso
+            continua ate o fim do periodo ja contratado ou do teste, sem renovacao. Podemos suspender uma conta que
+            descumpra estes termos, com aviso previo sempre que possivel.
           </p>
         </section>
 
