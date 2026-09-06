@@ -234,6 +234,8 @@ Os relatorios mudam conforme o plano:
 
 As regras ficam centralizadas em `lib/permissions.ts` e os guardas de rota/actions ficam em `lib/auth/guards.ts`.
 
+O acesso ao painel `/admin`, que cruza dados de todas as empresas, nao vem de papel nenhum: ele e concedido pela variavel `PLATFORM_ADMIN_EMAILS`. Um e-mail que esta nessa lista nao pode ser usado para criar conta — nem pelo cadastro publico nem pelo cadastro de funcionario — para que ninguem reivindique o endereco do administrador e entre pelo painel. Por isso a conta precisa existir antes de o endereco ser listado.
+
 ## Banco de dados
 
 O banco usa Prisma com PostgreSQL. O schema foi desenhado para suportar uma aplicacao SaaS real, com dominios separados para operacao, assinatura, relatorios e suporte.
@@ -377,7 +379,8 @@ Esse material resume problema, produto, modelo de negocio, planos, diferenciais,
 
 ## Pontos tecnicos importantes
 
-- A autenticacao atual e local, com cookie assinado e senha com `scrypt`.
+- A autenticacao atual e local, com cookie assinado e senha com `scrypt`. Trocar a senha de alguem ou inativar o acesso derruba as sessoes abertas daquela pessoa na hora, em vez de esperar o cookie vencer.
+- Consulta que alimenta a tela declara os campos que usa. Propriedade de componente cliente vai inteira para o payload da pagina, entao buscar a linha completa de `User` colocaria hash de senha dentro do HTML.
 - O upload de anexos esta modelado no banco, mas ainda pode evoluir para storage local ou externo.
 - A recorrencia ja possui schema e helper; um job/cron pode ser adicionado para gerar proximas tarefas automaticamente.
 - O banco usa PostgreSQL, com `DATABASE_URL` pooled e `DIRECT_URL` direta para migrations.

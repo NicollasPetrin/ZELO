@@ -24,8 +24,11 @@ export async function listGoalsForUser(user: CurrentUser, page = 1) {
     prisma.goal.findMany({
       where,
       include: {
-        department: true,
-        responsible: true,
+        // Apenas o nome, que e o unico dado destas relacoes que a tela mostra.
+        // `responsible: true` traria a linha inteira do usuario, hash de senha
+        // incluso.
+        department: { select: { id: true, name: true } },
+        responsible: { select: { id: true, name: true } },
       },
       orderBy: [{ status: "asc" }, { endDate: "asc" }, { id: "asc" }],
       skip: pageOffset(page),

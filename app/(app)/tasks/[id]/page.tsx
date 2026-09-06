@@ -15,6 +15,7 @@ import { formatDate, formatDateTime, isTaskLate, toDateInputValue } from "@/lib/
 import { recurrenceLabels } from "@/lib/labels";
 import { getPlanAccess } from "@/lib/plans";
 import { getActivePlanCode } from "@/lib/subscription";
+import { isSafeAttachmentUrl } from "@/lib/validations";
 
 export default async function TaskDetailPage({
   params,
@@ -131,9 +132,16 @@ export default async function TaskDetailPage({
                     <div className="flex items-center gap-2">
                       <Paperclip className="h-4 w-4 text-slate-400" aria-hidden="true" />
                       <div>
-                        <a href={attachment.fileUrl} className="font-medium text-slate-950 hover:underline" target="_blank" rel="noreferrer">
-                          {attachment.fileName}
-                        </a>
+                        {/* Anexo gravado antes da validacao de endereco pode
+                            trazer um esquema que nao se clica com seguranca.
+                            Nesse caso o nome aparece, mas sem virar link. */}
+                        {isSafeAttachmentUrl(attachment.fileUrl) ? (
+                          <a href={attachment.fileUrl} className="font-medium text-slate-950 hover:underline" target="_blank" rel="noreferrer">
+                            {attachment.fileName}
+                          </a>
+                        ) : (
+                          <span className="font-medium text-slate-950">{attachment.fileName}</span>
+                        )}
                         <p className="text-xs text-slate-500">
                           {attachment.fileType ?? "Arquivo"} - enviado por {attachment.author.name} em {formatDateTime(attachment.createdAt)}
                         </p>

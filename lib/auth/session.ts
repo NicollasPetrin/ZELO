@@ -1,5 +1,6 @@
 import "server-only";
 import { createHash, createHmac, randomBytes, timingSafeEqual } from "crypto";
+import type { Prisma } from "@prisma/client";
 import { cache } from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -86,6 +87,33 @@ export async function createSession(userId: string) {
     expires,
     maxAge: SESSION_DAYS * 24 * 60 * 60,
     path: "/",
+  });
+}
+
+/**
+ * Cliente do Prisma capaz de escrever em Session. Aceitar tanto o cliente comum
+ * quanto o de uma transacao permite revogar sessao no mesmo passo em que a
+ * senha e trocada: ou as duas coisas acontecem, ou nenhuma.
+ */
+type SessionWriter = Pick<Prisma.TransactionClient, "session">;
+
+/**
+ * Derruba todas as sessoes abertas de um usuario.
+ *
+ * Trocar a senha de alguem sem isto nao expulsa ninguem: o cookie que ja estava
+ * em uso continua valendo ate vencer sozinho. Ou seja, a acao que se toma
+ * justamente quando se desconfia de acesso indevido nao teria efeito algum
+ * sobre quem ja entrou.
+ */
+export async function revokeUserSessions(userId: string, client: SessionWriter = prisma) {
+  await client.session.updateMany({
+    where: {
+      userId,
+      revokedAt: null,
+    },
+    data: {
+      revokedAt: new Date(),
+    },
   });
 }
 

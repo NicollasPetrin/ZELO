@@ -167,10 +167,44 @@ export const commentSchema = z.object({
   text: z.string().trim().min(2, "Escreva um comentario."),
 });
 
+export const ATTACHMENT_URL_MESSAGE =
+  "Informe um endereco http:// ou https://, ou um caminho do proprio site comecando com /.";
+
+/**
+ * Endereco de anexo que a tela pode transformar em link.
+ *
+ * O valor e digitado por quem envia e a tarefa o coloca dentro de um `<a href>`
+ * que todo mundo com acesso a tarefa enxerga. Sem conferir o esquema, daria
+ * para gravar `javascript:...` ou `data:text/html,...` e deixar a armadilha
+ * esperando o proximo colega que abrisse a tarefa.
+ *
+ * Caminho relativo continua valendo, porque e o que o formulario sugere e o que
+ * um arquivo hospedado aqui mesmo usa. Mas so o de uma barra: `//outro.site` e
+ * `/\outro.site` sao lidos pelo navegador como endereco de outro dominio, e
+ * passariam por "caminho local" sem serem.
+ */
+export function isSafeAttachmentUrl(value: string) {
+  if (value.startsWith("/")) {
+    return value[1] !== "/" && value[1] !== "\\";
+  }
+
+  try {
+    const url = new URL(value);
+
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 export const attachmentSchema = z.object({
   taskId: z.string(),
   fileName: z.string().trim().min(2, "Informe o nome do arquivo."),
-  fileUrl: z.string().trim().min(2, "Informe a URL ou caminho do arquivo."),
+  fileUrl: z
+    .string()
+    .trim()
+    .min(2, "Informe a URL ou caminho do arquivo.")
+    .refine(isSafeAttachmentUrl, ATTACHMENT_URL_MESSAGE),
   fileType: z.string().trim().optional().or(z.literal("")),
   fileSize: z.coerce.number().min(0).optional().or(z.literal("")),
 });

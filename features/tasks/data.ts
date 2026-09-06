@@ -105,6 +105,15 @@ export async function listTeamTasks(user: CurrentUser, filters: TaskFilters, pag
   return paginatedResult(items, totalItems, page);
 }
 
+/**
+ * Opcoes dos seletores do formulario de tarefa.
+ *
+ * O `select` e obrigatorio, nao economia: estas listas sao entregues como
+ * propriedade de um componente cliente, e o React serializa o objeto inteiro no
+ * payload da pagina — inclusive os campos que a tela nunca mostra. Buscar a
+ * linha completa de User colocaria o hash de senha de toda a equipe dentro do
+ * HTML de quem abrir /team-tasks.
+ */
 export async function getTaskFormOptions(companyId: string) {
   const [departments, users] = await Promise.all([
     prisma.department.findMany({
@@ -112,6 +121,7 @@ export async function getTaskFormOptions(companyId: string) {
         companyId,
         isActive: true,
       },
+      select: { id: true, name: true },
       orderBy: { name: "asc" },
     }),
     prisma.user.findMany({
@@ -119,6 +129,7 @@ export async function getTaskFormOptions(companyId: string) {
         companyId,
         isActive: true,
       },
+      select: { id: true, name: true },
       orderBy: { name: "asc" },
     }),
   ]);
@@ -135,21 +146,32 @@ export async function getTaskDetail(user: CurrentUser, id: string) {
       ...(canManage ? {} : { assigneeId: user.id }),
     },
     include: {
-      assignee: true,
-      creator: true,
-      department: true,
+      // Somente o que a tela mostra. `assignee: true` traria a linha inteira de
+      // User, hash de senha incluso, para dentro do render.
+      assignee: { select: { id: true, name: true } },
+      creator: { select: { id: true, name: true } },
+      department: { select: { id: true, name: true } },
       recurrenceRule: true,
       comments: {
-        include: {
-          author: true,
+        select: {
+          id: true,
+          text: true,
+          createdAt: true,
+          author: { select: { id: true, name: true } },
         },
         orderBy: {
           createdAt: "asc",
         },
       },
       attachments: {
-        include: {
-          author: true,
+        select: {
+          id: true,
+          fileName: true,
+          fileUrl: true,
+          fileType: true,
+          fileSize: true,
+          createdAt: true,
+          author: { select: { id: true, name: true } },
         },
         orderBy: {
           createdAt: "desc",

@@ -19,12 +19,14 @@ export function listDepartments(companyId: string) {
   });
 }
 
+/** Seletor de setor: entregue a componente cliente, so leva id e nome. */
 export function listActiveDepartments(companyId: string) {
   return prisma.department.findMany({
     where: {
       companyId,
       isActive: true,
     },
+    select: { id: true, name: true },
     orderBy: { name: "asc" },
   });
 }

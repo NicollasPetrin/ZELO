@@ -55,8 +55,8 @@ export async function getDashboardData(user: CurrentUser) {
         },
       },
       include: {
-        assignee: true,
-        department: true,
+        assignee: { select: { id: true, name: true } },
+        department: { select: { id: true, name: true } },
       },
       orderBy: {
         dueDate: "asc",

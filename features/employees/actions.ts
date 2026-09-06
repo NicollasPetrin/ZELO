@@ -4,14 +4,33 @@ import { Prisma, type SubscriptionPlan } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { actionError } from "@/lib/action-result";
 import { recordActivity } from "@/lib/audit";
+import { emailIsAllowed } from "@/lib/auth/admin-allowlist";
 import { assertCanManageTeam } from "@/lib/auth/guards";
 import { hashPassword } from "@/lib/auth/password";
-import { requireUser } from "@/lib/auth/session";
+import { createSession, requireUser, revokeUserSessions } from "@/lib/auth/session";
 import { prisma } from "@/lib/db/client";
+import { getPlatformAdminEmails } from "@/lib/env";
 import { calculateMonthlyPrice, canActivateAdditionalUser, getPlanAccess, planDetails } from "@/lib/plans";
 import { assertUserActionRateLimit } from "@/lib/rate-limit";
 import { assertCompanyHasActivePlan } from "@/lib/subscription";
 import { employeeSchema, idSchema } from "@/lib/validations";
+
+// Nao exportadas: um arquivo "use server" so pode exportar funcoes async.
+const EMAIL_TAKEN_MESSAGE = "Este e-mail ja esta cadastrado. Use outro endereco.";
+
+/**
+ * Se o endereco e um dos que abrem o painel da plataforma.
+ *
+ * Quem entra com um e-mail dessa lista enxerga os numeros de todas as empresas.
+ * E o dono de qualquer empresa escolhe livremente o e-mail e a senha de um
+ * funcionario que ele mesmo cadastra: sem este bloqueio, bastava criar alguem
+ * com o endereco da lista para entrar no painel da plataforma pela porta da
+ * frente. A mensagem devolvida e a mesma de e-mail ja cadastrado, de proposito,
+ * para nao servir de sonda para descobrir qual endereco e o do administrador.
+ */
+function isPlatformAdminEmail(email: string) {
+  return emailIsAllowed(getPlatformAdminEmails(), email);
+}
 
 function userLimitMessage(plan: SubscriptionPlan) {
   const maxUsers = planDetails[plan].maxUsers;
@@ -72,6 +91,15 @@ export async function saveEmployeeAction(values: unknown) {
     await assertUserActionRateLimit(user.id, "employees:save");
 
     const parsed = employeeSchema.parse(values);
+
+    // O mesmo formulario edita qualquer pessoa da empresa, inclusive quem esta
+    // salvando. Sem esta linha, o dono conseguiria se inativar por aqui e
+    // deixar a empresa sem ninguem que possa gerenciar equipe — a acao de
+    // ativar/inativar ja barra isso, e o formulario nao pode ser o desvio.
+    if (parsed.id === user.id && !parsed.isActive) {
+      throw new Error("Voce nao pode inativar o proprio acesso.");
+    }
+
     const department = await prisma.department.findFirst({
       where: {
         id: parsed.departmentId,
@@ -105,12 +133,20 @@ export async function saveEmployeeAction(values: unknown) {
             },
             select: {
               id: true,
+              email: true,
               isActive: true,
             },
           });
 
           if (!existingEmployee) {
             throw new Error("Funcionario nao encontrado.");
+          }
+
+          // A comparacao e com o e-mail atual para nao travar a edicao de quem
+          // ja e administrador da plataforma e trabalha em alguma empresa: o
+          // que se barra e passar a usar o endereco, nao continuar com ele.
+          if (parsed.email !== existingEmployee.email && isPlatformAdminEmail(parsed.email)) {
+            throw new Error(EMAIL_TAKEN_MESSAGE);
           }
 
           if (!existingEmployee.isActive && parsed.isActive) {
@@ -140,10 +176,21 @@ export async function saveEmployeeAction(values: unknown) {
           if (result.count === 0) {
             throw new Error("Funcionario nao encontrado.");
           }
+
+          // Senha nova ou acesso inativado tem de valer agora, e nao quando o
+          // cookie vencer sozinho: quem ja estava logado com a senha antiga
+          // continuaria dentro por ate tres dias.
+          if (parsed.password || !parsed.isActive) {
+            await revokeUserSessions(existingEmployee.id, tx);
+          }
         },
         { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
       );
     } else {
+      if (isPlatformAdminEmail(parsed.email)) {
+        throw new Error(EMAIL_TAKEN_MESSAGE);
+      }
+
       await prisma.$transaction(
         async (tx) => {
           if (parsed.isActive) {
@@ -172,6 +219,14 @@ export async function saveEmployeeAction(values: unknown) {
       );
     }
 
+    // Quem acabou de trocar a propria senha continua aqui dentro: a revogacao
+    // acima serve para derrubar as outras sessoes, e nao para expulsar do
+    // produto quem esta no meio da edicao e acabou de provar que sabe a senha
+    // nova. As demais sessoes ja cairam.
+    if (parsed.id === user.id && parsed.password) {
+      await createSession(user.id);
+    }
+
     await recordActivity({
       companyId: user.companyId,
       actorId: user.id,
@@ -191,6 +246,12 @@ export async function saveEmployeeAction(values: unknown) {
     revalidatePath("/settings");
     return { ok: true, message: extraUserMessage ?? "Funcionario salvo." } as const;
   } catch (error) {
+    // O e-mail e unico no banco. Sem traduzir aqui, o conflito chegaria a tela
+    // como erro generico, e quem cadastrou nao saberia o que corrigir.
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      return actionError(new Error(EMAIL_TAKEN_MESSAGE), "Nao foi possivel salvar o funcionario.");
+    }
+
     return actionError(error, "Nao foi possivel salvar o funcionario.");
   }
 }
@@ -251,6 +312,12 @@ export async function toggleEmployeeAction(id: string, isActive: boolean, confir
 
         if (result.count === 0) {
           throw new Error("Funcionario nao encontrado.");
+        }
+
+        // Inativar precisa fechar a porta na hora. A sessao aberta segue valida
+        // ate vencer, e quem foi desligado continuaria com o produto aberto.
+        if (!isActive) {
+          await revokeUserSessions(parsedId, tx);
         }
       },
       { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },

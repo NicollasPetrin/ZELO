@@ -29,6 +29,27 @@ export async function saveGoalAction(values: unknown) {
       throw new Error("Metas por setor ou responsavel estao disponiveis a partir do Plano Gestao.");
     }
 
+    const departmentId = access.canUseGoalAssignments ? parsed.departmentId || null : null;
+    const responsibleId = access.canUseGoalAssignments ? parsed.responsibleId || null : null;
+
+    // Setor e responsavel chegam do formulario, entao sao identificadores
+    // escolhidos por quem envia. Sem conferir a empresa, bastava trocar o valor
+    // no envio para amarrar a meta a uma pessoa ou a um setor de outro cliente —
+    // e a tela de metas mostra o nome do responsavel, o que transformaria isso
+    // em leitura de dado alheio. E a mesma conferencia que a tarefa ja faz.
+    const [department, responsible] = await Promise.all([
+      departmentId
+        ? prisma.department.findFirst({ where: { id: departmentId, companyId: user.companyId }, select: { id: true } })
+        : null,
+      responsibleId
+        ? prisma.user.findFirst({ where: { id: responsibleId, companyId: user.companyId }, select: { id: true } })
+        : null,
+    ]);
+
+    if ((departmentId && !department) || (responsibleId && !responsible)) {
+      throw new Error("Setor ou responsavel invalido.");
+    }
+
     const data = {
       title: parsed.title,
       description: parsed.description || null,
@@ -37,8 +58,8 @@ export async function saveGoalAction(values: unknown) {
       unit: parsed.unit,
       period: parsed.period,
       status: parsed.status,
-      departmentId: access.canUseGoalAssignments ? parsed.departmentId || null : null,
-      responsibleId: access.canUseGoalAssignments ? parsed.responsibleId || null : null,
+      departmentId,
+      responsibleId,
       startDate: dateValue(parsed.startDate),
       endDate: dateValue(parsed.endDate),
     };
@@ -47,7 +68,7 @@ export async function saveGoalAction(values: unknown) {
     if (parsed.id) {
       const result = await prisma.goal.updateMany({
         where: {
-          id: parsed.id,
+          id: idSchema.parse(parsed.id),
           companyId: user.companyId,
         },
         data,

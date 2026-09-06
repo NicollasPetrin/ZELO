@@ -4,10 +4,11 @@ import type { SubscriptionPlan } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { ensureAsaasCustomer } from "@/features/billing/asaas-customer";
 import { createCheckout } from "@/lib/asaas/client";
-import { getAppUrl } from "@/lib/env";
+import { getAppUrl, getPlatformAdminEmails } from "@/lib/env";
 import { parsePhone } from "@/lib/phone";
 import { planDetails } from "@/lib/plans";
 import { TRIAL_DAYS } from "@/lib/subscription";
+import { emailIsAllowed } from "@/lib/auth/admin-allowlist";
 import { createSession, deleteSession, getCurrentUser } from "@/lib/auth/session";
 import { hashPassword, needsRehash, verifyPassword } from "@/lib/auth/password";
 import { prisma } from "@/lib/db/client";
@@ -127,7 +128,12 @@ export async function signupAction(formData: FormData) {
     },
   });
 
-  if (existingUser) {
+  // O e-mail da lista de administradores abre o painel com os numeros de todas
+  // as empresas, e o cadastro publico e aberto a qualquer um. Sem isto, quem
+  // adivinhasse o endereco do administrador antes de ele ter conta criaria a
+  // conta dele e entraria no painel. Recusa com a mesma resposta de e-mail ja
+  // cadastrado: quem tenta nao descobre que acertou o endereco.
+  if (existingUser || emailIsAllowed(getPlatformAdminEmails(), parsed.data.email)) {
     redirect("/signup?error=email");
   }
 
