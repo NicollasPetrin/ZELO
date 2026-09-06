@@ -1,0 +1,345 @@
+// Gera as artes de post e de carrossel do Instagram a partir do texto das pecas.
+//
+// Nada aqui e improviso visual: as cores e a tipografia sao as mesmas da landing
+// (app/landing.module.css) e o simbolo e o proprio public/brand/zelo-icon.svg, para
+// que uma arte publicada no feed pareca a mesma marca de quem chega no site depois.
+//
+//   node scripts/gerar-artes.mjs            # todas as pecas
+//   node scripts/gerar-artes.mjs post-03    # so as que casarem com o filtro
+//
+// Saida em output/artes/, que o .gitignore ja descarta. O formato e 1080x1350 (4:5),
+// o recorte de feed que o Instagram menos comprime; a captura sai em 2x para o app
+// reduzir com nitidez em vez de ampliar.
+import { mkdir, writeFile } from "node:fs/promises";
+import { resolve } from "node:path";
+import { pathToFileURL } from "node:url";
+
+// Importado por caminho absoluto, o playwright chega como modulo CJS e o
+// chromium fica em `default`; como especificador simples, vem nomeado.
+const playwright = await import(process.env.PLAYWRIGHT_MODULE ? pathToFileURL(process.env.PLAYWRIGHT_MODULE).href : "playwright");
+const { chromium } = playwright.chromium ? playwright : playwright.default;
+
+const VERDE = "#247451";        // acento da landing
+const VERDE_LOGO = "#2E7D5B";   // verde do simbolo, mantido como esta no arquivo
+const VERDE_CLARO = "#7FCBA6";  // acento sobre fundo escuro
+
+// ---------------------------------------------------------------- conteudo
+// Cada peca e uma legenda ja escrita em docs/marketing-conteudo.md. A arte carrega
+// so o gancho: quem para de rolar le seis palavras, nao um paragrafo.
+const POSTS = [
+  { nome: "post-01-quem-ficou-de-fazer", tipo: "frase", escuro: false,
+    olho: "Toda semana, a mesma cena", titulo: "Quem ficou<br>de fazer?",
+    apoio: "E o grupo fica em silêncio.", rodape: "Tarefa com responsável, prazo e setor." },
+  { nome: "post-02-dois-minutos", tipo: "numero", escuro: false,
+    olho: "No fim do expediente", numero: "2", unidade: "minutos",
+    titulo: "resolvem metade da bagunça da sua semana.",
+    passos: ["Cada pessoa abre a lista dela", "Marca o que terminou", "Vê o que ficou para amanhã"],
+    rodape: "O difícil não é a ferramenta. É o hábito." },
+  { nome: "post-03-a-planilha", tipo: "planilha", escuro: false,
+    olho: "Ela não morreu de uma vez", titulo: "A planilha parou<br>de ser atualizada.",
+    arquivo: "rotina_equipe.xlsx", carimbo: "Última edição: 12 dias atrás",
+    linhas: [["Conferir estoque", "Marcos", "12/08", "feito?"],
+             ["Ligar fornecedor", "", "", ""],
+             ["Escala do sábado", "Ana", "semana passada", ""],
+             ["Trocar etiquetas", "", "", ""]],
+    rodape: "Boa para calcular. Ruim para combinar." },
+  { nome: "post-04-setores", tipo: "captura", escuro: false,
+    olho: "Cada setor com a sua fila", titulo: "Sua empresa não é<br>um bloco só.",
+    apoio: "O funcionário vê a fila dele. O gerente vê a do setor. Você vê tudo.",
+    captura: "public/demo/painel.webp", rodape: "Balcão, estoque, financeiro, entrega." },
+  { nome: "post-05-cobranca-tripla", tipo: "baloes", escuro: false,
+    olho: "Cobrança é sintoma", titulo: "Três vezes<br>na mesma semana.",
+    mensagem: "Oi, conseguiu ver aquilo?", horarios: ["08:12", "14:47", "17:30"],
+    rodape: "Combinado sem registro vira cobrança." },
+  { nome: "post-06-tarefa-bem-escrita", tipo: "comparacao", escuro: false,
+    olho: "O que separa as duas", titulo: "Isso não é<br>uma tarefa.",
+    ruim: "ver o estoque",
+    bom: "Conferir estoque de bebidas e lançar a reposição — Marcos — sexta, 17h",
+    apoio: "Toda tarefa precisa de três coisas: <strong>o quê</strong>, <strong>quem</strong> e <strong>até quando</strong>.",
+    rodape: "Faltando uma, vira intenção." },
+  { nome: "post-07-o-painel", tipo: "captura", escuro: false,
+    olho: "Segunda-feira, 8h", titulo: "Você abre o painel<br>e já sabe.",
+    apoio: "O que atrasou, o que vence hoje, qual setor travou. Sem perguntar para ninguém.",
+    captura: "public/demo/zelo-painel.webp", rodape: "Junta o que está espalhado." },
+  { nome: "post-08-memoria-do-dono", tipo: "frase", escuro: true,
+    olho: "Enquanto o controle mora na sua cabeça",
+    titulo: "O sistema da<br>sua empresa<br>é a sua memória.",
+    rodape: "A empresa não funciona sem você." },
+  { nome: "post-09-permissoes", tipo: "papeis", escuro: false,
+    olho: "Nem todo mundo precisa ver tudo", titulo: "Cada papel enxerga<br>um recorte.",
+    papeis: [["Funcionário", "As tarefas dele, o prazo e o que precisa atualizar."],
+             ["Gerente", "O setor inteiro, quem está com o quê, o que atrasou."],
+             ["Dono", "A operação toda, os relatórios e a assinatura."]],
+    rodape: "Cada pessoa com o seu acesso." },
+  { nome: "post-10-preco", tipo: "precos", escuro: false,
+    olho: "Sem “fale com um consultor”", titulo: "Preço na cara.",
+    planos: [["Básico", "R$ 59,90", "5 pessoas inclusas", false],
+             ["Gestão", "R$ 199,90", "20 pessoas inclusas", true],
+             ["Completo", "R$ 499,90", "60 pessoas inclusas", false]],
+    apoio: "Por mês. Cancelamento pelo próprio painel, sem ligar para ninguém.",
+    rodape: "Não vendemos os dados da sua operação." },
+];
+
+// Capa e slide final saem escuros: no feed eles marcam onde o carrossel comeca e
+// termina, e a pessoa que ja viu um reconhece o proximo antes de ler.
+const CARROSSEIS = [
+  { prefixo: "carrossel-1-cinco-sinais", slides: [
+    ["capa", null, "5 sinais de que a rotina<br>da sua empresa<br>saiu do controle", "Nenhum deles é culpa da equipe."],
+    ["ponto", "1", "Você cobra a mesma coisa três vezes.", "Se precisa repetir, o combinado não ficou registrado em lugar nenhum."],
+    ["ponto", "2", "A planilha está desatualizada.", "E todo mundo sabe disso — por isso ninguém confia mais nela."],
+    ["ponto", "3", "Você é o único que sabe o que está atrasado.", "A empresa roda na sua memória, não em um sistema."],
+    ["ponto", "4", "“Achei que era você quem ia fazer”.", "Tarefa sem dono não é tarefa. É intenção."],
+    ["ponto", "5", "Você não consegue tirar uma semana de férias.", "Sem você, alguma coisa para. Sempre."],
+    ["virada", null, "O que esses cinco têm em comum", "Nenhum é problema de esforço. Todos são problema de registro."],
+    ["virada", null, "O que resolve", "Toda tarefa com três coisas: o quê, quem, até quando."],
+    ["virada", null, "E um lugar onde a equipe olha", "Não um grupo que rola para cima e some."],
+    ["fecho", null, "Gestão de tarefas<br>para microempresa.", "30 dias grátis. Link na bio."],
+  ]},
+  { prefixo: "carrossel-2-uma-semana", slides: [
+    ["capa", null, "Como organizar<br>a rotina da sua equipe<br>em uma semana", "Sem parar a operação."],
+    ["ponto", "SEG", "Escolha UM setor.", "Não a empresa toda. O setor que mais te dá dor de cabeça."],
+    ["ponto", "TER", "Liste o que se repete.", "As tarefas de toda semana, com nome e dia. Normalmente são menos de dez."],
+    ["ponto", "QUA", "Dê dono e data.", "Uma pessoa por tarefa. Data específica, não “essa semana”."],
+    ["ponto", "QUI", "Cadastre 3 pessoas.", "Só três. As que mais recebem tarefa sua."],
+    ["ponto", "SEX", "Combine a rotina dos 2 minutos.", "Fim do expediente: marca o que fez, vê o que sobrou."],
+    ["ponto", "SEG", "Abra o painel antes de falar com alguém.", "Na segunda seguinte, você já sabe o que atrasou."],
+    ["virada", null, "O erro mais comum", "Tentar cadastrar a empresa inteira no primeiro dia. Ninguém aguenta."],
+    ["virada", null, "A regra", "Um setor, três pessoas, uma semana. Depois expande."],
+    ["fecho", null, "30 dias grátis<br>para testar<br>essa semana.", "Link na bio."],
+  ]},
+];
+
+// ---------------------------------------------------------------- fonte e marca
+// A Manrope entra embutida em base64: a captura roda em file://, sem rede garantida,
+// e uma fonte que nao carrega troca a arte inteira por Arial sem avisar.
+async function manropeEmbutida() {
+  const agente = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36";
+  const css = await (await fetch("https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&display=swap",
+    { headers: { "User-Agent": agente } })).text();
+  let saida = css;
+  for (const url of new Set(css.match(/https:\/\/fonts\.gstatic\.com\/[^)]+/g) ?? [])) {
+    const bytes = Buffer.from(await (await fetch(url)).arrayBuffer());
+    const tipo = url.endsWith(".woff2") ? "font/woff2" : "font/ttf";
+    saida = saida.replaceAll(`url(${url})`, `url(data:${tipo};base64,${bytes.toString("base64")})`);
+  }
+  return saida;
+}
+
+async function capturaEmbutida(caminho) {
+  const { readFile } = await import("node:fs/promises");
+  const bytes = await readFile(resolve(caminho));
+  return `data:image/webp;base64,${bytes.toString("base64")}`;
+}
+
+const marca = (escuro) => {
+  const cor = escuro ? VERDE_CLARO : VERDE_LOGO;
+  return `<svg viewBox="0 0 120 120" width="54" height="54" aria-hidden="true">`
+    + `<path d="M 68 8 A 54 54 0 1 1 18 30" fill="none" stroke="${cor}" stroke-width="13" stroke-linecap="round"/>`
+    + `<circle cx="60" cy="60" r="16" fill="${cor}"/></svg>`;
+};
+const topo = (escuro) => `<div class="top">${marca(escuro)}<span class="wordmark">Zelo</span></div>`;
+const rodape = (texto, direita = "30 dias grátis") =>
+  `<div class="foot"><span>${texto}</span><b>${direita}</b></div>`;
+const contador = (n, total) =>
+  `<div class="foot"><span>${n === total ? "Zelo · gestão de tarefas para microempresa" : "arrasta →"}</span><b>${n} / ${total}</b></div>`;
+
+// ---------------------------------------------------------------- miolos
+const MIOLO = {
+  frase: (p) => `<p class="eyebrow">${p.olho}</p><h1 class="xl">${p.titulo}</h1>`
+    + (p.apoio ? `<p class="lead green">${p.apoio}</p>` : ""),
+
+  numero: (p) => `<p class="eyebrow">${p.olho}</p>
+    <div class="lockup"><span class="num">${p.numero}</span><span class="unit">${p.unidade}</span></div>
+    <p class="lead">${p.titulo}</p>
+    <ol class="steps">${p.passos.map((t, i) => `<li><span>${i + 1}</span><em>${t}</em></li>`).join("")}</ol>`,
+
+  planilha: (p) => `<p class="eyebrow">${p.olho}</p><h1 class="lg">${p.titulo}</h1>
+    <div class="sheet">
+      <div class="sheet-bar"><span>${p.arquivo}</span><b>${p.carimbo}</b></div>
+      <table><tr class="th"><td>Tarefa</td><td>Quem</td><td>Prazo</td><td>Status</td></tr>
+      ${p.linhas.map(([t, q, pr, s]) => `<tr><td>${t}</td>`
+        + [q, pr, s].map((v, i) => v === ""
+            ? `<td class="empty">—</td>`
+            : `<td${(i === 1 && v.includes("semana")) || i === 2 ? ' class="old"' : ""}>${v}</td>`).join("")
+        + `</tr>`).join("")}
+      </table>
+    </div>`,
+
+  captura: (p) => `<p class="eyebrow">${p.olho}</p><h1 class="lg">${p.titulo}</h1>
+    <p class="sub">${p.apoio}</p>
+    <div class="shot"><img src="${p.capturaUri}" alt=""></div>`,
+
+  baloes: (p) => `<p class="eyebrow">${p.olho}</p><h1 class="lg">${p.titulo}</h1>
+    <div class="chat">${p.horarios.map((h) =>
+      `<div class="bubble"><p>${p.mensagem}</p><time>${h}</time></div>`).join("")}</div>`,
+
+  comparacao: (p) => `<p class="eyebrow">${p.olho}</p><h1 class="lg">${p.titulo}</h1>
+    <div class="compare">
+      <div class="col bad"><b>Mal escrita</b><p>${p.ruim}</p></div>
+      <div class="col good"><b>Bem escrita</b><p>${p.bom}</p></div>
+    </div>
+    <p class="sub">${p.apoio}</p>`,
+
+  papeis: (p) => `<p class="eyebrow">${p.olho}</p><h1 class="lg">${p.titulo}</h1>
+    <div class="roles">${p.papeis.map(([n, d]) =>
+      `<div class="role"><b>${n}</b><p>${d}</p></div>`).join("")}</div>`,
+
+  precos: (p) => `<p class="eyebrow">${p.olho}</p><h1 class="lg">${p.titulo}</h1>
+    <div class="prices">${p.planos.map(([n, v, inc, hl]) =>
+      `<div class="price${hl ? " hl" : ""}"><b>${n}</b><span class="val">${v}</span><em>${inc}</em></div>`).join("")}</div>
+    <p class="sub">${p.apoio}</p>`,
+};
+
+const MIOLO_SLIDE = {
+  capa: (_r, t, a) => `<p class="eyebrow">Carrossel</p><h1 class="cv">${t}</h1><p class="lead soft">${a}</p>`,
+  fecho: (_r, t, a) => `<p class="eyebrow">Zelo</p><h1 class="cv">${t}</h1><p class="lead soft">${a}</p>`,
+  ponto: (r, t, a) => `<span class="chipnum">${r}</span><h1 class="md">${t}</h1><p class="sub big">${a}</p>`,
+  virada: (_r, t, a) => `<h1 class="md">${t}</h1><p class="sub big">${a}</p>`,
+};
+
+const CSS = `
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#333;font-family:"Manrope",sans-serif;display:flex;flex-wrap:wrap;gap:20px;padding:20px}
+.board{width:1080px;height:1350px;background:#f7f9f8;color:#182620;
+  display:flex;flex-direction:column;justify-content:space-between;padding:92px 88px 84px;overflow:hidden}
+.board.dark{background:#132520;color:#f2f7f4}
+.top{display:flex;align-items:center;gap:16px}
+.wordmark{font-size:38px;font-weight:800;letter-spacing:-.02em}
+.mid{display:flex;flex-direction:column;gap:48px;margin-block:auto;padding-bottom:40px}
+.mid.tight{gap:34px}
+.eyebrow{font-size:26px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:${VERDE}}
+.dark .eyebrow{color:${VERDE_CLARO}}
+h1{font-weight:800;letter-spacing:-.045em;line-height:.99}
+h1.xl{font-size:126px}
+h1.cv{font-size:88px;letter-spacing:-.038em;line-height:1.08}
+h1.lg{font-size:96px;letter-spacing:-.04em;line-height:1.02}
+h1.md{font-size:78px;letter-spacing:-.035em;line-height:1.08}
+.lead{font-size:44px;font-weight:700;line-height:1.3;letter-spacing:-.015em}
+.lead.green{color:${VERDE}}
+.lead.soft{color:#a8c4b7;font-weight:600}
+.sub{font-size:36px;font-weight:500;line-height:1.45;color:#58625d;max-width:830px}
+.sub.big{font-size:42px;line-height:1.4}
+.dark .sub{color:#a8c4b7}
+.sub strong{color:#182620;font-weight:800}
+.foot{border-top:2px solid #cfdad3;padding-top:26px;display:flex;justify-content:space-between;align-items:baseline;gap:20px}
+.dark .foot{border-top-color:#2f4a3e}
+.foot span{font-size:24px;font-weight:600;color:#58625d}
+.dark .foot span{color:#8fb3a2}
+.foot b{font-size:24px;font-weight:800;color:${VERDE}}
+.dark .foot b{color:${VERDE_CLARO}}
+.lockup{display:flex;align-items:baseline;gap:36px}
+.num{font-size:210px;font-weight:800;line-height:.82;letter-spacing:-.055em}
+.unit{font-size:92px;font-weight:800;letter-spacing:-.03em;color:#58625d}
+.steps{list-style:none;display:flex;flex-direction:column;gap:26px}
+.steps li{display:flex;align-items:baseline;gap:26px}
+.steps span{font-size:34px;font-weight:800;color:${VERDE};min-width:34px}
+.steps em{font-style:normal;font-size:38px;font-weight:600;line-height:1.35}
+.sheet{border:2px solid #cfdad3;border-radius:10px;overflow:hidden;background:#fff}
+.sheet-bar{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:20px 26px;background:#eef2f0;border-bottom:2px solid #cfdad3}
+.sheet-bar span{font-size:26px;font-weight:700;color:#58625d}
+.sheet-bar b{font-size:24px;font-weight:800;color:#b4472f}
+.sheet table{width:100%;border-collapse:collapse}
+.sheet td{padding:20px 26px;border-bottom:1px solid #e4eae6;border-right:1px solid #e4eae6;font-size:27px;font-weight:500;color:#182620}
+.sheet tr:last-child td{border-bottom:0}
+.sheet td:last-child{border-right:0}
+.sheet .th td{font-size:23px;font-weight:800;color:#7d8781;text-transform:uppercase;letter-spacing:.06em;background:#f6f8f7}
+.sheet .empty{color:#c3ccc7}
+.sheet .old{color:#b4472f;font-weight:700}
+.shot{border:2px solid #cfdad3;border-radius:12px;overflow:hidden;background:#fff;box-shadow:0 12px 34px rgba(24,38,32,.08);max-height:576px}
+.shot img{width:100%;display:block;object-fit:cover;object-position:top center}
+.chat{display:flex;flex-direction:column;gap:22px;align-items:flex-end}
+.bubble{background:#dff0e5;border-radius:22px 22px 6px 22px;padding:26px 30px;max-width:660px;display:flex;align-items:baseline;gap:22px}
+.bubble p{font-size:36px;font-weight:600;color:#182620}
+.bubble time{font-size:23px;font-weight:600;color:#6d8579;white-space:nowrap}
+.compare{display:grid;grid-template-columns:1fr 1.35fr;gap:22px}
+.col{border-radius:12px;padding:30px 32px;display:flex;flex-direction:column;gap:16px}
+.col b{font-size:23px;font-weight:800;text-transform:uppercase;letter-spacing:.1em}
+.col p{font-size:34px;font-weight:600;line-height:1.35}
+.col.bad{background:#f0eeed;border:2px solid #ddd7d4}
+.col.bad b{color:#a08d85}
+.col.bad p{color:#8b817c;text-decoration:line-through;text-decoration-thickness:2px}
+.col.good{background:#e9f3ed;border:2px solid #b9d6c6}
+.col.good b{color:${VERDE}}
+.roles{display:flex;flex-direction:column;gap:20px}
+.role{border-left:8px solid ${VERDE};background:#fff;border-radius:0 12px 12px 0;padding:26px 32px;display:flex;flex-direction:column;gap:8px}
+.role b{font-size:34px;font-weight:800}
+.role p{font-size:29px;font-weight:500;color:#58625d;line-height:1.4}
+.prices{display:flex;flex-direction:column;border-top:2px solid #cfdad3}
+.price{display:flex;align-items:baseline;justify-content:space-between;gap:24px;padding:30px 4px;border-bottom:2px solid #cfdad3}
+.price b{font-size:40px;font-weight:800;min-width:250px}
+.price .val{font-size:52px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.price em{font-style:normal;font-size:27px;font-weight:600;color:#58625d;text-align:right;min-width:270px}
+.price.hl b,.price.hl .val{color:${VERDE}}
+.chipnum{font-size:60px;font-weight:800;color:${VERDE};letter-spacing:-.02em;line-height:1}
+.dark .chipnum{color:${VERDE_CLARO}}
+`;
+
+// ---------------------------------------------------------------- montagem
+const filtro = process.argv[2];
+const pecas = [];
+
+for (const post of POSTS) {
+  if (post.captura) post.capturaUri = await capturaEmbutida(post.captura);
+  const apertado = post.tipo === "captura" ? " tight" : "";
+  pecas.push({
+    nome: post.nome,
+    html: `<div class="board${post.escuro ? " dark" : ""}" data-name="${post.nome}">`
+      + topo(post.escuro)
+      + `<div class="mid${apertado}">${MIOLO[post.tipo](post)}</div>`
+      + rodape(post.rodape) + `</div>`,
+  });
+}
+
+for (const { prefixo, slides } of CARROSSEIS) {
+  slides.forEach(([tipo, rotulo, titulo, apoio], i) => {
+    const escuro = tipo === "capa" || tipo === "fecho";
+    const nome = `${prefixo}-slide-${String(i + 1).padStart(2, "0")}`;
+    pecas.push({
+      nome,
+      html: `<div class="board${escuro ? " dark" : ""}" data-name="${nome}">`
+        + topo(escuro)
+        + `<div class="mid">${MIOLO_SLIDE[tipo](rotulo, titulo, apoio)}</div>`
+        + contador(i + 1, slides.length) + `</div>`,
+    });
+  });
+}
+
+const selecionadas = filtro ? pecas.filter((p) => p.nome.includes(filtro)) : pecas;
+if (selecionadas.length === 0) {
+  console.error(`Nenhuma peca casa com "${filtro}".`);
+  process.exit(1);
+}
+
+const saida = resolve("output/artes");
+await mkdir(saida, { recursive: true });
+const doc = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><style>`
+  + (await manropeEmbutida()) + CSS + `</style></head><body>`
+  + selecionadas.map((p) => p.html).join("") + `</body></html>`;
+const pagina = resolve(saida, "_pecas.html");
+await writeFile(pagina, doc, "utf8");
+
+const browser = await chromium.launch({ headless: true, channel: process.env.BROWSER_CHANNEL || undefined });
+try {
+  const page = await browser.newPage({ viewport: { width: 1240, height: 1500 }, deviceScaleFactor: 2 });
+  const erros = [];
+  page.on("pageerror", (e) => erros.push(e.message));
+  await page.goto(pathToFileURL(pagina).href, { waitUntil: "load" });
+  await page.evaluate(() => document.fonts.ready);
+  if (!(await page.evaluate(() => document.fonts.check("800 100px Manrope")))) {
+    throw new Error("Manrope nao carregou; a arte sairia com a fonte errada.");
+  }
+  // Texto que passa da altura da peca sai cortado na imagem, e a captura nao acusa:
+  // e preciso perguntar ao layout antes de fotografar.
+  const estouro = await page.evaluate(() => Array.from(document.querySelectorAll(".board"))
+    .filter((e) => e.scrollHeight > e.clientHeight + 1)
+    .map((e) => `${e.dataset.name} (${e.scrollHeight}px em ${e.clientHeight}px)`));
+  if (estouro.length > 0) throw new Error(`Texto estourando a peca:\n  ${estouro.join("\n  ")}`);
+
+  for (const { nome } of selecionadas) {
+    await page.locator(`[data-name="${nome}"]`).screenshot({ path: resolve(saida, `${nome}.png`) });
+  }
+  if (erros.length > 0) throw new Error(`Erro de pagina: ${erros.join(" | ")}`);
+  console.log(`${selecionadas.length} artes em ${saida} (1080x1350, capturadas em 2x).`);
+} finally {
+  await browser.close();
+}
