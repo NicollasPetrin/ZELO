@@ -798,7 +798,10 @@ tarefas reais na tela. Conta que sai vazia da reunião não volta.
 
 ## 9. Roteiros de carrossel
 
-Formato de dez slides, para Instagram e LinkedIn.
+Cinco a sete slides. Slide que carrega meia ideia cansa antes de convencer: o que cabe
+junto vira um so, e a conclusao mora no fecho em vez de ocupar tres telas. Alem destes
+dois, cada post da secao 1 tambem existe como carrossel — as artes de todos saem de
+`scripts/gerar-artes.mjs`.
 
 ### Carrossel 1 — "5 sinais de que sua empresa perdeu o controle da rotina"
 
@@ -810,10 +813,7 @@ Formato de dez slides, para Instagram e LinkedIn.
 | 4 | **3. Você é o único que sabe o que está atrasado.** A empresa roda na sua memória, não em um sistema. |
 | 5 | **4. "Achei que era você quem ia fazer".** Tarefa sem dono não é tarefa. É intenção. |
 | 6 | **5. Você não consegue tirar uma semana de férias.** Sem você, alguma coisa para. Sempre. |
-| 7 | **O que esses cinco têm em comum** — nenhum é problema de esforço. Todos são problema de registro. |
-| 8 | **O que resolve** — toda tarefa com três coisas: o quê, quem, até quando. |
-| 9 | **E um lugar onde a equipe olha** — não um grupo que rola para cima e some. |
-| 10 | **Zelo** — gestão de tarefas para microempresa. 30 dias grátis. Link na bio. |
+| 7 | **Nenhum é problema de esforço. Todos são de registro.** Toda tarefa com o quê, quem e até quando. 30 dias grátis, link na bio. |
 
 ### Carrossel 2 — "Como organizar a rotina em uma semana"
 
@@ -825,12 +825,7 @@ Formato de dez slides, para Instagram e LinkedIn.
 | 4 | **Quarta — dê dono e data.** Uma pessoa por tarefa. Data específica, não "essa semana". |
 | 5 | **Quinta — cadastre 3 pessoas.** Só três. As que mais recebem tarefa sua. |
 | 6 | **Sexta — combine a rotina dos 2 minutos.** Fim do expediente: marca o que fez, vê o que sobrou. |
-| 7 | **Segunda seguinte — abra o painel antes de falar com alguém.** Você já sabe o que atrasou. |
-| 8 | **O erro mais comum** — tentar cadastrar a empresa inteira no primeiro dia. Ninguém aguenta. |
-| 9 | **A regra** — um setor, três pessoas, uma semana. Depois expande. |
-| 10 | **Zelo** — 30 dias grátis para testar essa semana. Link na bio. |
-
----
+| 7 | **Na segunda, abra o painel antes de falar com alguém.** Um setor, três pessoas, uma semana. Depois expande. |
 
 ## 10. Calendario editorial — primeiras 4 semanas
 
@@ -846,7 +841,8 @@ Tres publicacoes por semana, alternando dor, ensino e produto.
 Reserva para as semanas 5-6: posts 9 e 10, vídeos 3, 4 e 5.
 
 **Regra de reaproveitamento:** todo carrossel vira cinco posts individuais, e todo vídeo
-vira uma legenda de post. Nao produzir peca nova enquanto houver peca boa nao reaproveitada.
+vira uma legenda de post. E todo post vira carrossel, abrindo em slides o argumento que
+a legenda ja faz. Nao produzir peca nova enquanto houver peca boa nao reaproveitada.
 
 ---
 

@@ -14,10 +14,13 @@ rede na primeira execucao, para baixar a Manrope.
 
 ## O que sai
 
-107 imagens: 10 posts (`post-01` a `post-10`) e 12 carrosseis.
+80 imagens: 10 posts (`post-01` a `post-10`) e 12 carrosseis.
 
-- Dois carrosseis proprios, de dez slides: `carrossel-1-cinco-sinais`, `carrossel-2-uma-semana`.
-- Um carrossel por post, de 7 a 8 slides: `carrossel-post-01-...` a `carrossel-post-10-...`.
+- Dois carrosseis proprios: `carrossel-1-cinco-sinais`, `carrossel-2-uma-semana`.
+- Um carrossel por post: `carrossel-post-01-...` a `carrossel-post-10-...`.
+
+Todos com **cinco a sete slides**. Slide que carrega meia ideia cansa antes de convencer:
+o que cabe junto vira um so, e a conclusao mora no fecho em vez de ocupar tres telas.
   Cada um abre o argumento da legenda em etapas, um slide por etapa, e usa a legenda do
   post irmao na publicacao.
 
@@ -126,8 +129,7 @@ O script falha em vez de entregar imagem torta:
 3. Rode com filtro pelo nome e olhe o PNG.
 
 Para transformar um post em carrossel: um slide por etapa do argumento que a legenda ja
-faz, capa com o gancho, fecho com a chamada. Sete a oito slides costuma bastar; passar
-disso e diluir.
+faz, capa com o gancho, fecho com a chamada. Cinco a sete slides; passar disso e diluir.
 
 ## Relacionados
 

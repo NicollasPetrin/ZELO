@@ -84,6 +84,10 @@ const POSTS = [
 // um slide por etapa faz a pessoa parar em cada uma em vez de varrer o paragrafo.
 // Capa e fecho saem escuros — no feed eles marcam onde o carrossel comeca e termina.
 //
+// Cinco a sete slides. Slide que carrega meia ideia cansa antes de convencer: se duas
+// etapas cabem juntas sem perder forca, elas viram uma, e a conclusao mora no fecho em
+// vez de ocupar tres telas.
+//
 // Um slide e {t, h, s}: tipo, titulo (h1) e apoio. `r` e o rotulo do tipo "ponto";
 // `comp` liga um componente visual (a mesma planilha, os mesmos baloes dos posts).
 const CARROSSEIS = [
@@ -94,10 +98,7 @@ const CARROSSEIS = [
     { t: "ponto", r: "3", h: "Você é o único que sabe o que está atrasado.", s: "A empresa roda na sua memória, não em um sistema." },
     { t: "ponto", r: "4", h: "“Achei que era você quem ia fazer”.", s: "Tarefa sem dono não é tarefa. É intenção." },
     { t: "ponto", r: "5", h: "Você não consegue tirar uma semana de férias.", s: "Sem você, alguma coisa para. Sempre." },
-    { t: "virada", h: "O que esses cinco têm em comum", s: "Nenhum é problema de esforço. Todos são problema de registro." },
-    { t: "virada", h: "O que resolve", s: "Toda tarefa com três coisas: o quê, quem, até quando." },
-    { t: "virada", h: "E um lugar onde a equipe olha", s: "Não um grupo que rola para cima e some." },
-    { t: "fecho", h: "Gestão de tarefas<br>para microempresa.", s: "30 dias grátis. Link na bio." },
+    { t: "fecho", h: "Nenhum é problema<br>de esforço.<br>Todos são de registro.", s: "Toda tarefa com o quê, quem e até quando. 30 dias grátis, link na bio." },
   ]},
   { prefixo: "carrossel-2-uma-semana", slides: [
     { t: "capa", h: "Como organizar<br>a rotina da sua equipe<br>em uma semana", s: "Sem parar a operação." },
@@ -106,20 +107,15 @@ const CARROSSEIS = [
     { t: "ponto", r: "QUA", h: "Dê dono e data.", s: "Uma pessoa por tarefa. Data específica, não “essa semana”." },
     { t: "ponto", r: "QUI", h: "Cadastre 3 pessoas.", s: "Só três. As que mais recebem tarefa sua." },
     { t: "ponto", r: "SEX", h: "Combine a rotina dos 2 minutos.", s: "Fim do expediente: marca o que fez, vê o que sobrou." },
-    { t: "ponto", r: "SEG", h: "Abra o painel antes de falar com alguém.", s: "Na segunda seguinte, você já sabe o que atrasou." },
-    { t: "virada", h: "O erro mais comum", s: "Tentar cadastrar a empresa inteira no primeiro dia. Ninguém aguenta." },
-    { t: "virada", h: "A regra", s: "Um setor, três pessoas, uma semana. Depois expande." },
-    { t: "fecho", h: "30 dias grátis<br>para testar<br>essa semana.", s: "Link na bio." },
+    { t: "fecho", h: "Na segunda,<br>abra o painel antes<br>de falar com alguém.", s: "Um setor, três pessoas, uma semana. Depois expande. 30 dias grátis." },
   ]},
 
   { prefixo: "carrossel-post-01-quem-ficou-de-fazer", slides: [
     { t: "capa", h: "Quem ficou<br>de fazer?", s: "A pergunta que ninguém responde." },
     { t: "virada", h: "Toda semana a mesma cena.", s: "Alguém pergunta, e o grupo fica em silêncio." },
-    { t: "virada", h: "O combinado existiu.", s: "No corredor, no fim do expediente, no meio de uma conversa sobre outra coisa." },
-    { t: "virada", h: "Mas não virou nada escrito.", s: "Sem nome. Sem data." },
+    { t: "virada", h: "O combinado existiu.", s: "No corredor, no fim do expediente. Mas não virou nada escrito, com nome e com data." },
     { t: "virada", h: "Aí a tarefa não é de ninguém.", s: "E vira sua." },
-    { t: "virada", h: "O que muda", s: "Toda tarefa com responsável, prazo e setor, no lugar onde a equipe olha." },
-    { t: "fecho", h: "Ninguém precisa<br>lembrar de cabeça.", s: "30 dias grátis. Link na bio." },
+    { t: "fecho", h: "Responsável, prazo<br>e setor em<br>cada tarefa.", s: "Ninguém precisa lembrar de cabeça. 30 dias grátis, link na bio." },
   ]},
 
   { prefixo: "carrossel-post-02-dois-minutos", slides: [
@@ -127,19 +123,15 @@ const CARROSSEIS = [
     { t: "ponto", r: "1", h: "Cada pessoa abre a lista dela.", s: "A dela, não a da empresa inteira." },
     { t: "ponto", r: "2", h: "Marca o que terminou.", s: "Um toque por tarefa." },
     { t: "ponto", r: "3", h: "Vê o que ficou para amanhã.", s: "E fecha o dia sabendo." },
-    { t: "virada", h: "Só isso. Dois minutos.", s: "Não é reunião, não é relatório, não é planilha." },
-    { t: "virada", h: "O que muda na segunda", s: "Você não precisa perguntar nada para ninguém. Já está tudo na tela." },
-    { t: "virada", h: "O difícil não é a ferramenta.", s: "É a equipe pegar o hábito. Comece pedindo para uma pessoa só, por uma semana." },
-    { t: "fecho", h: "Quando ela pega,<br>puxa as outras.", s: "30 dias grátis. Link na bio." },
+    { t: "virada", h: "Na segunda de manhã você não pergunta nada.", s: "Já está tudo na tela." },
+    { t: "fecho", h: "O difícil não é<br>a ferramenta.<br>É o hábito.", s: "Comece com uma pessoa, por uma semana. Quando ela pega, puxa as outras." },
   ]},
 
   { prefixo: "carrossel-post-03-a-planilha", slides: [
     { t: "capa", h: "A planilha<br>não morreu<br>de uma vez", s: "Ela foi morrendo assim." },
     { t: "comp", comp: "planilha", h: "Essa é a sua planilha." },
-    { t: "ponto", r: "1", h: "Alguém esqueceu de atualizar.", s: "Uma vez só. Parecia pouco." },
-    { t: "ponto", r: "2", h: "Duas pessoas mexeram na mesma linha.", s: "E a versão certa virou opinião." },
-    { t: "ponto", r: "3", h: "Virou “vou atualizar depois”.", s: "Depois nunca chega." },
-    { t: "ponto", r: "4", h: "Ninguém confia mais no que está ali.", s: "E todo mundo volta a perguntar no grupo." },
+    { t: "ponto", r: "1", h: "Alguém esqueceu de atualizar.", s: "Depois duas pessoas mexeram na mesma linha, e a versão certa virou opinião." },
+    { t: "ponto", r: "2", h: "Virou “vou atualizar depois”.", s: "Depois nunca chega, e ninguém confia mais no que está ali." },
     { t: "virada", h: "Planilha é ótima para calcular.", s: "É péssima para combinar." },
     { t: "fecho", h: "Combinado precisa<br>de responsável,<br>data e aviso.", s: "30 dias grátis. Link na bio." },
   ]},
@@ -148,19 +140,14 @@ const CARROSSEIS = [
     { t: "capa", h: "Sua empresa<br>não é<br>um bloco só", s: "Cada setor tem a sua fila." },
     { t: "virada", h: "Balcão, estoque, financeiro, entrega.", s: "Cada um com um ritmo, uma fila e um responsável diferente." },
     { t: "comp", comp: "captura", captura: "public/demo/painel.webp", h: "Na Zelo você organiza por setor." },
-    { t: "ponto", r: "01", h: "O funcionário vê a fila dele.", s: "Só o que é da conta dele, com prazo e status." },
-    { t: "ponto", r: "02", h: "O gerente vê a do setor.", s: "Quem está com o quê, e o que já atrasou." },
-    { t: "ponto", r: "03", h: "O dono vê tudo.", s: "A operação inteira, setor por setor." },
-    { t: "virada", h: "Ninguém recebe o que não é da conta dele.", s: "E ninguém deixa de receber o que é." },
-    { t: "fecho", h: "A estrutura<br>da sua operação,<br>do seu jeito.", s: "30 dias grátis. Link na bio." },
+    { t: "virada", h: "Cada um vê o seu recorte.", s: "O funcionário, a fila dele. O gerente, a do setor. Você, a operação inteira." },
+    { t: "fecho", h: "Ninguém recebe<br>o que não é<br>da conta dele.", s: "E ninguém deixa de receber o que é. 30 dias grátis." },
   ]},
 
   { prefixo: "carrossel-post-05-cobranca-tripla", slides: [
     { t: "capa", h: "Você já cobrou<br>a mesma coisa<br>três vezes?", s: "Essa semana." },
     { t: "comp", comp: "baloes", h: "Sempre a mesma mensagem." },
-    { t: "ponto", r: "1ª", h: "Foi um pedido.", s: "Normal. Acontece." },
-    { t: "ponto", r: "2ª", h: "Foi um lembrete.", s: "Ainda tudo bem." },
-    { t: "ponto", r: "3ª", h: "Já foi desgaste.", s: "Pra você e pra ela." },
+    { t: "virada", h: "Pedido, lembrete, desgaste.", s: "A terceira já custa — pra você e pra ela." },
     { t: "virada", h: "O problema quase nunca é má vontade.", s: "É que a tarefa não estava em lugar nenhum: nem na cabeça dela, nem numa tela que ela abre todo dia." },
     { t: "virada", h: "Cobrança é sintoma.", s: "De combinado sem registro." },
     { t: "fecho", h: "A tarefa<br>cobra sozinha.", s: "30 dias grátis. Link na bio." },
@@ -169,21 +156,17 @@ const CARROSSEIS = [
   { prefixo: "carrossel-post-06-tarefa-bem-escrita", slides: [
     { t: "capa", h: "Isso não é<br>uma tarefa", s: "“Ver o estoque”." },
     { t: "comp", comp: "comparacao", h: "A diferença não é capricho." },
-    { t: "virada", h: "A segunda pode ser cobrada sem discussão.", s: "A primeira não." },
     { t: "ponto", r: "1", h: "O quê", s: "Específico. Não “ver o estoque”, mas o que exatamente é para fazer." },
     { t: "ponto", r: "2", h: "Quem", s: "Uma pessoa. Não o setor, não “alguém”." },
     { t: "ponto", r: "3", h: "Até quando", s: "Uma data. Não “essa semana”." },
-    { t: "virada", h: "Faltando uma das três", s: "Ela não é uma tarefa. É uma intenção." },
-    { t: "fecho", h: "Três campos.<br>É só isso<br>que separa.", s: "30 dias grátis. Link na bio." },
+    { t: "fecho", h: "Faltando uma<br>das três,<br>vira intenção.", s: "Com as três, dá para cobrar sem discussão. 30 dias grátis." },
   ]},
 
   { prefixo: "carrossel-post-07-o-painel", slides: [
     { t: "capa", h: "Segunda-feira,<br>8 da manhã", s: "Você abre o painel e já sabe." },
     { t: "comp", comp: "captura", captura: "public/demo/zelo-painel.webp", h: "Uma tela só." },
-    { t: "ponto", r: "01", h: "O que está atrasado.", s: "Antes de virar problema com cliente." },
-    { t: "ponto", r: "02", h: "O que vence hoje.", s: "Para o dia começar decidido." },
-    { t: "ponto", r: "03", h: "Qual setor está travado.", s: "O gargalo aparece sozinho." },
-    { t: "ponto", r: "04", h: "Quais metas estão em risco.", s: "Enquanto ainda dá para reagir." },
+    { t: "ponto", r: "01", h: "O que atrasou e o que vence hoje.", s: "Antes de virar problema com cliente." },
+    { t: "ponto", r: "02", h: "Qual setor travou e quais metas estão em risco.", s: "Enquanto ainda dá para reagir." },
     { t: "virada", h: "Sem perguntar para ninguém.", s: "Sem abrir cinco conversas." },
     { t: "fecho", h: "Junta o que está<br>espalhado e mostra<br>para quem decide.", s: "30 dias grátis. Link na bio." },
   ]},
@@ -192,8 +175,7 @@ const CARROSSEIS = [
     { t: "capa", h: "O sistema<br>da sua empresa<br>é a sua memória", s: "Enquanto o controle mora na sua cabeça." },
     { t: "virada", h: "A empresa não funciona sem você.", s: "E isso não é elogio." },
     { t: "ponto", r: "1", h: "Você não tira férias tranquilo.", s: "Leva o celular. Responde do hotel." },
-    { t: "ponto", r: "2", h: "Você não fica doente sem que algo pare.", s: "Um dia fora já custa." },
-    { t: "ponto", r: "3", h: "Você não delega de verdade.", s: "Porque delegar é lembrar de cobrar depois." },
+    { t: "ponto", r: "2", h: "Você não delega de verdade.", s: "Porque delegar é lembrar de cobrar depois." },
     { t: "virada", h: "Não é falta de confiança na equipe.", s: "É falta de lugar onde a rotina fica escrita." },
     { t: "fecho", h: "Tira da sua cabeça<br>e põe onde<br>a equipe olha.", s: "30 dias grátis. Link na bio." },
   ]},
@@ -201,9 +183,7 @@ const CARROSSEIS = [
   { prefixo: "carrossel-post-09-permissoes", slides: [
     { t: "capa", h: "Nem todo mundo<br>precisa<br>ver tudo", s: "Cada papel enxerga um recorte." },
     { t: "comp", comp: "papeis", h: "Três acessos, uma empresa." },
-    { t: "ponto", r: "01", h: "Funcionário", s: "As tarefas dele, o prazo e o que precisa atualizar. Funciona no celular." },
-    { t: "ponto", r: "02", h: "Gerente", s: "O setor inteiro, quem está com o quê, o que atrasou." },
-    { t: "ponto", r: "03", h: "Dono", s: "A operação toda, os relatórios e a assinatura." },
+    { t: "virada", h: "O funcionário só vê o que é dele.", s: "É a tela mais simples do sistema, e funciona no celular." },
     { t: "virada", h: "Cada pessoa entra com o acesso dela.", s: "Ninguém compartilha senha." },
     { t: "fecho", h: "Quem vê o quê<br>deixa de ser<br>combinado de boca.", s: "30 dias grátis. Link na bio." },
   ]},
@@ -211,9 +191,6 @@ const CARROSSEIS = [
   { prefixo: "carrossel-post-10-preco", slides: [
     { t: "capa", h: "Preço na cara", s: "Sem “fale com um consultor”." },
     { t: "comp", comp: "precos", h: "Os três planos." },
-    { t: "ponto", r: "R$ 59,90", h: "Básico", s: "5 pessoas inclusas. Para equipes de até 15." },
-    { t: "ponto", r: "R$ 199,90", h: "Gestão", s: "20 pessoas inclusas. Para quem já tem gerente." },
-    { t: "ponto", r: "R$ 499,90", h: "Completo", s: "60 pessoas inclusas. Para operação acima de 45." },
     { t: "virada", h: "30 dias para testar.", s: "Cancelamento pelo próprio painel, sem ligar para ninguém." },
     { t: "virada", h: "Não usamos os dados da sua operação para publicidade.", s: "E não vendemos para ninguém." },
     { t: "fecho", h: "Se não fecha<br>pra você agora,<br>tudo bem.", s: "Mas você não descobre isso depois de três reuniões." },
