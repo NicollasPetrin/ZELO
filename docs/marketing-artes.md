@@ -14,8 +14,13 @@ rede na primeira execucao, para baixar a Manrope.
 
 ## O que sai
 
-30 imagens: 10 posts (`post-01` a `post-10`) e 20 slides de carrossel
-(`carrossel-1-cinco-sinais-slide-01..10`, `carrossel-2-uma-semana-slide-01..10`).
+107 imagens: 10 posts (`post-01` a `post-10`) e 12 carrosseis.
+
+- Dois carrosseis proprios, de dez slides: `carrossel-1-cinco-sinais`, `carrossel-2-uma-semana`.
+- Um carrossel por post, de 7 a 8 slides: `carrossel-post-01-...` a `carrossel-post-10-...`.
+  Cada um abre o argumento da legenda em etapas, um slide por etapa, e usa a legenda do
+  post irmao na publicacao.
+
 O nome do arquivo e a ordem de postagem — ao subir um carrossel, selecionar na ordem
 numerica basta.
 
@@ -72,9 +77,26 @@ Margens: `92px 88px 84px`.
 
 ### Miolos disponiveis
 
-`frase`, `numero`, `planilha`, `captura`, `baloes`, `comparacao`, `papeis`, `precos`
-para posts; `capa`, `ponto`, `virada`, `fecho` para slides. Peca nova reaproveita um
-miolo existente sempre que der — miolo novo so quando o conteudo realmente pede.
+Post: `frase`, `numero`, `planilha`, `captura`, `baloes`, `comparacao`, `papeis`, `precos`.
+Slide: `capa`, `ponto`, `virada`, `fecho`, `comp`.
+
+Peca nova reaproveita um miolo existente sempre que der — miolo novo so quando o conteudo
+realmente pede.
+
+### Componentes
+
+Planilha, captura, baloes, comparacao, papeis e precos vivem em `COMPONENTE`, escritos uma
+vez. O post os usa abaixo do titulo; o slide `comp` os usa sozinhos, com `h1.sm`, porque
+ali o bloco visual e o protagonista.
+
+Um carrossel de post puxa os dados do proprio post pelo nome (`carrossel-post-03-...` acha
+`post-03-...`): a planilha, os baloes e a tabela de precos existem uma vez so, e mudar o
+post muda o carrossel junto.
+
+### Formato do slide
+
+`{ t, h, s }` — tipo, titulo e apoio. `r` e o rotulo do tipo `ponto` (numero, dia da semana
+ou preco). `comp` liga um componente; `captura` aponta um arquivo de imagem proprio.
 
 ## Regras de conteudo
 
@@ -102,6 +124,10 @@ O script falha em vez de entregar imagem torta:
 1. Escreva a legenda em `docs/marketing-conteudo.md`.
 2. Acrescente a entrada em `POSTS` ou `CARROSSEIS` no script, escolhendo um miolo.
 3. Rode com filtro pelo nome e olhe o PNG.
+
+Para transformar um post em carrossel: um slide por etapa do argumento que a legenda ja
+faz, capa com o gancho, fecho com a chamada. Sete a oito slides costuma bastar; passar
+disso e diluir.
 
 ## Relacionados
 
