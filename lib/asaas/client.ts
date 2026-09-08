@@ -4,12 +4,14 @@ import {
   asaasCheckoutSchema,
   asaasCustomerSchema,
   asaasDeletedSchema,
+  asaasPaymentListSchema,
   asaasPaymentSchema,
   type AsaasCheckout,
   type AsaasCheckoutInput,
   type AsaasCustomer,
   type AsaasDeleted,
   type AsaasPayment,
+  type AsaasPaymentList,
 } from "@/lib/asaas/types";
 
 const DEFAULT_TIMEOUT_MS = 15_000;
@@ -125,6 +127,24 @@ export function deleteSubscription(subscriptionId: string): Promise<AsaasDeleted
   return asaasRequest(`/subscriptions/${encodeURIComponent(subscriptionId)}`, asaasDeletedSchema, {
     method: "DELETE",
   });
+}
+
+/**
+ * Cobrancas de um cliente, das mais antigas para as mais recentes.
+ *
+ * A ordem importa para quem for aplicar o resultado: os periodos de assinatura
+ * sao encadeados a partir do anterior, entao processar fora de ordem produziria
+ * vigencias erradas.
+ */
+export function listPaymentsByCustomer(customerId: string, limit = 50): Promise<AsaasPaymentList> {
+  const query = new URLSearchParams({
+    customer: customerId,
+    limit: String(limit),
+    order: "asc",
+    sort: "dateCreated",
+  });
+
+  return asaasRequest(`/payments?${query.toString()}`, asaasPaymentListSchema);
 }
 
 export function getPayment(paymentId: string): Promise<AsaasPayment> {

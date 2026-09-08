@@ -59,6 +59,15 @@ export const asaasPaymentSchema = z.object({
 
 export type AsaasPayment = z.infer<typeof asaasPaymentSchema>;
 
+/** Pagina de resultados das listagens do Asaas. */
+export const asaasPaymentListSchema = z.object({
+  data: z.array(asaasPaymentSchema),
+  hasMore: z.boolean().optional(),
+  totalCount: z.number().optional(),
+});
+
+export type AsaasPaymentList = z.infer<typeof asaasPaymentListSchema>;
+
 /** Resposta do Asaas ao remover um recurso. */
 export const asaasDeletedSchema = z.object({
   id: z.string().min(1),

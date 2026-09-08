@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CircleCheck, Loader2, TriangleAlert } from "lucide-react";
+import { syncSubscriptionAction } from "@/features/billing/actions";
 
 export type PaymentReturnStatus = "confirmado" | "cancelado" | "expirado" | "indisponivel";
 
@@ -17,6 +18,11 @@ const INTERVALO_MS = 3000;
  * volta em poucos segundos, e a confirmacao chega por webhook, que pode
  * demorar mais que isso. Sem este aviso a pessoa cai numa tela que ainda diz
  * "sem plano ativo" e conclui que o pagamento falhou.
+ *
+ * Enquanto espera, a tela tambem pergunta ativamente a processadora se o
+ * pagamento entrou, em vez de so recarregar. Recarregar sozinho nao resolve
+ * nada quando o webhook nao chega — e foi exatamente assim que um pagamento
+ * real ficou sem liberar o plano.
  */
 export function PaymentReturnBanner({
   status,
@@ -34,12 +40,28 @@ export function PaymentReturnBanner({
       return;
     }
 
-    const id = setTimeout(() => {
+    let cancelado = false;
+
+    const id = setTimeout(async () => {
+      // A cada duas tentativas, e nao em todas: a consulta sai para fora da
+      // aplicacao, e martelar a processadora dez vezes em trinta segundos
+      // atrasaria justamente quem esta esperando.
+      if (tentativas % 2 === 0) {
+        await syncSubscriptionAction().catch(() => undefined);
+      }
+
+      if (cancelado) {
+        return;
+      }
+
       setTentativas((atual) => atual + 1);
       router.refresh();
     }, INTERVALO_MS);
 
-    return () => clearTimeout(id);
+    return () => {
+      cancelado = true;
+      clearTimeout(id);
+    };
   }, [aguardando, tentativas, router]);
 
   if (status === "indisponivel") {
@@ -86,7 +108,7 @@ export function PaymentReturnBanner({
       <p>
         {tentativas < MAX_TENTATIVAS
           ? "Pagamento recebido. Estamos liberando seu acesso, aguarde alguns segundos..."
-          : "O pagamento foi recebido, mas a liberacao esta demorando mais que o normal. Atualize a pagina em alguns minutos; se continuar assim, fale com o suporte."}
+          : "O pagamento foi recebido, mas a liberacao esta demorando mais que o normal. Use o botao \"Ja paguei, conferir agora\" abaixo; se ainda assim nao liberar, fale com o suporte."}
       </p>
     </div>
   );

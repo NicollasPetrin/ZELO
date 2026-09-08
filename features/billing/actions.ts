@@ -6,6 +6,7 @@ import { actionError } from "@/lib/action-result";
 import { AsaasError, createCheckout, deleteSubscription } from "@/lib/asaas/client";
 import { ASAAS_PROVIDER } from "@/lib/asaas/types";
 import { ensureAsaasCustomer } from "@/features/billing/asaas-customer";
+import { syncSubscriptionFromAsaas } from "@/features/billing/sync-subscription";
 import { recordActivity } from "@/lib/audit";
 import { assertCanManageCompany } from "@/lib/auth/guards";
 import { requireUser } from "@/lib/auth/session";
@@ -13,6 +14,7 @@ import { prisma } from "@/lib/db/client";
 import { ASAAS_NOT_CONFIGURED_MESSAGE, getAppUrl, isAsaasConfigured } from "@/lib/env";
 import { calculateMonthlyPrice, formatPriceCents, planDetails } from "@/lib/plans";
 import { assertUserActionRateLimit } from "@/lib/rate-limit";
+import { getActivePlanCode } from "@/lib/subscription";
 import { subscriptionPlanSchema } from "@/lib/validations";
 
 const CHECKOUT_EXPIRATION_MINUTES = 60;
@@ -235,5 +237,93 @@ export async function cancelSubscriptionAction() {
     } as const;
   } catch (error) {
     return actionError(error, "Nao foi possivel cancelar a assinatura.");
+  }
+}
+
+/**
+ * Conferencia sob demanda do pagamento, para quando o webhook nao chegou.
+ *
+ * Existe porque a liberacao do plano nao pode ficar refem de uma entrega: a
+ * fila do Asaas se interrompe sozinha depois de varias falhas seguidas, e ate
+ * alguem reparar nisso o cliente pagou e ficou sem acesso. Com este caminho o
+ * proprio cliente destrava a conta, sem depender de suporte.
+ */
+export async function syncSubscriptionAction() {
+  try {
+    const user = await requireUser();
+    assertCanManageCompany(user);
+    await assertUserActionRateLimit(user.id, "billing:sync-subscription");
+
+    if (user.company.isDemo) {
+      throw new Error("Contas demo nao possuem cobranca real para conferir.");
+    }
+
+    if (!isAsaasConfigured()) {
+      throw new Error(ASAAS_NOT_CONFIGURED_MESSAGE);
+    }
+
+    if (!user.company.asaasCustomerId) {
+      throw new Error("Nenhuma compra foi iniciada por esta empresa ainda. Escolha um plano para comecar.");
+    }
+
+    const antes = getActivePlanCode(user.company);
+    const resultado = await syncSubscriptionFromAsaas(user.company.asaasCustomerId);
+
+    // Recarrega do banco: quem decide se ha acesso e a mesma funcao que as
+    // paginas usam, e ela precisa ler o que a conferencia acabou de gravar.
+    const empresa = await prisma.company.findUnique({
+      where: { id: user.companyId },
+      select: {
+        subscriptions: {
+          orderBy: { currentPeriodEnd: "desc" },
+          take: 1,
+          select: { currentPeriodEnd: true, status: true, cancelAtPeriodEnd: true, plan: { select: { code: true } } },
+        },
+      },
+    });
+    const depois = empresa ? getActivePlanCode(empresa) : null;
+
+    await recordActivity({
+      companyId: user.companyId,
+      actorId: user.id,
+      type: "SUBSCRIPTION_CHANGED",
+      entityType: "Company",
+      entityId: user.companyId,
+      title: "Conferencia de pagamento",
+      description: depois && !antes ? "Plano liberado pela conferencia" : "Sem mudanca no plano",
+      metadata: {
+        cobrancasEncontradas: resultado.found,
+        cobrancasAplicadas: resultado.applied,
+        ignoradas: resultado.ignored,
+      },
+    });
+
+    revalidatePath("/settings");
+    revalidatePath("/", "layout");
+
+    if (depois && !antes) {
+      return {
+        ok: true,
+        message: `Pagamento encontrado. O Plano ${planDetails[depois].name} esta liberado.`,
+      } as const;
+    }
+
+    if (depois) {
+      return { ok: true, message: "Tudo certo: a assinatura ja estava em dia." } as const;
+    }
+
+    if (resultado.found === 0) {
+      return {
+        ok: true,
+        message: "Nenhuma cobranca foi encontrada para esta empresa na processadora. Se voce acabou de pagar, aguarde um minuto e tente de novo.",
+      } as const;
+    }
+
+    return {
+      ok: true,
+      message: `${resultado.found} cobranca(s) encontrada(s), nenhuma confirmada ainda. O acesso e liberado assim que o pagamento for aprovado.`,
+    } as const;
+  } catch (error) {
+    return actionError(error, "Nao foi possivel conferir o pagamento.");
   }
 }

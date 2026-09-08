@@ -81,6 +81,26 @@ export async function getPlatformOverview() {
 
   const novasAssinaturas = await prisma.companySubscription.count({ where: { createdAt: { gte: seteDias } } });
 
+  // Saude da integracao de cobranca. Um pagamento que nao vira plano nao aparece
+  // em nenhum numero de receita — a empresa simplesmente fica parada com uma
+  // intencao de compra e sem assinatura, e ninguem descobre ate o cliente
+  // reclamar. Estas duas medidas existem para que isso apareca antes disso.
+  const [ultimoWebhook, webhooksSeteDias, travadas] = await Promise.all([
+    prisma.webhookEvent.findFirst({ orderBy: { receivedAt: "desc" }, select: { receivedAt: true, event: true } }),
+    prisma.webhookEvent.groupBy({
+      by: ["status"],
+      where: { receivedAt: { gte: seteDias } },
+      _count: { _all: true },
+    }),
+    prisma.company.count({
+      where: {
+        isDemo: false,
+        pendingPlanCode: { not: null },
+        subscriptions: { none: { status: { in: [...ASSINATURAS_VIGENTES] } } },
+      },
+    }),
+  ]);
+
   return {
     assinantes: {
       ativas: contaStatus("ACTIVE"),
@@ -105,6 +125,15 @@ export async function getPlatformOverview() {
       empresas,
       empresasNovasTrintaDias: empresasNovas,
       usuariosAtivos,
+    },
+    cobranca: {
+      ultimoWebhookEm: ultimoWebhook?.receivedAt ?? null,
+      ultimoWebhookEvento: ultimoWebhook?.event ?? null,
+      webhooksSeteDias: webhooksSeteDias.reduce((total, linha) => total + linha._count._all, 0),
+      webhooksComFalhaSeteDias: webhooksSeteDias
+        .filter((linha) => linha.status === "FAILED" || linha.status === "RECEIVED")
+        .reduce((total, linha) => total + linha._count._all, 0),
+      empresasTravadas: travadas,
     },
   };
 }

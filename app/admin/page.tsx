@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { AlertTriangle, Building2, CreditCard, TrendingUp, Users } from "lucide-react";
+import { AlertTriangle, Building2, CreditCard, PlugZap, TrendingUp, Users } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 import { buttonClassName } from "@/components/ui/button";
 import { getPlatformOverview } from "@/features/admin/data";
@@ -12,6 +12,12 @@ export const metadata: Metadata = {
 };
 
 export const dynamic = "force-dynamic";
+
+const HORA_MS = 60 * 60 * 1000;
+
+function horasDesde(data: Date) {
+  return Math.floor((Date.now() - data.getTime()) / HORA_MS);
+}
 
 function brl(cents: number) {
   return (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -46,8 +52,14 @@ function Numero({
 
 export default async function AdminPage() {
   const user = await requirePlatformAdmin();
-  const { assinantes, porPlano, receita, contas } = await getPlatformOverview();
+  const { assinantes, porPlano, receita, contas, cobranca } = await getPlatformOverview();
   const pagantes = assinantes.ativas + assinantes.inadimplentes;
+  // Silencio prolongado da processadora ou empresa parada sem plano: os dois
+  // sao sintoma do mesmo defeito, o aviso de pagamento que nao chegou.
+  const integracaoComProblema =
+    cobranca.empresasTravadas > 0 ||
+    !cobranca.ultimoWebhookEm ||
+    horasDesde(cobranca.ultimoWebhookEm) > 48;
 
   return (
     <main className="min-h-screen bg-slate-50">
@@ -161,6 +173,49 @@ export default async function AdminPage() {
             icone={<AlertTriangle className="h-5 w-5" />}
             tom={receita.faturasEmAberto > 0 ? "atencao" : "neutro"}
           />
+        </section>
+
+        <section
+          className={`mt-8 rounded-lg border p-5 ${
+            integracaoComProblema ? "border-amber-300 bg-amber-50" : "border-slate-200 bg-white"
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            <PlugZap
+              className={`h-5 w-5 ${integracaoComProblema ? "text-amber-600" : "text-emerald-700"}`}
+              aria-hidden="true"
+            />
+            <h2 className="text-base font-semibold text-slate-950">Integração de cobrança</h2>
+          </div>
+          <dl className="mt-4 grid gap-4 sm:grid-cols-3">
+            <div>
+              <dt className="text-sm text-slate-500">Último aviso da processadora</dt>
+              <dd className="mt-1 font-semibold tabular-nums text-slate-950">
+                {cobranca.ultimoWebhookEm
+                  ? `${horasDesde(cobranca.ultimoWebhookEm)} h atrás`
+                  : "nunca"}
+              </dd>
+              <dd className="text-xs text-slate-500">{cobranca.ultimoWebhookEvento ?? "sem registro"}</dd>
+            </div>
+            <div>
+              <dt className="text-sm text-slate-500">Avisos em 7 dias</dt>
+              <dd className="mt-1 font-semibold tabular-nums text-slate-950">{cobranca.webhooksSeteDias}</dd>
+              <dd className="text-xs text-slate-500">{cobranca.webhooksComFalhaSeteDias} sem efeito</dd>
+            </div>
+            <div>
+              <dt className="text-sm text-slate-500">Empresas travadas</dt>
+              <dd className="mt-1 font-semibold tabular-nums text-slate-950">{cobranca.empresasTravadas}</dd>
+              <dd className="text-xs text-slate-500">iniciaram compra e estão sem plano</dd>
+            </div>
+          </dl>
+          {integracaoComProblema ? (
+            <p className="mt-4 text-sm leading-6 text-amber-950">
+              Um pagamento que não vira plano não aparece em nenhum número de receita: a empresa fica parada com a
+              compra iniciada e sem assinatura. Confira em Integrações → Webhooks se a fila do Asaas está
+              interrompida, e veja os logs de entrega. Cada cliente nessa situação também consegue se destravar
+              sozinho pelo botão &quot;Já paguei, conferir agora&quot; nas Configurações.
+            </p>
+          ) : null}
         </section>
 
         <section className="mt-8 rounded-lg border border-slate-200 bg-white p-5">

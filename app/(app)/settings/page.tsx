@@ -3,6 +3,7 @@ import { PageHeader } from "@/components/page-header";
 import { CancelSubscriptionPanel } from "@/features/billing/cancel-subscription-panel";
 import { PaymentReturnBanner, type PaymentReturnStatus } from "@/features/billing/payment-return-banner";
 import { PlanCheckoutButton } from "@/features/billing/plan-checkout-button";
+import { VerifyPaymentPanel } from "@/features/billing/verify-payment-panel";
 import { SubscriptionStatusCard } from "@/features/billing/subscription-status-card";
 import { CompanySettingsForm } from "@/features/settings/company-settings-form";
 import { requireCompanyManager } from "@/lib/auth/guards";
@@ -70,6 +71,9 @@ export default async function SettingsPage({
         <div className="mb-5">
           <SubscriptionStatusCard window={subscriptionWindow} />
         </div>
+        {!activePlanCode && user.company.asaasCustomerId && !user.company.isDemo ? (
+          <VerifyPaymentPanel planActive={false} />
+        ) : null}
         <div className="grid gap-5 lg:grid-cols-[0.75fr_1.25fr] lg:items-start">
           <div>
             <div className="flex items-center gap-2 text-sm font-semibold text-emerald-700">
@@ -192,6 +196,9 @@ export default async function SettingsPage({
             })}
           </div>
         </div>
+        {activePlanCode && user.company.asaasCustomerId && !user.company.isDemo ? (
+          <VerifyPaymentPanel planActive />
+        ) : null}
         {activePlan && subscriptionWindow.hasAccess && !subscriptionWindow.cancelAtPeriodEnd ? (
           <CancelSubscriptionPanel
             planName={activePlan.name}
