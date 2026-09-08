@@ -1,7 +1,6 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { startTrial } from "@/features/billing/trial";
 import { parsePhone } from "@/lib/phone";
 import { createSession, deleteSession, getCurrentUser } from "@/lib/auth/session";
 import { hashPassword, needsRehash, verifyPassword } from "@/lib/auth/password";
@@ -96,7 +95,6 @@ export async function signupAction(formData: FormData) {
     password: readText(formData, "password"),
     confirmPassword: readText(formData, "confirmPassword"),
     plan: readText(formData, "plan"),
-    trial: readText(formData, "trial"),
   });
 
   if (!parsed.success) {
@@ -142,7 +140,7 @@ export async function signupAction(formData: FormData) {
     }
   }
 
-  const { userId, companyId } = await prisma.$transaction(async (tx) => {
+  const userId = await prisma.$transaction(async (tx) => {
     const company = await tx.company.create({
       data: {
         name: parsed.data.companyName,
@@ -201,32 +199,18 @@ export async function signupAction(formData: FormData) {
       },
     });
 
-    return { userId: owner.id, companyId: company.id };
+    return owner.id;
   });
 
   await createSession(userId);
 
-  if (!parsed.data.plan) {
-    redirect("/settings?welcome=1");
-  }
-
-  // Quem escolheu plano entra direto usando: o teste nao pede cartao, entao nao
-  // ha processadora envolvida aqui e nao existe a falha de "conta criada mas
-  // pagamento indisponivel" que essa etapa produzia.
+  // A conta nasce cadastrada e sem plano. Comecar o teste e um ato dentro do
+  // produto, nao um efeito colateral de preencher um formulario: assim a pessoa
+  // ve o que esta contratando antes de o relogio dos 30 dias comecar a correr,
+  // e o cadastro deixa de depender de qualquer coisa dar certo depois dele.
   //
-  // Uma falha aqui ainda deixa a pessoa dentro do produto, com o plano a um
-  // clique nas configuracoes. O redirecionamento fica fora do try porque
-  // redirect() sinaliza por excecao e seria confundido com erro.
-  let testeLiberado = false;
-
-  try {
-    const resultado = await startTrial(companyId, parsed.data.plan);
-    testeLiberado = resultado.started;
-  } catch (error) {
-    console.error("[signup] conta criada, mas o teste nao foi liberado:", error);
-  }
-
-  redirect(testeLiberado ? "/dashboard?teste=iniciado" : "/settings?welcome=1");
+  // O plano escolhido na landing viaja na URL so para chegar destacado.
+  redirect(parsed.data.plan ? `/settings?welcome=1&plano=${parsed.data.plan}` : "/settings?welcome=1");
 }
 
 export async function logoutAction() {

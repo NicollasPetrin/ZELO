@@ -10,14 +10,14 @@ import { CompanySettingsForm } from "@/features/settings/company-settings-form";
 import { requireCompanyManager } from "@/lib/auth/guards";
 import { prisma } from "@/lib/db/client";
 import { calculateMonthlyPrice, formatPriceCents, getPlanAccess, planDetails, planOrder } from "@/lib/plans";
-import { getActivePlanCode, getSubscriptionWindow } from "@/lib/subscription";
+import { getActivePlanCode, getSubscriptionWindow, TRIAL_DAYS } from "@/lib/subscription";
 
 const paymentStatuses: PaymentReturnStatus[] = ["confirmado", "cancelado", "expirado", "indisponivel"];
 
 export default async function SettingsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ pagamento?: string }>;
+  searchParams: Promise<{ pagamento?: string; welcome?: string; plano?: string }>;
 }) {
   const user = await requireCompanyManager();
   const params = await searchParams;
@@ -27,6 +27,10 @@ export default async function SettingsPage({
   const activePlan = activePlanCode ? planDetails[activePlanCode] : null;
   // O primeiro plano da empresa nao passa pela processadora: e teste gratuito.
   const trialEligible = await isTrialEligible(user.companyId);
+  // Plano escolhido na landing: chega destacado, mas quem comeca o teste e a
+  // pessoa, com o preco na frente.
+  const planoSugerido = planOrder.find((code) => code === params.plano) ?? null;
+  const recemCadastrada = params.welcome === "1";
   const access = getPlanAccess(activePlanCode);
   const activeUserCount = await prisma.user.count({
     where: {
@@ -68,6 +72,15 @@ export default async function SettingsPage({
             Criar conta ou iniciar checkout nao ativa assinatura automaticamente.
           </div>
         </div>
+        {recemCadastrada && trialEligible ? (
+          <div className="mb-5 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm leading-6 text-emerald-900">
+            Conta criada e cadastro completo.{" "}
+            {planoSugerido
+              ? `Comece agora os ${TRIAL_DAYS} dias gratuitos do Plano ${planDetails[planoSugerido].name}, sem cartao.`
+              : `Escolha um plano abaixo para comecar ${TRIAL_DAYS} dias gratuitos, sem cartao.`}{" "}
+            No fim do teste, pagar e um clique: nao pedimos os dados de novo.
+          </div>
+        ) : null}
         {paymentStatus ? (
           <PaymentReturnBanner status={paymentStatus} planActive={Boolean(activePlanCode)} />
         ) : null}
@@ -170,7 +183,14 @@ export default async function SettingsPage({
                 : undefined;
 
               return (
-                <article key={plan.code} className="rounded-md border border-slate-200 bg-slate-50 p-3">
+                <article
+                  key={plan.code}
+                  className={
+                    planoSugerido === planCode && trialEligible
+                      ? "rounded-md border-2 border-emerald-500 bg-white p-3"
+                      : "rounded-md border border-slate-200 bg-slate-50 p-3"
+                  }
+                >
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <h4 className="font-semibold text-slate-950">{plan.name}</h4>

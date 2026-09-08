@@ -32,7 +32,12 @@ describe("cadastro sem os campos de cobranca", () => {
   it("aceita o envio do formulario curto", () => {
     const form = new FormData();
     form.set("companyName", "Zelo Teste");
-    form.set("document", "");
+    form.set("document", "11222333000181");
+    form.set("phone", "11987654321");
+    form.set("postalCode", "01310100");
+    form.set("address", "Avenida Paulista");
+    form.set("addressNumber", "1000");
+    form.set("province", "Bela Vista");
     form.set("segment", "");
     form.set("ownerName", "Nicollas Petrin");
     form.set("email", "teste@zelo.com");
@@ -54,7 +59,6 @@ describe("cadastro sem os campos de cobranca", () => {
       password: readText(form, "password"),
       confirmPassword: readText(form, "confirmPassword"),
       plan: readText(form, "plan"),
-      trial: readText(form, "trial"),
     });
 
     expect(parsed.success).toBe(true);

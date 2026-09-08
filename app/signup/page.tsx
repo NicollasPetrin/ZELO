@@ -10,7 +10,8 @@ import { BillingAddressFields } from "@/features/billing/billing-address-fields"
 import { planDetails, planOrder } from "@/lib/plans";
 
 const errorMessages: Record<string, string> = {
-  dados: "Algum campo esta invalido. Confira e-mail, CNPJ e a senha (8 caracteres, com letra maiuscula e caractere especial).",
+  dados:
+    "Algum campo esta invalido. Confira o CNPJ, o telefone, o endereco, o e-mail e a senha (8 caracteres, com letra maiuscula e caractere especial).",
   email: "Este e-mail ja esta cadastrado. Entre na conta ou use outro e-mail.",
   rate: "Muitas tentativas. Aguarde alguns minutos e tente novamente.",
   documento: "Este CNPJ ou CPF ja esta cadastrado em outra conta.",
@@ -72,8 +73,8 @@ export default async function SignupPage({
             <div className="mt-3 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm leading-6 text-emerald-900">
               <>
                 <strong>30 dias gratis</strong>, depois {plan.price}/mes — {plan.includedUsers} usuarios incluidos.{" "}
-                <strong>Nenhum cartao e pedido agora</strong> e nada e cobrado automaticamente. Ao fim dos 30 dias o
-                acesso e bloqueado ate o pagamento, e seus dados continuam guardados.
+                <strong>Nenhum cartao e pedido</strong>: crie a conta e comece o teste na tela seguinte. Ao fim dos 30
+                dias o acesso e bloqueado ate o pagamento, e seus dados continuam guardados.
               </>{" "}
               <Link href="/signup" className="font-semibold underline">
                 Prefiro so criar a conta
@@ -81,8 +82,7 @@ export default async function SignupPage({
             </div>
           ) : (
             <p className="mt-2 text-sm leading-6 text-slate-600">
-              Os dados cadastrados ficam salvos por empresa. As funcionalidades sao liberadas somente apos uma assinatura
-              ativa.{" "}
+              Crie a conta da empresa e escolha o plano na tela seguinte, com 30 dias gratuitos e sem cartao.{" "}
               <Link href="/#planos" className="font-semibold text-emerald-700 underline hover:text-emerald-800">
                 Ver planos e testar 30 dias gratis
               </Link>
@@ -96,22 +96,21 @@ export default async function SignupPage({
             </div>
             <div className="space-y-1.5">
               <Label>CNPJ ou CPF</Label>
-              <Input name="document" inputMode="numeric" autoComplete="off" placeholder="Opcional agora, exigido para assinar" />
+              <Input name="document" inputMode="numeric" autoComplete="off" placeholder="Somente numeros" required />
             </div>
             <div className="space-y-1.5">
               <Label>Segmento</Label>
               <Input name="segment" placeholder="Ex.: varejo, clinica, servicos" />
             </div>
-            {plan ? (
-              <>
-                <input type="hidden" name="plan" value={plan.code} />
-                <div className="space-y-1.5">
-                  <Label>Telefone</Label>
-                  <Input name="phone" inputMode="tel" autoComplete="tel" placeholder="(11) 98765-4321" required />
-                </div>
-                <BillingAddressFields />
-              </>
-            ) : null}
+            {/* Os dados de cobranca sao pedidos uma vez, aqui, mesmo sem plano
+                escolhido: e o que faz o pagamento no fim do teste ser um clique
+                em vez de um cadastro novo. */}
+            {plan ? <input type="hidden" name="plan" value={plan.code} /> : null}
+            <div className="space-y-1.5">
+              <Label>Telefone</Label>
+              <Input name="phone" inputMode="tel" autoComplete="tel" placeholder="(11) 98765-4321" required />
+            </div>
+            <BillingAddressFields />
             <div className="space-y-1.5">
               <Label>Seu nome</Label>
               <Input name="ownerName" placeholder="Nome completo" required minLength={2} />
@@ -131,10 +130,10 @@ export default async function SignupPage({
             {error ? <p className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</p> : null}
             <SubmitButton
               className="w-full"
-              pendingLabel={plan ? "Liberando seu teste..." : "Criando sua conta..."}
+              pendingLabel="Criando sua conta..."
               icon={<ArrowRight className="h-4 w-4" aria-hidden="true" />}
             >
-              {comTeste ? "Comecar teste gratuito" : "Criar conta e entrar"}
+              {comTeste ? "Criar conta e continuar" : "Criar conta e entrar"}
             </SubmitButton>
           </form>
 

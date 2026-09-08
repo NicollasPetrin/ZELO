@@ -39,64 +39,50 @@ export const loginSchema = z.object({
   password: z.string().min(1, "Informe a senha."),
 });
 
-/** Campos que o Asaas exige do pagador para aceitar o checkout. */
-const camposDeCobranca = ["document", "phone", "postalCode", "address", "addressNumber", "province"] as const;
-
 export const signupSchema = z
   .object({
     companyName: z.string().trim().min(2, "Informe o nome da empresa."),
-    // Opcionais quando a pessoa so quer conhecer o produto. Viram obrigatorios
-    // assim que um plano e escolhido, porque sem eles o Asaas recusa o checkout.
+    // Cadastro completo desde a porta, mesmo sem cobranca nenhuma no ato.
+    //
+    // Sao os dados que o Asaas exige do pagador. Pedir agora e o que permite
+    // que, no fim do teste, pagar seja um clique: se ficassem para depois, a
+    // pessoa teria que refazer o cadastro justamente no momento em que decide
+    // pagar, que e o pior momento possivel para inventar um formulario novo.
+    //
+    // O documento tambem e o que sustenta a regra de um teste por empresa: sem
+    // ele nao ha chave unica, e criar conta nova daria mes gratuito de novo.
     document: z
       .string()
       .trim()
-      .refine((value) => value === "" || isValidDocument(value), "CNPJ ou CPF invalido.")
-      .optional()
-      .or(z.literal("")),
+      .min(1, "Informe o CNPJ ou CPF da empresa.")
+      .refine(isValidDocument, "CNPJ ou CPF invalido."),
     phone: z
       .string()
       .trim()
-      .refine((value) => value === "" || isValidPhone(value), "Telefone invalido. Use DDD + numero.")
-      .optional()
-      .or(z.literal("")),
+      .min(1, "Informe o telefone da empresa.")
+      .refine(isValidPhone, "Telefone invalido. Use DDD + numero."),
     postalCode: z
       .string()
       .trim()
-      .refine((value) => value === "" || value.replace(/\D/g, "").length === 8, "CEP invalido.")
-      .optional()
-      .or(z.literal("")),
-    address: z.string().trim().optional().or(z.literal("")),
-    addressNumber: z.string().trim().optional().or(z.literal("")),
+      .refine((value) => value.replace(/D/g, "").length === 8, "CEP invalido."),
+    address: z.string().trim().min(2, "Informe o logradouro."),
+    addressNumber: z.string().trim().min(1, "Informe o numero."),
+    province: z.string().trim().min(2, "Informe o bairro."),
+    // Complemento e o unico campo de endereco que pode faltar sem quebrar a
+    // cobranca.
     addressComplement: z.string().trim().optional().or(z.literal("")),
-    province: z.string().trim().optional().or(z.literal("")),
     segment: z.string().trim().optional().or(z.literal("")),
     ownerName: z.string().trim().min(2, "Informe seu nome."),
     email: z.string().email("Informe um e-mail valido.").trim().toLowerCase(),
     password: strongPasswordSchema,
     confirmPassword: z.string().min(1, "Confirme a senha."),
-    /** Vazio quando a pessoa cria conta sem assinar agora. */
+    /** Plano escolhido na landing. So define qual vem destacado depois; o teste
+     * comeca dentro do produto, nunca no cadastro. */
     plan: z.enum(subscriptionPlans).optional().or(z.literal("")),
-    /** "1" quando a assinatura comeca com o mes de teste. */
-    trial: z.literal("1").optional().or(z.literal("")),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "As senhas nao conferem.",
     path: ["confirmPassword"],
-  })
-  .superRefine((data, ctx) => {
-    if (!data.plan) {
-      return;
-    }
-
-    for (const campo of camposDeCobranca) {
-      if (!data[campo]) {
-        ctx.addIssue({
-          code: "custom",
-          path: [campo],
-          message: "Obrigatorio para assinar um plano.",
-        });
-      }
-    }
   });
 
 export const departmentSchema = z.object({
