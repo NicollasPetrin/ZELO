@@ -7,6 +7,7 @@ import { AsaasError, createCheckout, deleteSubscription } from "@/lib/asaas/clie
 import { ASAAS_PROVIDER } from "@/lib/asaas/types";
 import { ensureAsaasCustomer } from "@/features/billing/asaas-customer";
 import { syncSubscriptionFromAsaas } from "@/features/billing/sync-subscription";
+import { isTrialEligible, startTrial } from "@/features/billing/trial";
 import { recordActivity } from "@/lib/audit";
 import { assertCanManageCompany } from "@/lib/auth/guards";
 import { requireUser } from "@/lib/auth/session";
@@ -14,7 +15,7 @@ import { prisma } from "@/lib/db/client";
 import { ASAAS_NOT_CONFIGURED_MESSAGE, getAppUrl, isAsaasConfigured } from "@/lib/env";
 import { calculateMonthlyPrice, formatPriceCents, planDetails } from "@/lib/plans";
 import { assertUserActionRateLimit } from "@/lib/rate-limit";
-import { getActivePlanCode } from "@/lib/subscription";
+import { getActivePlanCode, TRIAL_DAYS } from "@/lib/subscription";
 import { subscriptionPlanSchema } from "@/lib/validations";
 
 const CHECKOUT_EXPIRATION_MINUTES = 60;
@@ -50,6 +51,36 @@ export async function startPlanCheckoutAction(planCode: SubscriptionPlan) {
 
     if (price.requiresUpgrade || price.totalPriceCents === null) {
       throw new Error(`O Plano ${plan.name} nao comporta ${activeUserCount} usuarios ativos. Escolha um plano maior.`);
+    }
+
+    // Primeiro plano da empresa: em vez de cobrar, libera o teste gratuito. E o
+    // mesmo direito de quem escolheu plano no cadastro — o mes gratuito e da
+    // empresa, e nao do caminho pelo qual ela chegou aqui. Quem ja teve
+    // assinatura alguma vez segue direto para o pagamento.
+    if (await isTrialEligible(user.companyId)) {
+      const teste = await startTrial(user.companyId, parsedPlanCode);
+
+      if (teste.started) {
+        await recordActivity({
+          companyId: user.companyId,
+          actorId: user.id,
+          type: "SUBSCRIPTION_CHANGED",
+          entityType: "SubscriptionPlan",
+          entityId: parsedPlanCode,
+          title: "Teste gratuito iniciado",
+          description: `Plano ${plan.name} por ${TRIAL_DAYS} dias`,
+          metadata: { endsAt: teste.endsAt.toISOString(), activeUserCount },
+        });
+
+        revalidatePath("/settings");
+        revalidatePath("/", "layout");
+
+        return {
+          ok: true,
+          data: { checkoutUrl: null },
+          message: `Plano ${plan.name} liberado por ${TRIAL_DAYS} dias. Nenhuma cobranca foi feita.`,
+        } as const;
+      }
     }
 
     if (!isAsaasConfigured()) {
@@ -130,7 +161,7 @@ export async function startPlanCheckoutAction(planCode: SubscriptionPlan) {
     return {
       ok: true,
       data: {
-        checkoutUrl: checkout.link,
+        checkoutUrl: checkout.link as string | null,
       },
       message: `Redirecionando para o pagamento do Plano ${plan.name}, ${formatPriceCents(price.totalPriceCents)}/mes.`,
     } as const;

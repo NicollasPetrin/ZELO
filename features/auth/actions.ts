@@ -1,13 +1,8 @@
 "use server";
 
-import type { SubscriptionPlan } from "@prisma/client";
 import { redirect } from "next/navigation";
-import { ensureAsaasCustomer } from "@/features/billing/asaas-customer";
-import { createCheckout } from "@/lib/asaas/client";
-import { getAppUrl } from "@/lib/env";
+import { startTrial } from "@/features/billing/trial";
 import { parsePhone } from "@/lib/phone";
-import { planDetails } from "@/lib/plans";
-import { TRIAL_DAYS } from "@/lib/subscription";
 import { createSession, deleteSession, getCurrentUser } from "@/lib/auth/session";
 import { hashPassword, needsRehash, verifyPassword } from "@/lib/auth/password";
 import { prisma } from "@/lib/db/client";
@@ -147,7 +142,7 @@ export async function signupAction(formData: FormData) {
     }
   }
 
-  const userId = await prisma.$transaction(async (tx) => {
+  const { userId, companyId } = await prisma.$transaction(async (tx) => {
     const company = await tx.company.create({
       data: {
         name: parsed.data.companyName,
@@ -206,7 +201,7 @@ export async function signupAction(formData: FormData) {
       },
     });
 
-    return owner.id;
+    return { userId: owner.id, companyId: company.id };
   });
 
   await createSession(userId);
@@ -215,90 +210,23 @@ export async function signupAction(formData: FormData) {
     redirect("/settings?welcome=1");
   }
 
-  // Conta criada e sessao aberta: daqui em diante qualquer falha ainda deixa a
-  // pessoa dentro do produto, com o plano a um clique. Perder a conta por causa
-  // de um erro da processadora seria bem pior.
+  // Quem escolheu plano entra direto usando: o teste nao pede cartao, entao nao
+  // ha processadora envolvida aqui e nao existe a falha de "conta criada mas
+  // pagamento indisponivel" que essa etapa produzia.
   //
-  // O redirecionamento fica fora do try de proposito: redirect() sinaliza por
-  // excecao, e chamado aqui dentro seria confundido com falha do checkout.
-  let checkoutUrl: string | null = null;
+  // Uma falha aqui ainda deixa a pessoa dentro do produto, com o plano a um
+  // clique nas configuracoes. O redirecionamento fica fora do try porque
+  // redirect() sinaliza por excecao e seria confundido com erro.
+  let testeLiberado = false;
 
   try {
-    checkoutUrl = await startSignupCheckout(userId, parsed.data.plan, parsed.data.trial === "1");
+    const resultado = await startTrial(companyId, parsed.data.plan);
+    testeLiberado = resultado.started;
   } catch (error) {
-    console.error("[signup] conta criada, mas o checkout falhou:", error);
+    console.error("[signup] conta criada, mas o teste nao foi liberado:", error);
   }
 
-  if (!checkoutUrl) {
-    redirect("/settings?pagamento=indisponivel");
-  }
-
-  redirect(checkoutUrl);
-}
-
-/** Cria o cliente na processadora e devolve o link de pagamento do plano. */
-async function startSignupCheckout(userId: string, plan: SubscriptionPlan, comTeste: boolean) {
-  const user = await prisma.user.findUniqueOrThrow({
-    where: { id: userId },
-    include: { company: true },
-  });
-
-  const asaasCustomerId = await ensureAsaasCustomer({
-    id: user.company.id,
-    name: user.company.name,
-    document: user.company.document,
-    email: user.company.email,
-    phone: user.company.phone,
-    postalCode: user.company.postalCode,
-    address: user.company.address,
-    addressNumber: user.company.addressNumber,
-    addressComplement: user.company.addressComplement,
-    province: user.company.province,
-    asaasCustomerId: user.company.asaasCustomerId,
-  });
-
-  await prisma.company.update({
-    where: { id: user.company.id },
-    data: { pendingPlanCode: plan },
-  });
-
-  const detalhes = planDetails[plan];
-  const appUrl = getAppUrl();
-  const retorno = (estado: string) => `${appUrl}/settings?pagamento=${estado}`;
-
-  const checkout = await createCheckout({
-    billingTypes: ["CREDIT_CARD"],
-    customer: asaasCustomerId,
-    chargeTypes: ["RECURRENT"],
-    minutesToExpire: 60,
-    items: [
-      {
-        name: `Plano ${detalhes.name}`,
-        description: comTeste
-          ? `Assinatura mensal da Zelo. Primeiros ${TRIAL_DAYS} dias gratuitos.`
-          : "Assinatura mensal da Zelo.",
-        quantity: 1,
-        value: detalhes.priceCents / 100,
-      },
-    ],
-    subscription: {
-      cycle: "MONTHLY",
-      // No teste gratuito o cartao e validado agora e a primeira cobranca so cai
-      // no fim do periodo. O Asaas gera essa cobranca futura na hora, e e o
-      // evento dela que libera o acesso do teste.
-      nextDueDate: new Date(Date.now() + (comTeste ? TRIAL_DAYS : 0) * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .slice(0, 10),
-    },
-    callback: {
-      successUrl: retorno("confirmado"),
-      cancelUrl: retorno("cancelado"),
-      expiredUrl: retorno("expirado"),
-      autoRedirect: true,
-    },
-  });
-
-  return checkout.link;
+  redirect(testeLiberado ? "/dashboard?teste=iniciado" : "/settings?welcome=1");
 }
 
 export async function logoutAction() {

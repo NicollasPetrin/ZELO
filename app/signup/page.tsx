@@ -34,7 +34,9 @@ export default async function SignupPage({
   // a conta — quem quer conhecer o produto nao e obrigado a pagar na porta.
   const planCode = planOrder.find((code) => code === params.plano) ?? null;
   const plan = planCode ? planDetails[planCode] : null;
-  const comTeste = Boolean(plan) && params.teste === "1";
+  // Escolher plano e comecar o teste sao a mesma coisa agora: o mes gratuito e
+  // da empresa, nao do link por onde ela entrou. Nao ha mais dois caminhos.
+  const comTeste = Boolean(plan);
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-100 px-4 py-10">
       <div className="grid w-full max-w-5xl overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm lg:grid-cols-[1fr_440px]">
@@ -61,26 +63,18 @@ export default async function SignupPage({
         <section className="p-8">
           <div className="mb-8 flex items-center gap-2 text-sm font-medium text-slate-500">
             <Building2 className="h-4 w-4" aria-hidden="true" />
-            {comTeste ? "Teste gratuito de 30 dias" : plan ? "Criar conta e assinar" : "Cadastro sem cobranca automatica"}
+            {comTeste ? "Teste gratuito de 30 dias" : "Cadastro sem cobranca automatica"}
           </div>
           <h2 className="text-2xl font-semibold text-slate-950">
-            {comTeste ? `Testar o Plano ${plan?.name} por 30 dias` : plan ? `Assinar Plano ${plan.name}` : "Criar conta"}
+            {comTeste ? `Testar o Plano ${plan?.name} por 30 dias` : "Criar conta"}
           </h2>
           {plan ? (
             <div className="mt-3 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm leading-6 text-emerald-900">
-              {comTeste ? (
-                <>
-                  <strong>30 dias gratis</strong>, depois {plan.price}/mes — {plan.includedUsers} usuarios incluidos.
-                  O cartao e cadastrado agora para validacao, mas{" "}
-                  <strong>nada e cobrado hoje</strong>. A primeira cobranca cai daqui a 30 dias, e voce pode cancelar
-                  antes disso.
-                </>
-              ) : (
-                <>
-                  <strong>{plan.price}/mes</strong> — {plan.includedUsers} usuarios incluidos. Ao concluir, voce vai
-                  direto para o pagamento.
-                </>
-              )}{" "}
+              <>
+                <strong>30 dias gratis</strong>, depois {plan.price}/mes — {plan.includedUsers} usuarios incluidos.{" "}
+                <strong>Nenhum cartao e pedido agora</strong> e nada e cobrado automaticamente. Ao fim dos 30 dias o
+                acesso e bloqueado ate o pagamento, e seus dados continuam guardados.
+              </>{" "}
               <Link href="/signup" className="font-semibold underline">
                 Prefiro so criar a conta
               </Link>
@@ -111,7 +105,6 @@ export default async function SignupPage({
             {plan ? (
               <>
                 <input type="hidden" name="plan" value={plan.code} />
-                {comTeste ? <input type="hidden" name="trial" value="1" /> : null}
                 <div className="space-y-1.5">
                   <Label>Telefone</Label>
                   <Input name="phone" inputMode="tel" autoComplete="tel" placeholder="(11) 98765-4321" required />
@@ -138,10 +131,10 @@ export default async function SignupPage({
             {error ? <p className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</p> : null}
             <SubmitButton
               className="w-full"
-              pendingLabel={plan ? "Levando ao cadastro do cartao..." : "Criando sua conta..."}
+              pendingLabel={plan ? "Liberando seu teste..." : "Criando sua conta..."}
               icon={<ArrowRight className="h-4 w-4" aria-hidden="true" />}
             >
-              {comTeste ? "Comecar teste gratuito" : plan ? "Criar conta e pagar" : "Criar conta e entrar"}
+              {comTeste ? "Comecar teste gratuito" : "Criar conta e entrar"}
             </SubmitButton>
           </form>
 

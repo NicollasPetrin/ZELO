@@ -6,6 +6,9 @@ export const NO_ACTIVE_SUBSCRIPTION_MESSAGE =
 export const SUBSCRIPTION_SUSPENDED_MESSAGE =
   "A assinatura esta suspensa por falta de pagamento. Regularize para liberar as funcionalidades novamente.";
 
+export const TRIAL_ENDED_MESSAGE =
+  "Seu teste gratuito terminou. Assine o plano para liberar as funcionalidades novamente.";
+
 export const SUBSCRIPTION_ENDED_MESSAGE =
   "A assinatura foi cancelada e o periodo contratado terminou. Contrate um plano para voltar a usar as funcionalidades.";
 
@@ -32,7 +35,9 @@ export type SubscriptionPhase =
   /** Vencida alem da tolerancia: acesso suspenso. */
   | "suspended"
   /** Cancelada pelo cliente e com o periodo contratado ja terminado. */
-  | "ended";
+  | "ended"
+  /** Teste gratuito terminado sem assinatura paga. */
+  | "trial_ended";
 
 export type SubscriptionWindow = {
   phase: SubscriptionPhase;
@@ -112,6 +117,22 @@ export function getSubscriptionWindow(company: ActivePlanCompany, now: Date = ne
     };
   }
 
+  // O teste termina no dia combinado, sem tolerancia. A tolerancia existe para
+  // quem ja e cliente e teve uma cobranca falhar; um teste que acabou nao e
+  // pagamento atrasado, e nunca houve cobranca para atrasar.
+  if (isTrial) {
+    return {
+      phase: "trial_ended",
+      isTrial,
+      cancelAtPeriodEnd,
+      endsAt,
+      daysRemaining: null,
+      daysOverdue: null,
+      hasAccess: false,
+      shouldRemind: true,
+    };
+  }
+
   // Quem cancelou nao recebe tolerancia nem cobranca de pagamento: o combinado
   // era acesso ate o fim do periodo pago, e o fim e o fim. Esticar dois dias e
   // depois bloquear seria pior do que encerrar na data prometida.
@@ -173,6 +194,10 @@ export function assertActivePlanCode(plan: SubscriptionPlan | null | undefined):
 export function assertCompanyHasActivePlan(company: ActivePlanCompany, now: Date = new Date()): SubscriptionPlan {
   const window = getSubscriptionWindow(company, now);
 
+  if (window.phase === "trial_ended") {
+    throw new Error(TRIAL_ENDED_MESSAGE);
+  }
+
   if (window.phase === "ended") {
     throw new Error(SUBSCRIPTION_ENDED_MESSAGE);
   }
@@ -215,12 +240,21 @@ export function buildReminderContent(window: SubscriptionWindow, planName: strin
     };
   }
 
+  if (window.phase === "trial_ended") {
+    return {
+      title: "Seu teste gratuito terminou",
+      message:
+        `As funcionalidades estao bloqueadas ate a assinatura do Plano ${planName} ser paga. ` +
+        "Seus dados continuam guardados e voltam assim que o pagamento for confirmado.",
+    };
+  }
+
   if (window.isTrial && window.daysRemaining !== null) {
     return {
       title: `Seu teste gratuito termina em ${pluralizeDays(window.daysRemaining)}`,
       message:
-        `Depois disso a primeira cobranca do Plano ${planName} entra automaticamente e o acesso continua. ` +
-        "Se preferir nao seguir, cancele antes do fim do teste.",
+        `Depois dessa data o acesso e bloqueado ate o pagamento do Plano ${planName} ser confirmado. ` +
+        "Nada e cobrado automaticamente: nenhum cartao foi guardado.",
     };
   }
 

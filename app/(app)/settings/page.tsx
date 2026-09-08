@@ -3,6 +3,7 @@ import { PageHeader } from "@/components/page-header";
 import { CancelSubscriptionPanel } from "@/features/billing/cancel-subscription-panel";
 import { PaymentReturnBanner, type PaymentReturnStatus } from "@/features/billing/payment-return-banner";
 import { PlanCheckoutButton } from "@/features/billing/plan-checkout-button";
+import { isTrialEligible } from "@/features/billing/trial";
 import { VerifyPaymentPanel } from "@/features/billing/verify-payment-panel";
 import { SubscriptionStatusCard } from "@/features/billing/subscription-status-card";
 import { CompanySettingsForm } from "@/features/settings/company-settings-form";
@@ -24,6 +25,8 @@ export default async function SettingsPage({
   const activePlanCode = getActivePlanCode(user.company);
   const subscriptionWindow = getSubscriptionWindow(user.company);
   const activePlan = activePlanCode ? planDetails[activePlanCode] : null;
+  // O primeiro plano da empresa nao passa pela processadora: e teste gratuito.
+  const trialEligible = await isTrialEligible(user.companyId);
   const access = getPlanAccess(activePlanCode);
   const activeUserCount = await prisma.user.count({
     where: {
@@ -152,7 +155,9 @@ export default async function SettingsPage({
               // botao precisa deixar voltar atras: sem isso o unico caminho de
               // volta seria esperar o acesso acabar.
               const checkoutLabel = !activePlanCode
-                ? "Comprar plano"
+                ? trialEligible
+                  ? "Comecar teste de 30 dias"
+                  : "Comprar plano"
                 : isCurrent
                   ? subscriptionWindow.cancelAtPeriodEnd
                     ? "Reativar plano"

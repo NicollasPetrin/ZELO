@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 };
 
 const highlightedPlan = planOrder.find((code) => planDetails[code].highlight) ?? planOrder[0];
-const trialHref = `/signup?plano=${highlightedPlan}&teste=1`;
+const trialHref = `/signup?plano=${highlightedPlan}`;
 const features = [
   { icon: ListChecks, title: "Cada tarefa, uma responsabilidade", description: "Defina quem faz, qual é o prazo e o que vem primeiro. Sua equipe encontra a rotina em um só lugar." },
   { icon: Layers3, title: "Sua empresa, do seu jeito", description: "Organize os setores e acompanhe tarefas e metas com a estrutura que faz sentido para a sua operação." },
@@ -99,7 +99,7 @@ export default function Home() {
                   </dl>
                   <ul className={styles.planFeatures}>{copy.features.map((feature) => <li key={feature}><Check size={17} aria-hidden="true" /><span>{feature}</span></li>)}</ul>
                   <div className={styles.planActions}>
-                    <Link href={`/signup?plano=${code}&teste=1`} className={plan.highlight ? styles.primaryButton : styles.secondaryButton}>Testar {TRIAL_DAYS} dias grátis <ArrowRight size={16} aria-hidden="true" /></Link>
+                    <Link href={`/signup?plano=${code}`} className={plan.highlight ? styles.primaryButton : styles.secondaryButton}>Testar {TRIAL_DAYS} dias grátis <ArrowRight size={16} aria-hidden="true" /></Link>
                     <Link href={`/signup?plano=${code}`} className={styles.directSignup}>Assinar direto, sem teste</Link>
                   </div>
                 </article>

@@ -23,6 +23,17 @@ type Estilo = {
 };
 
 function buildEstilo(window: SubscriptionWindow): Estilo {
+  if (window.phase === "trial_ended") {
+    return {
+      container: "border-rose-200 bg-rose-50",
+      destaque: "text-rose-800",
+      icone: ShieldOff,
+      rotulo: "Teste terminado",
+      titulo: "Funcionalidades bloqueadas",
+      detalhe: "Assine o plano para liberar o acesso. Seus dados continuam guardados.",
+    };
+  }
+
   if (window.phase === "ended") {
     return {
       container: "border-slate-300 bg-slate-100",
@@ -86,7 +97,7 @@ function buildEstilo(window: SubscriptionWindow): Estilo {
       icone: acabando ? AlertTriangle : CircleCheck,
       rotulo: "Teste gratuito",
       titulo: `${pluralizeDays(window.daysRemaining)} restantes`,
-      detalhe: "Ao terminar, a primeira cobranca entra automaticamente e o acesso continua.",
+      detalhe: "Ao terminar, o acesso e bloqueado ate o pagamento. Nenhum cartao foi guardado.",
     };
   }
 

@@ -164,7 +164,7 @@ describe("teste gratuito", () => {
   });
 
   it("reminds near the end, like any other subscription", () => {
-    const window = getSubscriptionWindow(emTeste(3), now);
+    const window = getSubscriptionWindow(testeTerminandoEm(3), now);
 
     expect(window.shouldRemind).toBe(true);
     expect(window.isTrial).toBe(true);
@@ -254,5 +254,70 @@ describe("assinatura cancelada", () => {
     expect(window.cancelAtPeriodEnd).toBe(false);
     expect(window.phase).toBe("grace");
     expect(window.hasAccess).toBe(true);
+  });
+});
+
+function testeTerminandoEm(dias: number) {
+  return {
+    subscriptions: [
+      {
+        currentPeriodEnd: new Date(now.getTime() + dias * DAY_MS),
+        status: "TRIALING" as const,
+        plan: { code: "MANAGEMENT" as const },
+      },
+    ],
+  };
+}
+
+function emTesteQueTerminou(diasDesdeOFim: number) {
+  return {
+    subscriptions: [
+      {
+        currentPeriodEnd: new Date(now.getTime() - diasDesdeOFim * DAY_MS),
+        status: "TRIALING" as const,
+        plan: { code: "MANAGEMENT" as const },
+      },
+    ],
+  };
+}
+
+describe("teste gratuito terminado", () => {
+  it("blocks the moment the trial ends, with no grace period", () => {
+    const window = getSubscriptionWindow(emTesteQueTerminou(0.01), now);
+
+    expect(window.phase).toBe("trial_ended");
+    expect(window.hasAccess).toBe(false);
+    expect(getActivePlanCode(emTesteQueTerminou(0.01), now)).toBeNull();
+  });
+
+  it("does not give the trial the tolerance a late payer gets", () => {
+    // Mesma defasagem que, numa assinatura paga, ainda estaria em tolerancia.
+    expect(getSubscriptionWindow(companyEndingIn(-1), now).hasAccess).toBe(true);
+    expect(getSubscriptionWindow(emTesteQueTerminou(1), now).hasAccess).toBe(false);
+  });
+
+  it("blocks with a message about the trial, not about overdue payment", () => {
+    expect(() => assertCompanyHasActivePlan(emTesteQueTerminou(2), now)).toThrow(/teste gratuito terminou/i);
+  });
+
+  it("asks for a subscription instead of reporting a missed payment", () => {
+    const conteudo = buildReminderContent(getSubscriptionWindow(emTesteQueTerminou(1), now), "Gestao");
+
+    expect(conteudo?.title).toMatch(/teste gratuito terminou/i);
+    expect(conteudo?.message).not.toMatch(/atras[oa]/i);
+  });
+
+  it("warns during the trial that access stops, and that nothing is charged on its own", () => {
+    const conteudo = buildReminderContent(getSubscriptionWindow(testeTerminandoEm(3), now), "Gestao");
+
+    expect(conteudo?.message).toMatch(/bloqueado/i);
+    expect(conteudo?.message).toMatch(/nenhum cartao/i);
+  });
+
+  it("keeps a paid subscription on the old path, unaffected by the trial rule", () => {
+    const window = getSubscriptionWindow(companyEndingIn(-GRACE_PERIOD_DAYS), now);
+
+    expect(window.phase).toBe("suspended");
+    expect(window.isTrial).toBe(false);
   });
 });

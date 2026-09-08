@@ -2,6 +2,7 @@
 
 import type { SubscriptionPlan } from "@prisma/client";
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { ArrowUpRight, CreditCard } from "lucide-react";
 import { FormMessage } from "@/components/form-message";
 import { buttonClassName } from "@/components/ui/button";
@@ -18,6 +19,7 @@ export function PlanCheckoutButton({
   disabled?: boolean;
   disabledReason?: string;
 }) {
+  const router = useRouter();
   const [message, setMessage] = useState<string>();
   const [error, setError] = useState<string>();
   const [isPending, startTransition] = useTransition();
@@ -37,7 +39,12 @@ export function PlanCheckoutButton({
 
       if (result.data.checkoutUrl) {
         window.location.href = result.data.checkoutUrl;
+        return;
       }
+
+      // Sem link: o plano foi liberado aqui mesmo, como teste gratuito. A tela
+      // precisa recarregar para deixar de dizer "sem plano ativo".
+      router.refresh();
     });
   }
 
@@ -54,7 +61,7 @@ export function PlanCheckoutButton({
         ) : (
           <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
         )}
-        {isPending ? "Preparando..." : label}
+        {isPending ? "Liberando..." : label}
       </button>
       {disabled && disabledReason ? <p className="text-xs leading-5 text-rose-700">{disabledReason}</p> : null}
       <FormMessage message={message} error={error} />
