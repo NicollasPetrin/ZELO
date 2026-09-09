@@ -81,7 +81,13 @@ export async function createSession(userId: string) {
 
   cookieStore.set(COOKIE_NAME, createCookieValue(session.id, verifier), {
     httpOnly: true,
-    sameSite: "strict",
+    // "lax" e nao "strict": com "strict" o navegador nao manda o cookie em
+    // navegacao iniciada por outro site, e a volta do consentimento do Google
+    // chega exatamente assim. A sessao sumia dentro de /api/google/retorno, o
+    // requireUser mandava para o login e a agenda nunca era ligada. "lax" segue
+    // barrando o envio em requisicao cross-site que nao seja navegacao de topo,
+    // que e a protecao que interessa aqui.
+    sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
     expires,
     maxAge: SESSION_DAYS * 24 * 60 * 60,

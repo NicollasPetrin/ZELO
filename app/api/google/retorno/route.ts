@@ -23,10 +23,12 @@ function iguais(a: string, b: string) {
 export async function GET(request: NextRequest) {
   const destino = (estado: string) => NextResponse.redirect(`${getAppUrl()}/agenda?google=${estado}`);
   const cookieStore = await cookies();
+  // Fora do try de proposito: requireUser redireciona para /login lancando um
+  // erro interno do Next. Dentro do try ele seria confundido com falha da
+  // integracao e viraria "falhou", escondendo que o caso era sessao expirada.
+  const user = await requireUser();
 
   try {
-    const user = await requireUser();
-
     if (!isGoogleCalendarConfigured()) {
       return destino("indisponivel");
     }
