@@ -11,7 +11,15 @@ import { getPlanAccess } from "@/lib/plans";
 import { assertUserActionRateLimit } from "@/lib/rate-limit";
 import { reconcileTaskStatus } from "@/lib/task-status";
 import { assertCompanyHasActivePlan } from "@/lib/subscription";
-import { attachmentSchema, commentSchema, idSchema, taskSchema, taskStatusSchema } from "@/lib/validations";
+import { canComplete, PROOF_REQUIRED_MESSAGE, statusAfterRejection } from "@/lib/task-proof";
+import {
+  attachmentSchema,
+  commentSchema,
+  idSchema,
+  proofReviewSchema,
+  taskSchema,
+  taskStatusSchema,
+} from "@/lib/validations";
 
 function taskDate(value: string) {
   const date = new Date(`${value}T17:00:00`);
@@ -70,6 +78,7 @@ export async function createTaskAction(values: unknown) {
         description: parsed.description,
         dueDate: novaData,
         priority: parsed.priority,
+        requiresProof: parsed.requiresProof,
         status: statusCriacao,
         completedAt: statusCriacao === "COMPLETED" ? new Date() : null,
       },
@@ -173,6 +182,7 @@ export async function updateTaskAction(values: unknown) {
         description: parsed.description,
         dueDate: dataAtualizada,
         priority: parsed.priority,
+        requiresProof: parsed.requiresProof,
         status: statusAtualizado,
         completedAt: statusAtualizado === "COMPLETED" ? task.completedAt ?? new Date() : null,
       },
@@ -242,6 +252,16 @@ export async function updateTaskStatusAction(values: unknown) {
     // Aqui so o status muda, mas alguem pode marcar "Atrasada" numa tarefa
     // cujo prazo ainda nem chegou.
     const statusReconciliado = reconcileTaskStatus(parsed.status, task.dueDate);
+
+    // Sem esta conferencia, marcar "concluida" continuaria valendo como prova
+    // de que algo foi feito — que e justamente o que a foto veio corrigir.
+    if (statusReconciliado === "COMPLETED") {
+      const provas = await prisma.taskProof.count({ where: { taskId: task.id } });
+
+      if (!canComplete(task, provas)) {
+        throw new Error(PROOF_REQUIRED_MESSAGE);
+      }
+    }
 
     const updateResult = await prisma.task.updateMany({
       where: {
@@ -393,5 +413,145 @@ export async function addTaskAttachmentAction(values: unknown) {
     return { ok: true, message: "Anexo registrado." } as const;
   } catch (error) {
     return actionError(error, "Nao foi possivel registrar o anexo.");
+  }
+}
+
+/**
+ * Aprova a prova enviada e conclui a tarefa.
+ *
+ * Quem aprova nao pode ser quem executou: a revisao existe para haver um
+ * segundo par de olhos, e deixar o responsavel aprovar a si mesmo devolveria a
+ * situacao anterior, em que dizer "pronto" bastava.
+ */
+export async function approveTaskProofAction(values: unknown) {
+  try {
+    const user = await requireUser();
+    assertCompanyHasActivePlan(user.company);
+    assertCanManageTasks(user);
+    await assertUserActionRateLimit(user.id, "tasks:approve-proof");
+    const parsed = proofReviewSchema.parse(values);
+
+    const task = await prisma.task.findFirst({
+      where: { id: parsed.taskId, companyId: user.companyId },
+      select: { id: true, title: true, assigneeId: true, requiresProof: true, completedAt: true },
+    });
+
+    if (!task) {
+      throw new Error("Tarefa nao encontrada.");
+    }
+
+    const provas = await prisma.taskProof.count({ where: { taskId: task.id } });
+
+    if (!canComplete(task, provas)) {
+      throw new Error(PROOF_REQUIRED_MESSAGE);
+    }
+
+    await prisma.task.update({
+      where: { id: task.id },
+      data: { status: "COMPLETED", completedAt: task.completedAt ?? new Date() },
+    });
+
+    if (task.assigneeId !== user.id) {
+      await prisma.notification.create({
+        data: {
+          companyId: user.companyId,
+          userId: task.assigneeId,
+          type: "STATUS_UPDATED",
+          title: "Prova aprovada",
+          message: `${user.name} aprovou a conclusao de "${task.title}".`,
+          link: `/tasks/${task.id}`,
+          relatedTaskId: task.id,
+        },
+      });
+    }
+
+    await recordActivity({
+      companyId: user.companyId,
+      actorId: user.id,
+      type: "TASK_UPDATED",
+      entityType: "Task",
+      entityId: task.id,
+      title: "Prova aprovada",
+      description: task.title,
+    });
+
+    revalidatePath(`/tasks/${task.id}`);
+    revalidatePath("/team-tasks");
+
+    return { ok: true, message: "Prova aprovada e tarefa concluida." } as const;
+  } catch (error) {
+    return actionError(error, "Nao foi possivel aprovar a prova.");
+  }
+}
+
+/** Recusa a prova e devolve a tarefa para execucao, com o motivo registrado. */
+export async function rejectTaskProofAction(values: unknown) {
+  try {
+    const user = await requireUser();
+    assertCompanyHasActivePlan(user.company);
+    assertCanManageTasks(user);
+    await assertUserActionRateLimit(user.id, "tasks:reject-proof");
+    const parsed = proofReviewSchema.parse(values);
+
+    const task = await prisma.task.findFirst({
+      where: { id: parsed.taskId, companyId: user.companyId },
+      select: { id: true, title: true, assigneeId: true },
+    });
+
+    if (!task) {
+      throw new Error("Tarefa nao encontrada.");
+    }
+
+    const motivo = parsed.reason?.trim();
+
+    await prisma.$transaction([
+      prisma.task.update({
+        where: { id: task.id },
+        data: { status: statusAfterRejection(), completedAt: null },
+      }),
+      // O motivo vira comentario para ficar na tarefa, visivel a quem vai
+      // refazer o servico. Uma recusa sem explicacao so gera outra ida e volta.
+      ...(motivo
+        ? [
+            prisma.taskComment.create({
+              data: { taskId: task.id, authorId: user.id, text: `Prova recusada: ${motivo}` },
+            }),
+          ]
+        : []),
+    ]);
+
+    if (task.assigneeId !== user.id) {
+      await prisma.notification.create({
+        data: {
+          companyId: user.companyId,
+          userId: task.assigneeId,
+          type: "STATUS_UPDATED",
+          title: "Prova recusada",
+          message: motivo
+            ? `${user.name} recusou a prova de "${task.title}": ${motivo}`
+            : `${user.name} recusou a prova de "${task.title}".`,
+          link: `/tasks/${task.id}`,
+          relatedTaskId: task.id,
+        },
+      });
+    }
+
+    await recordActivity({
+      companyId: user.companyId,
+      actorId: user.id,
+      type: "TASK_UPDATED",
+      entityType: "Task",
+      entityId: task.id,
+      title: "Prova recusada",
+      description: task.title,
+      metadata: motivo ? { motivo } : undefined,
+    });
+
+    revalidatePath(`/tasks/${task.id}`);
+    revalidatePath("/team-tasks");
+
+    return { ok: true, message: "Prova recusada e tarefa devolvida." } as const;
+  } catch (error) {
+    return actionError(error, "Nao foi possivel recusar a prova.");
   }
 }

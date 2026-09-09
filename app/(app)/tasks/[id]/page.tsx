@@ -10,6 +10,7 @@ import { buttonClassName } from "@/components/ui/button";
 import { getTaskDetail, getTaskFormOptions } from "@/features/tasks/data";
 import { TaskAttachmentForm, TaskCommentForm, TaskStatusForm } from "@/features/tasks/task-inline-forms";
 import { TaskForm } from "@/features/tasks/task-form";
+import { TaskProofPanel } from "@/features/tasks/task-proof-panel";
 import { requireUser } from "@/lib/auth/session";
 import { formatDate, formatDateTime, isTaskLate, toDateInputValue } from "@/lib/format";
 import { recurrenceLabels } from "@/lib/labels";
@@ -122,6 +123,23 @@ export default async function TaskDetailPage({
             </div>
           </article>
 
+          <TaskProofPanel
+            taskId={task.id}
+            requiresProof={task.requiresProof}
+            status={task.status}
+            // Quem executou envia a prova; quem cobrou revisa. Sao papeis
+            // diferentes de proposito: aprovar o proprio servico devolveria a
+            // situacao que a prova veio corrigir.
+            canSend={task.assigneeId === user.id}
+            canReview={canManage && task.assigneeId !== user.id}
+            proofs={task.proofs.map((prova) => ({
+              id: prova.id,
+              note: prova.note,
+              authorName: prova.author?.name ?? "Usuario removido",
+              createdAt: formatDateTime(prova.createdAt),
+            }))}
+          />
+
           <article className="rounded-md border border-slate-200 bg-white p-4 shadow-sm">
             <h2 className="text-base font-semibold text-slate-950">Anexos</h2>
             <div className="mt-4 space-y-2">
@@ -184,6 +202,7 @@ export default async function TaskDetailPage({
                     departmentId: task.departmentId,
                     dueDate: toDateInputValue(task.dueDate),
                     priority: task.priority,
+                    requiresProof: task.requiresProof,
                     status: task.status,
                     recurrenceType: task.recurrenceRule?.type ?? "NONE",
                     weekDays: task.recurrenceRule?.weekDays ?? "",

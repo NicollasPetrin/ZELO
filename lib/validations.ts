@@ -136,6 +136,8 @@ export const taskSchema = z.object({
   dueDate: z.string().min(1, "Informe o prazo."),
   priority: z.enum(taskPriorities),
   status: z.enum(taskStatuses),
+  /// Checkbox do formulario: chega "on" quando marcado, ausente quando nao.
+  requiresProof: z.coerce.boolean().default(false),
   recurrenceType: z.enum(recurrenceTypes).default("NONE"),
   weekDays: z.string().optional().or(z.literal("")),
   monthDay: z.coerce.number().min(1).max(31).optional().or(z.literal("")),
@@ -225,4 +227,9 @@ export const messageSchema = z.object({
 export const newConversationSchema = z.object({
   participantIds: z.array(idSchema).min(1, "Escolha com quem falar."),
   title: z.string().trim().max(80, "Titulo muito longo.").optional().or(z.literal("")),
+});
+
+export const proofReviewSchema = z.object({
+  taskId: idSchema,
+  reason: z.string().trim().max(500, "Motivo muito longo.").optional().or(z.literal("")),
 });

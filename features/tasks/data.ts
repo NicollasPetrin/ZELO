@@ -155,6 +155,14 @@ export async function getTaskDetail(user: CurrentUser, id: string) {
           createdAt: "desc",
         },
       },
+      proofs: {
+        include: {
+          author: true,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      },
     },
   });
 

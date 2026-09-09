@@ -250,6 +250,7 @@ model User {
   createdTasks       Task[]                    @relation("TaskCreator")
   comments           TaskComment[]
   attachments        TaskAttachment[]
+  taskProofs         TaskProof[]               @relation("TaskProofAuthor")
   goals              Goal[]                    @relation("GoalResponsible")
   notifications      Notification[]            @relation("NotificationRecipient")
   onboardingSteps    OnboardingStep[]
@@ -313,6 +314,8 @@ model Task {
   priority       TaskPriority     @default(MEDIUM)
   status         TaskStatus       @default(PENDING)
   completedAt    DateTime?
+  /// Exige foto de prova antes de a tarefa poder ser dada como concluida.
+  requiresProof  Boolean          @default(false)
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
   company        Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
@@ -321,6 +324,7 @@ model Task {
   creator        User             @relation("TaskCreator", fields: [creatorId], references: [id], onDelete: Restrict)
   comments       TaskComment[]
   attachments    TaskAttachment[]
+  proofs         TaskProof[]
   activities     TaskActivity[]
   recurrenceRule RecurrenceRule?
 
@@ -359,6 +363,28 @@ model TaskAttachment {
   createdAt DateTime @default(now())
   task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
   author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([taskId, createdAt])
+}
+
+/**
+ * Foto que comprova a conclusao de uma tarefa.
+ * O arquivo mora no armazenamento externo e aqui fica so a chave: imagem em
+ * banco encarece backup e consulta sem dar nada em troca. A chave e unica para
+ * que dois registros nunca apontem para o mesmo objeto — apagar um deixaria o
+ * outro sem arquivo.
+ */
+model TaskProof {
+  id          String   @id @default(cuid())
+  taskId      String
+  authorId    String?
+  note        String?
+  objectKey   String   @unique
+  contentType String
+  sizeBytes   Int
+  createdAt   DateTime @default(now())
+  task        Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  author      User?    @relation("TaskProofAuthor", fields: [authorId], references: [id], onDelete: SetNull)
 
   @@index([taskId, createdAt])
 }

@@ -27,6 +27,13 @@ const envSchema = z.object({
   // uma coluna que qualquer escrita indevida poderia ligar. Numa variavel de
   // ambiente, conceder acesso exige entrar no painel de deploy.
   PLATFORM_ADMIN_EMAILS: z.string().optional(),
+  // Armazenamento das fotos de prova de conclusao (Cloudflare R2, API do S3).
+  // Opcionais como as demais: sem elas a prova por foto fica desligada, e o
+  // resto do sistema continua de pe.
+  R2_ACCOUNT_ID: z.string().optional(),
+  R2_ACCESS_KEY_ID: z.string().optional(),
+  R2_SECRET_ACCESS_KEY: z.string().optional(),
+  R2_BUCKET: z.string().optional(),
 });
 
 // Uma variavel declarada e vazia no .env chega aqui como "" e nao como undefined,
@@ -69,6 +76,10 @@ const parsedEnv = envSchema.safeParse({
   ASAAS_USER_AGENT: optionalEnv(process.env.ASAAS_USER_AGENT),
   APP_URL: normalizeUrl(process.env.APP_URL),
   PLATFORM_ADMIN_EMAILS: optionalEnv(process.env.PLATFORM_ADMIN_EMAILS),
+  R2_ACCOUNT_ID: optionalEnv(process.env.R2_ACCOUNT_ID),
+  R2_ACCESS_KEY_ID: optionalEnv(process.env.R2_ACCESS_KEY_ID),
+  R2_SECRET_ACCESS_KEY: optionalEnv(process.env.R2_SECRET_ACCESS_KEY),
+  R2_BUCKET: optionalEnv(process.env.R2_BUCKET),
 });
 
 // Este modulo e avaliado durante o build, quando o Next carrega os modulos de
@@ -214,4 +225,37 @@ export function getAsaasWebhookToken() {
  */
 export function getPlatformAdminEmails() {
   return parseAdminEmails(env.PLATFORM_ADMIN_EMAILS);
+}
+
+export const STORAGE_NOT_CONFIGURED_MESSAGE =
+  "O armazenamento de fotos nao esta configurado. Defina R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY e R2_BUCKET.";
+
+export type StorageConfig = {
+  accountId: string;
+  accessKeyId: string;
+  secretAccessKey: string;
+  bucket: string;
+  host: string;
+  region: string;
+};
+
+export function isStorageConfigured() {
+  return Boolean(env.R2_ACCOUNT_ID && env.R2_ACCESS_KEY_ID && env.R2_SECRET_ACCESS_KEY && env.R2_BUCKET);
+}
+
+export function getStorageConfig(): StorageConfig {
+  if (!env.R2_ACCOUNT_ID || !env.R2_ACCESS_KEY_ID || !env.R2_SECRET_ACCESS_KEY || !env.R2_BUCKET) {
+    throw new Error(STORAGE_NOT_CONFIGURED_MESSAGE);
+  }
+
+  return {
+    accountId: env.R2_ACCOUNT_ID,
+    accessKeyId: env.R2_ACCESS_KEY_ID,
+    secretAccessKey: env.R2_SECRET_ACCESS_KEY,
+    bucket: env.R2_BUCKET,
+    host: `${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+    // O R2 nao tem regioes como a AWS, mas a assinatura exige uma; "auto" e a
+    // que a Cloudflare manda usar.
+    region: "auto",
+  };
 }

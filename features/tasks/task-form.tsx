@@ -51,6 +51,7 @@ export function TaskForm({
       departmentId: initial?.departmentId ?? departments[0]?.id ?? "",
       dueDate: initial?.dueDate ?? "",
       priority: initial?.priority ?? "MEDIUM",
+      requiresProof: initial?.requiresProof ?? false,
       status: initial?.status ?? "PENDING",
       recurrenceType: initial?.recurrenceType ?? "NONE",
       weekDays: initial?.weekDays ?? "",
@@ -145,6 +146,13 @@ export function TaskForm({
               </option>
             ))}
           </Select>
+        </div>
+        <div className="space-y-1.5">
+          <Label>Prova de conclusao</Label>
+          <label className="flex h-10 items-center gap-2 text-sm text-slate-700">
+            <input type="checkbox" className="h-4 w-4 rounded border-slate-300" {...register("requiresProof")} />
+            Exigir foto para concluir
+          </label>
         </div>
         <div className="space-y-1.5">
           <Label>Status</Label>
