@@ -11,6 +11,7 @@ import {
   Gauge,
   Goal,
   ListTodo,
+  CalendarClock,
   MessageSquare,
   Settings,
   Trophy,
@@ -41,6 +42,7 @@ const navItems: NavItem[] = [
   { href: "/goals", label: "Metas", icon: Goal, roles: ["OWNER", "MANAGER", "EMPLOYEE"] },
   { href: "/pontos", label: "Pontos", icon: Trophy, roles: ["OWNER", "MANAGER", "EMPLOYEE"] },
   { href: "/conversas", label: "Conversas", icon: MessageSquare, roles: ["OWNER", "MANAGER", "EMPLOYEE"], alwaysAvailable: true },
+  { href: "/agenda", label: "Agenda", icon: CalendarClock, roles: ["OWNER", "MANAGER", "EMPLOYEE"] },
   { href: "/notifications", label: "Notificacoes", icon: Bell, roles: ["OWNER", "MANAGER", "EMPLOYEE"] },
   { href: "/settings", label: "Configuracoes", icon: Settings, roles: ["OWNER"], alwaysAvailable: true },
 ];

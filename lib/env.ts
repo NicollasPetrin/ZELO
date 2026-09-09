@@ -34,6 +34,9 @@ const envSchema = z.object({
   R2_ACCESS_KEY_ID: z.string().optional(),
   R2_SECRET_ACCESS_KEY: z.string().optional(),
   R2_BUCKET: z.string().optional(),
+  // Integracao com o Google Agenda. Ausentes, o botao de conectar nem aparece.
+  GOOGLE_CLIENT_ID: z.string().optional(),
+  GOOGLE_CLIENT_SECRET: z.string().optional(),
 });
 
 // Uma variavel declarada e vazia no .env chega aqui como "" e nao como undefined,
@@ -80,6 +83,8 @@ const parsedEnv = envSchema.safeParse({
   R2_ACCESS_KEY_ID: optionalEnv(process.env.R2_ACCESS_KEY_ID),
   R2_SECRET_ACCESS_KEY: optionalEnv(process.env.R2_SECRET_ACCESS_KEY),
   R2_BUCKET: optionalEnv(process.env.R2_BUCKET),
+  GOOGLE_CLIENT_ID: optionalEnv(process.env.GOOGLE_CLIENT_ID),
+  GOOGLE_CLIENT_SECRET: optionalEnv(process.env.GOOGLE_CLIENT_SECRET),
 });
 
 // Este modulo e avaliado durante o build, quando o Next carrega os modulos de
@@ -257,5 +262,25 @@ export function getStorageConfig(): StorageConfig {
     // O R2 nao tem regioes como a AWS, mas a assinatura exige uma; "auto" e a
     // que a Cloudflare manda usar.
     region: "auto",
+  };
+}
+
+export const GOOGLE_NOT_CONFIGURED_MESSAGE =
+  "A integracao com o Google Agenda nao esta configurada. Defina GOOGLE_CLIENT_ID e GOOGLE_CLIENT_SECRET.";
+
+export function isGoogleCalendarConfigured() {
+  return Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET);
+}
+
+export function getGoogleConfig() {
+  if (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET) {
+    throw new Error(GOOGLE_NOT_CONFIGURED_MESSAGE);
+  }
+
+  return {
+    clientId: env.GOOGLE_CLIENT_ID,
+    clientSecret: env.GOOGLE_CLIENT_SECRET,
+    // O endereco de retorno tem que bater com o cadastrado no Google Cloud.
+    redirectUri: `${getAppUrl()}/api/google/retorno`,
   };
 }

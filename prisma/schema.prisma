@@ -251,6 +251,8 @@ model User {
   comments           TaskComment[]
   attachments        TaskAttachment[]
   taskProofs         TaskProof[]               @relation("TaskProofAuthor")
+  googleCalendar     GoogleCalendarAccount?
+  calendarEvents     TaskCalendarEvent[]
   goals              Goal[]                    @relation("GoalResponsible")
   notifications      Notification[]            @relation("NotificationRecipient")
   onboardingSteps    OnboardingStep[]
@@ -303,7 +305,7 @@ model Department {
 }
 
 model Task {
-  id             String           @id @default(cuid())
+  id             String              @id @default(cuid())
   companyId      String
   departmentId   String
   assigneeId     String
@@ -311,20 +313,21 @@ model Task {
   title          String
   description    String
   dueDate        DateTime
-  priority       TaskPriority     @default(MEDIUM)
-  status         TaskStatus       @default(PENDING)
+  priority       TaskPriority        @default(MEDIUM)
+  status         TaskStatus          @default(PENDING)
   completedAt    DateTime?
   /// Exige foto de prova antes de a tarefa poder ser dada como concluida.
-  requiresProof  Boolean          @default(false)
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
-  company        Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  department     Department       @relation(fields: [departmentId], references: [id], onDelete: Restrict)
-  assignee       User             @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: Restrict)
-  creator        User             @relation("TaskCreator", fields: [creatorId], references: [id], onDelete: Restrict)
+  requiresProof  Boolean             @default(false)
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  company        Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  department     Department          @relation(fields: [departmentId], references: [id], onDelete: Restrict)
+  assignee       User                @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: Restrict)
+  creator        User                @relation("TaskCreator", fields: [creatorId], references: [id], onDelete: Restrict)
   comments       TaskComment[]
   attachments    TaskAttachment[]
   proofs         TaskProof[]
+  calendarEvents TaskCalendarEvent[]
   activities     TaskActivity[]
   recurrenceRule RecurrenceRule?
 
@@ -692,6 +695,48 @@ model Message {
   author         User?        @relation("MessageAuthor", fields: [authorId], references: [id], onDelete: SetNull)
 
   @@index([conversationId, createdAt])
+}
+
+/**
+ * Ligacao de uma pessoa com a agenda dela no Google.
+ * E por usuario, e nao por empresa: a agenda pertence a pessoa, e o dono da
+ * empresa nao tem por que decidir o que entra no calendario pessoal de quem
+ * trabalha com ele.
+ * Os dois tokens sao guardados cifrados. O refresh token nao expira e da acesso
+ * continuo a agenda; em texto puro, uma copia do banco viraria um molho de
+ * chaves das agendas de todos os clientes.
+ */
+model GoogleCalendarAccount {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  /// Conta escolhida na hora de conectar, so para a pessoa reconhecer qual e.
+  googleEmail  String?
+  accessToken  String
+  refreshToken String
+  expiresAt    DateTime
+  calendarId   String   @default("primary")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/**
+ * Qual compromisso do Google corresponde a qual tarefa, para cada pessoa.
+ * Sem esse vinculo, editar uma tarefa criaria um compromisso novo em vez de
+ * corrigir o que ja esta na agenda, e o dia da pessoa encheria de duplicatas.
+ */
+model TaskCalendarEvent {
+  id            String   @id @default(cuid())
+  taskId        String
+  userId        String
+  googleEventId String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  task          Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([taskId, userId])
+  @@index([userId])
 }
 
 model RateLimit {

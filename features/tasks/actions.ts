@@ -11,6 +11,7 @@ import { getPlanAccess } from "@/lib/plans";
 import { assertUserActionRateLimit } from "@/lib/rate-limit";
 import { reconcileTaskStatus } from "@/lib/task-status";
 import { assertCompanyHasActivePlan } from "@/lib/subscription";
+import { syncTaskCalendarSafely } from "@/features/calendar/sync";
 import { canComplete, PROOF_REQUIRED_MESSAGE, statusAfterRejection } from "@/lib/task-proof";
 import {
   attachmentSchema,
@@ -115,6 +116,10 @@ export async function createTaskAction(values: unknown) {
         status: parsed.status,
       },
     });
+
+    // A agenda e espelho da tarefa: toda mudanca no que a pessoa precisa
+    // fazer, ou em quando, tem que chegar la.
+    await syncTaskCalendarSafely(task.id);
 
     revalidatePath("/team-tasks");
     revalidatePath("/my-tasks");
@@ -226,6 +231,10 @@ export async function updateTaskAction(values: unknown) {
       },
     });
 
+    // A agenda e espelho da tarefa: toda mudanca no que a pessoa precisa
+    // fazer, ou em quando, tem que chegar la.
+    await syncTaskCalendarSafely(task.id);
+
     revalidatePath("/team-tasks");
     revalidatePath("/my-tasks");
     revalidatePath(`/tasks/${task.id}`);
@@ -305,6 +314,10 @@ export async function updateTaskStatusAction(values: unknown) {
         status: parsed.status,
       },
     });
+
+    // A agenda e espelho da tarefa: toda mudanca no que a pessoa precisa
+    // fazer, ou em quando, tem que chegar la.
+    await syncTaskCalendarSafely(task.id);
 
     revalidatePath("/team-tasks");
     revalidatePath("/my-tasks");
@@ -476,6 +489,10 @@ export async function approveTaskProofAction(values: unknown) {
     });
 
     revalidatePath(`/tasks/${task.id}`);
+    // A agenda e espelho da tarefa: toda mudanca no que a pessoa precisa
+    // fazer, ou em quando, tem que chegar la.
+    await syncTaskCalendarSafely(task.id);
+
     revalidatePath("/team-tasks");
 
     return { ok: true, message: "Prova aprovada e tarefa concluida." } as const;
@@ -548,6 +565,10 @@ export async function rejectTaskProofAction(values: unknown) {
     });
 
     revalidatePath(`/tasks/${task.id}`);
+    // A agenda e espelho da tarefa: toda mudanca no que a pessoa precisa
+    // fazer, ou em quando, tem que chegar la.
+    await syncTaskCalendarSafely(task.id);
+
     revalidatePath("/team-tasks");
 
     return { ok: true, message: "Prova recusada e tarefa devolvida." } as const;
