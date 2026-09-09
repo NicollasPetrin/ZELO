@@ -78,9 +78,9 @@ const POSTS = [
              ["Completo", "R$ 499,90", "60 pessoas inclusas", false]],
     apoio: "Por mês. Cancelamento pelo próprio painel, sem ligar para ninguém.",
     rodape: "Não vendemos os dados da sua operação." },
-  { nome: "post-11-google-agenda", tipo: "frase", escuro: false, corpo: "lg",
-    parceria: { logo: "public/brand/google-calendar.png", nome: "Google Agenda" },
-    olho: "Agora conectados", titulo: "Ninguém abre<br>dois aplicativos.",
+  { nome: "post-11-google-agenda", tipo: "frase", escuro: false, corpo: "md",
+    parceria: { logo: "public/brand/google-calendar.png", nome: "Google Agenda", destaque: true },
+    olho: "Agora conectados", titulo: "Ninguém abre<br>dois aplicativos.", corpoTitulo: "md",
     apoio: "O prazo da tarefa vira<br>compromisso na agenda.",
     rodape: "A tarefa chega onde a pessoa já olha." },
 ];
@@ -240,15 +240,21 @@ async function logoParceiro(caminho) {
   }
 }
 
-const marca = (escuro) => {
+const marca = (escuro, tamanho = 54) => {
   const cor = escuro ? VERDE_CLARO : VERDE_LOGO;
-  return `<svg viewBox="0 0 120 120" width="54" height="54" aria-hidden="true">`
+  return `<svg viewBox="0 0 120 120" width="${tamanho}" height="${tamanho}" aria-hidden="true">`
     + `<path d="M 68 8 A 54 54 0 1 1 18 30" fill="none" stroke="${cor}" stroke-width="13" stroke-linecap="round"/>`
     + `<circle cx="60" cy="60" r="16" fill="${cor}"/></svg>`;
 };
 const topo = (escuro) => `<div class="top">${marca(escuro)}<span class="wordmark">Zelo</span></div>`;
 // Numa peca de integracao o lockup ocupa o lugar da assinatura: ele e o anuncio, e repetir
 // o simbolo da Zelo em duas escalas na mesma arte pareceria descuido.
+// Em destaque, o lockup e o herol da peca: as duas marcas grandes, lado a lado, e o texto
+// abaixo. A assinatura do topo sai — o logo da Zelo ja esta ali, maior.
+const lockupDestaque = (escuro, parceiro, nome) => `<div class="lockup-hero">`
+  + `<span class="lado">${marca(escuro, 88)}<span class="nome">Zelo</span></span>`
+  + `<span class="mais">+</span>`
+  + `<span class="lado">${parceiro}<span class="nome">${nome}</span></span></div>`;
 const topoParceria = (escuro, logo, nome) => `<div class="top lockup-top">`
   + `<span class="lado">${marca(escuro)}<span class="wordmark">Zelo</span></span>`
   + `<span class="mais">+</span>`
@@ -337,6 +343,12 @@ body{background:#333;font-family:"Manrope",sans-serif;display:flex;flex-wrap:wra
 .lockup-top .lado{display:flex;align-items:center;gap:16px}
 .lockup-top .mais{font-size:40px;font-weight:700;color:#9aa8a1;line-height:1}
 .parceiro{width:54px;height:54px;display:block;object-fit:contain}
+.lockup-hero{display:flex;align-items:center;gap:30px;flex-wrap:nowrap}
+.lockup-hero .lado{display:flex;align-items:center;gap:18px;flex-shrink:0}
+.lockup-hero .nome{font-size:48px;font-weight:800;letter-spacing:-.03em;line-height:1}
+.lockup-hero .parceiro{height:88px;width:auto;display:block}
+.lockup-hero .mais{font-size:44px;font-weight:700;color:#9aa8a1;line-height:1}
+.lockup-hero .parceiro.vazio{width:88px;height:88px;font-size:15px;line-height:1.25}
 .parceiro.vazio{width:54px;height:54px;display:flex;align-items:center;justify-content:center;text-align:center;
   border:2px dashed #b4472f;border-radius:8px;color:#b4472f;font-size:13px;font-weight:800;line-height:1.15}
 .mid{display:flex;flex-direction:column;gap:48px;margin-block:auto;padding-bottom:40px}
@@ -416,14 +428,21 @@ const pecas = [];
 for (const post of POSTS) {
   if (post.captura) post.capturaUri = await capturaEmbutida(post.captura);
   const apertado = post.tipo === "captura" ? " tight" : "";
-  const cabecalho = post.parceria
-    ? topoParceria(post.escuro, await logoParceiro(post.parceria.logo), post.parceria.nome)
-    : topo(post.escuro);
+  let cabecalho = topo(post.escuro);
+  let heroi = "";
+  if (post.parceria) {
+    const parceiro = await logoParceiro(post.parceria.logo);
+    if (post.parceria.destaque) {
+      cabecalho = lockupDestaque(post.escuro, parceiro, post.parceria.nome);
+    } else {
+      cabecalho = topoParceria(post.escuro, parceiro, post.parceria.nome);
+    }
+  }
   pecas.push({
     nome: post.nome,
     html: `<div class="board${post.escuro ? " dark" : ""}" data-name="${post.nome}">`
       + cabecalho
-      + `<div class="mid${apertado}">${MIOLO[post.tipo](post)}</div>`
+      + `<div class="mid${apertado}">${heroi}${MIOLO[post.tipo](post)}</div>`
       + rodape(post.rodape) + `</div>`,
   });
 }

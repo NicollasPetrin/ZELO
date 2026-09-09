@@ -240,9 +240,9 @@ de três reuniões.
 
 ### Post 11 — Lancamento · Google Agenda
 
-> **Arte:** lockup de parceria no topo — simbolo da Zelo + simbolo do Google Agenda —
-> e a frase grande abaixo. O logo do Google entra pelo arquivo oficial em
-> `public/brand/google-calendar.png`; sem ele a arte sai com o espaco marcado.
+> **Arte:** lockup em destaque no topo — `(o) Zelo + [icone] Google Agenda`, simbolo e nome
+> na mesma escala dos dois lados — e a frase grande abaixo. O icone oficial do Google entra
+> por `public/brand/google-calendar.png`; sem ele a arte sai com o espaco marcado.
 
 **Legenda:**
 

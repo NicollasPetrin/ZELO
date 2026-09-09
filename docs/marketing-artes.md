@@ -92,6 +92,15 @@ Peca que anuncia integracao troca a assinatura do topo pelo lockup
 `[Zelo] Zelo + [parceiro] Nome`: ele e o anuncio, e repetir o simbolo da Zelo em duas
 escalas na mesma arte pareceria descuido. Ligado pelo campo `parceria` do post.
 
+Com `destaque: true`, o lockup vira o herol no topo, com simbolo + nome dos dois lados na
+mesma escala: `(o) Zelo + [icone] Google Agenda`. O nome do parceiro sai em Manrope, nao no
+logotipo dele — escrever o nome de um produto e uso nominativo comum, e assim o idioma fica
+certo (o lockup oficial diz "Calendar"; no Brasil o produto e "Google Agenda"). Por isso o
+arquivo necessario e o **icone quadrado**, nao o logotipo com a palavra.
+
+A escala do lockup e ditada pelo nome mais longo: "Google Agenda" a 48px ja ocupa metade da
+largura util. Nome maior que esse pede reduzir o corpo, nunca deixar quebrar em duas linhas.
+
 **O logo do parceiro nunca e redesenhado aqui.** Recriar por aproximacao e o que as
 diretrizes de marca de terceiro proibem, e fica visivelmente errado para quem conhece o
 icone. O arquivo oficial vai em `public/brand/`, e o script so o posiciona — em 54px, na
