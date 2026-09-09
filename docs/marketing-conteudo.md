@@ -240,8 +240,9 @@ de três reuniões.
 
 ### Post 11 — Lancamento · Google Agenda
 
-> **Arte:** frase grande sobre fundo claro, com o olho "Novo na Zelo". Sem o logo do
-> Google: o nome em texto e factual e nao depende das diretrizes de marca de terceiro.
+> **Arte:** lockup de parceria no topo — simbolo da Zelo + simbolo do Google Agenda —
+> e a frase grande abaixo. O logo do Google entra pelo arquivo oficial em
+> `public/brand/google-calendar.png`; sem ele a arte sai com o espaco marcado.
 
 **Legenda:**
 

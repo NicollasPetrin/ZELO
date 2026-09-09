@@ -86,6 +86,18 @@ Slide: `capa`, `ponto`, `virada`, `fecho`, `comp`.
 Peca nova reaproveita um miolo existente sempre que der — miolo novo so quando o conteudo
 realmente pede.
 
+### Lockup de parceria
+
+Peca que anuncia integracao troca a assinatura do topo pelo lockup
+`[Zelo] Zelo + [parceiro] Nome`: ele e o anuncio, e repetir o simbolo da Zelo em duas
+escalas na mesma arte pareceria descuido. Ligado pelo campo `parceria` do post.
+
+**O logo do parceiro nunca e redesenhado aqui.** Recriar por aproximacao e o que as
+diretrizes de marca de terceiro proibem, e fica visivelmente errado para quem conhece o
+icone. O arquivo oficial vai em `public/brand/`, e o script so o posiciona — em 54px, na
+mesma altura optica do simbolo da Zelo. Sem o arquivo, a arte sai com o espaco marcado em
+vermelho e o script avisa no terminal: ninguem publica uma imagem escrito "falta o logo".
+
 ### Componentes
 
 Planilha, captura, baloes, comparacao, papeis e precos vivem em `COMPONENTE`, escritos uma

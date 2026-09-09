@@ -79,8 +79,9 @@ const POSTS = [
     apoio: "Por mês. Cancelamento pelo próprio painel, sem ligar para ninguém.",
     rodape: "Não vendemos os dados da sua operação." },
   { nome: "post-11-google-agenda", tipo: "frase", escuro: false, corpo: "lg",
-    olho: "Novo na Zelo", titulo: "Ninguém abre<br>dois aplicativos.",
-    apoio: "Agora o prazo da tarefa<br>aparece no Google Agenda.",
+    parceria: { logo: "public/brand/google-calendar.png", nome: "Google Agenda" },
+    olho: "Agora conectados", titulo: "Ninguém abre<br>dois aplicativos.",
+    apoio: "O prazo da tarefa vira<br>compromisso na agenda.",
     rodape: "A tarefa chega onde a pessoa já olha." },
 ];
 // Cada post tambem existe como carrossel: a legenda ja traz o argumento em etapas, e
@@ -222,6 +223,23 @@ async function capturaEmbutida(caminho) {
   return `data:image/webp;base64,${bytes.toString("base64")}`;
 }
 
+
+// Logo de parceiro nunca e redesenhado aqui: recriar um logo de terceiro por aproximacao
+// e justamente o que as diretrizes de marca proibem, e fica visivelmente errado para quem
+// conhece o icone. O arquivo oficial entra em public/brand/ e o script so o posiciona.
+// Sem o arquivo, sai um espaco marcado — ninguem publica uma arte escrito "falta o logo".
+async function logoParceiro(caminho) {
+  const { readFile } = await import("node:fs/promises");
+  try {
+    const bytes = await readFile(resolve(caminho));
+    const tipo = caminho.endsWith(".svg") ? "image/svg+xml" : caminho.endsWith(".webp") ? "image/webp" : "image/png";
+    return `<img class="parceiro" src="data:${tipo};base64,${bytes.toString("base64")}" alt="">`;
+  } catch {
+    console.warn(`  ! ${caminho} nao encontrado: a arte sai com o espaco do logo marcado.`);
+    return `<span class="parceiro vazio">falta<br>o logo</span>`;
+  }
+}
+
 const marca = (escuro) => {
   const cor = escuro ? VERDE_CLARO : VERDE_LOGO;
   return `<svg viewBox="0 0 120 120" width="54" height="54" aria-hidden="true">`
@@ -229,6 +247,12 @@ const marca = (escuro) => {
     + `<circle cx="60" cy="60" r="16" fill="${cor}"/></svg>`;
 };
 const topo = (escuro) => `<div class="top">${marca(escuro)}<span class="wordmark">Zelo</span></div>`;
+// Numa peca de integracao o lockup ocupa o lugar da assinatura: ele e o anuncio, e repetir
+// o simbolo da Zelo em duas escalas na mesma arte pareceria descuido.
+const topoParceria = (escuro, logo, nome) => `<div class="top lockup-top">`
+  + `<span class="lado">${marca(escuro)}<span class="wordmark">Zelo</span></span>`
+  + `<span class="mais">+</span>`
+  + `<span class="lado">${logo}<span class="wordmark">${nome}</span></span></div>`;
 const rodape = (texto, direita = "30 dias grátis") =>
   `<div class="foot"><span>${texto}</span><b>${direita}</b></div>`;
 const contador = (n, total) =>
@@ -309,6 +333,12 @@ body{background:#333;font-family:"Manrope",sans-serif;display:flex;flex-wrap:wra
 .board.dark{background:#132520;color:#f2f7f4}
 .top{display:flex;align-items:center;gap:16px}
 .wordmark{font-size:38px;font-weight:800;letter-spacing:-.02em}
+.lockup-top{gap:30px;flex-wrap:wrap}
+.lockup-top .lado{display:flex;align-items:center;gap:16px}
+.lockup-top .mais{font-size:40px;font-weight:700;color:#9aa8a1;line-height:1}
+.parceiro{width:54px;height:54px;display:block;object-fit:contain}
+.parceiro.vazio{width:54px;height:54px;display:flex;align-items:center;justify-content:center;text-align:center;
+  border:2px dashed #b4472f;border-radius:8px;color:#b4472f;font-size:13px;font-weight:800;line-height:1.15}
 .mid{display:flex;flex-direction:column;gap:48px;margin-block:auto;padding-bottom:40px}
 .mid.tight{gap:34px}
 .eyebrow{font-size:26px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:${VERDE}}
@@ -386,10 +416,13 @@ const pecas = [];
 for (const post of POSTS) {
   if (post.captura) post.capturaUri = await capturaEmbutida(post.captura);
   const apertado = post.tipo === "captura" ? " tight" : "";
+  const cabecalho = post.parceria
+    ? topoParceria(post.escuro, await logoParceiro(post.parceria.logo), post.parceria.nome)
+    : topo(post.escuro);
   pecas.push({
     nome: post.nome,
     html: `<div class="board${post.escuro ? " dark" : ""}" data-name="${post.nome}">`
-      + topo(post.escuro)
+      + cabecalho
       + `<div class="mid${apertado}">${MIOLO[post.tipo](post)}</div>`
       + rodape(post.rodape) + `</div>`,
   });
