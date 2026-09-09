@@ -11,8 +11,9 @@ export const metadata: Metadata = {
 
 /*
   O conteudo abaixo descreve o que o sistema realmente faz: os campos vieram do
-  schema do Prisma, o processamento de pagamento do modulo lib/asaas e a
-  hospedagem da infraestrutura em uso. Nao e parecer juridico. Antes de tratar
+  schema do Prisma, o processamento de pagamento do modulo lib/asaas, a ligacao
+  com o Google de lib/google e features/calendar, e a hospedagem da
+  infraestrutura em uso. Nao e parecer juridico. Antes de tratar
   isto como documento oficial, peca revisao de quem responde pelo juridico da
   empresa e preencha a identificacao em components/site-footer.tsx.
 */
@@ -70,6 +71,37 @@ export default function PrivacidadePage() {
           <p className="mt-3 leading-7 text-slate-700">
             A aplicacao e o banco de dados sao hospedados em provedores de infraestrutura com servidores nos Estados
             Unidos. Isso caracteriza transferencia internacional de dados, feita para viabilizar o proprio servico.
+          </p>
+        </section>
+
+        <section className="mt-8">
+          <h2 className="text-xl font-semibold">Google Agenda</h2>
+          <p className="mt-3 leading-7 text-slate-700">
+            A ligacao com o Google Agenda e opcional e individual: cada pessoa liga a propria agenda, e o dono da
+            empresa nao liga nem desliga a de ninguem. Enquanto voce nao conectar, a Zelo nao pede nada ao Google.
+          </p>
+          <p className="mt-3 leading-7 text-slate-700">
+            Ao conectar, pedimos duas permissoes: criar e gerenciar compromissos na sua agenda e ver o endereco de
+            e-mail da conta escolhida. A permissao de compromissos e usada apenas nos compromissos que a propria Zelo
+            cria a partir das suas tarefas — nao lemos, nao alteramos e nao apagamos os seus outros compromissos. O
+            e-mail e guardado apenas para mostrar na tela qual conta esta ligada.
+          </p>
+          <p className="mt-3 leading-7 text-slate-700">
+            Vao para o Google somente os dados da tarefa que viram o compromisso: titulo, prioridade, prazo, descricao,
+            setor, quem pediu e o link de volta para a tarefa na Zelo. Mudou o prazo ou a prioridade, o compromisso muda
+            junto; concluida ou cancelada, ele sai da agenda.
+          </p>
+          <p className="mt-3 leading-7 text-slate-700">
+            As autorizacoes de acesso ficam cifradas no nosso banco com AES-256-GCM, e a chave fica fora do banco: uma
+            copia do banco sozinha nao abre nada. Nao vendemos esses dados, nao os usamos para publicidade, nao os
+            usamos para treinar modelos e nenhuma pessoa da Zelo os le. O uso das informacoes recebidas das APIs do
+            Google segue a Politica de Dados do Usuario dos Servicos de API do Google, incluindo os requisitos de Uso
+            Limitado.
+          </p>
+          <p className="mt-3 leading-7 text-slate-700">
+            Voce desliga quando quiser, na propria tela de Agenda dentro da Zelo: as autorizacoes sao apagadas na hora e
+            a Zelo perde o acesso. Os compromissos ja criados continuam na sua agenda, e voce apaga os que quiser por
+            la. Tambem da para remover o acesso da Zelo direto na sua Conta Google, em myaccount.google.com/permissions.
           </p>
         </section>
 
