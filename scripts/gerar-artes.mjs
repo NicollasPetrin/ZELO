@@ -78,8 +78,11 @@ const POSTS = [
              ["Completo", "R$ 499,90", "60 pessoas inclusas", false]],
     apoio: "Por mês. Cancelamento pelo próprio painel, sem ligar para ninguém.",
     rodape: "Não vendemos os dados da sua operação." },
+  { nome: "post-11-google-agenda", tipo: "frase", escuro: false, corpo: "lg",
+    olho: "Novo na Zelo", titulo: "Ninguém abre<br>dois aplicativos.",
+    apoio: "Agora o prazo da tarefa<br>aparece no Google Agenda.",
+    rodape: "A tarefa chega onde a pessoa já olha." },
 ];
-
 // Cada post tambem existe como carrossel: a legenda ja traz o argumento em etapas, e
 // um slide por etapa faz a pessoa parar em cada uma em vez de varrer o paragrafo.
 // Capa e fecho saem escuros — no feed eles marcam onde o carrossel comeca e termina.
@@ -264,7 +267,7 @@ const COMPONENTE = {
 };
 
 const MIOLO = {
-  frase: (p) => `<p class="eyebrow">${p.olho}</p><h1 class="xl">${p.titulo}</h1>`
+  frase: (p) => `<p class="eyebrow">${p.olho}</p><h1 class="${p.corpo ?? "xl"}">${p.titulo}</h1>`
     + (p.apoio ? `<p class="lead green">${p.apoio}</p>` : ""),
 
   numero: (p) => `<p class="eyebrow">${p.olho}</p>

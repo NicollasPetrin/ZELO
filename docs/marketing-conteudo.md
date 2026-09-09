@@ -238,6 +238,34 @@ de três reuniões.
 
 ---
 
+### Post 11 — Lancamento · Google Agenda
+
+> **Arte:** frase grande sobre fundo claro, com o olho "Novo na Zelo". Sem o logo do
+> Google: o nome em texto e factual e nao depende das diretrizes de marca de terceiro.
+
+**Legenda:**
+
+Ninguém vai abrir dois aplicativos.
+
+O prazo estava na Zelo. A agenda da pessoa estava no Google. Duas telas — e a que ela abre
+de manhã é sempre a mesma. A outra vira aquela que "eu ia ver depois".
+
+Agora não são mais duas.
+
+Toda tarefa com data na Zelo vira compromisso no Google Agenda de quem é responsável. O
+prazo chega onde a pessoa já olha, junto com a reunião e o almoço.
+
+Nada muda no seu jeito de trabalhar: você continua criando a tarefa com responsável, prazo
+e setor. Ela só passa a existir nos dois lugares.
+
+Conecta uma vez, e vale para as tarefas seguintes.
+
+30 dias para testar. Link na bio.
+
+`#gestão #microempresa #googleagenda #rotina`
+
+---
+
 ## 2. Roteiros de video curto (Reels, Shorts, TikTok)
 
 Formato: 20 a 40 segundos, vertical, gravado com celular. O gancho precisa acontecer nos
