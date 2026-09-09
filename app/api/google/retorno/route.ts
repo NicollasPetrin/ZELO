@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { cookies } from "next/headers";
 import { OAUTH_STATE_COOKIE } from "@/app/api/google/conectar/route";
-import { requireUser } from "@/lib/auth/session";
+import { getCurrentUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/db/client";
 import { getAppUrl, getSessionSecret, isGoogleCalendarConfigured } from "@/lib/env";
 import { exchangeCode, fetchGoogleEmail } from "@/lib/google/oauth";
@@ -23,10 +23,15 @@ function iguais(a: string, b: string) {
 export async function GET(request: NextRequest) {
   const destino = (estado: string) => NextResponse.redirect(`${getAppUrl()}/agenda?google=${estado}`);
   const cookieStore = await cookies();
-  // Fora do try de proposito: requireUser redireciona para /login lancando um
-  // erro interno do Next. Dentro do try ele seria confundido com falha da
-  // integracao e viraria "falhou", escondendo que o caso era sessao expirada.
-  const user = await requireUser();
+  // getCurrentUser, e nao requireUser: o redirect do Next funciona lancando um
+  // erro. Dentro do try ele viraria "falhou", escondendo que o caso era sessao
+  // expirada; fora dele, num route handler, sobe como 500. Aqui a ausencia de
+  // sessao vira uma resposta explicita, que e o que o navegador precisa.
+  const user = await getCurrentUser();
+
+  if (!user) {
+    return NextResponse.redirect(`${getAppUrl()}/login`);
+  }
 
   try {
     if (!isGoogleCalendarConfigured()) {

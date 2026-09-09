@@ -1,7 +1,7 @@
 import { randomBytes } from "node:crypto";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { requireUser } from "@/lib/auth/session";
+import { getCurrentUser } from "@/lib/auth/session";
 import { getAppUrl, isGoogleCalendarConfigured } from "@/lib/env";
 import { buildAuthUrl } from "@/lib/google/oauth";
 
@@ -18,7 +18,13 @@ export const OAUTH_STATE_COOKIE = "zelo_google_state";
  * abrir um retorno forjado e ligar a agenda de outra conta a ele.
  */
 export async function GET() {
-  await requireUser();
+  // Mesma razao do retorno: sem sessao, uma resposta explicita em vez do
+  // redirect por excecao do requireUser, que aqui subiria como 500.
+  const user = await getCurrentUser();
+
+  if (!user) {
+    return NextResponse.redirect(`${getAppUrl()}/login`);
+  }
 
   if (!isGoogleCalendarConfigured()) {
     return NextResponse.redirect(`${getAppUrl()}/agenda?google=indisponivel`);
