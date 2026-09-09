@@ -101,6 +101,11 @@ arquivo necessario e o **icone quadrado**, nao o logotipo com a palavra.
 A escala do lockup e ditada pelo nome mais longo: "Google Agenda" a 48px ja ocupa metade da
 largura util. Nome maior que esse pede reduzir o corpo, nunca deixar quebrar em duas linhas.
 
+`public/brand/google-calendar.png` e o icone recortado do logotipo oficial que o dono da
+conta forneceu — recorte, nao redesenho: os pixels do icone estao intactos. Ele vem achatado
+sobre `#f7f9f8`, o fundo claro da peca, para os cantos arredondados encaixarem sem emenda;
+uma peca de fundo escuro precisaria de uma versao propria.
+
 **O logo do parceiro nunca e redesenhado aqui.** Recriar por aproximacao e o que as
 diretrizes de marca de terceiro proibem, e fica visivelmente errado para quem conhece o
 icone. O arquivo oficial vai em `public/brand/`, e o script so o posiciona — em 54px, na
