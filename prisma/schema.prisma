@@ -142,6 +142,13 @@ enum ReportSnapshotType {
   HEALTH
 }
 
+enum ConversationKind {
+  /// Conversa entre pessoas da mesma empresa.
+  COMPANY
+  /// Conversa da empresa com o suporte da Zelo.
+  SUPPORT
+}
+
 enum SupportTicketStatus {
   OPEN
   IN_PROGRESS
@@ -222,35 +229,38 @@ model Company {
   activityLogs      ActivityLog[]
   reportSnapshots   ReportSnapshot[]
   supportTickets    SupportTicket[]
+  conversations     Conversation[]
 }
 
 model User {
-  id                 String              @id @default(cuid())
+  id                 String                    @id @default(cuid())
   companyId          String
   departmentId       String?
   name               String
-  email              String              @unique
+  email              String                    @unique
   passwordHash       String
-  role               UserRole            @default(EMPLOYEE)
+  role               UserRole                  @default(EMPLOYEE)
   position           String?
-  isActive           Boolean             @default(true)
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
-  company            Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  department         Department?         @relation(fields: [departmentId], references: [id], onDelete: SetNull)
-  assignedTasks      Task[]              @relation("TaskAssignee")
-  createdTasks       Task[]              @relation("TaskCreator")
+  isActive           Boolean                   @default(true)
+  createdAt          DateTime                  @default(now())
+  updatedAt          DateTime                  @updatedAt
+  company            Company                   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  department         Department?               @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  assignedTasks      Task[]                    @relation("TaskAssignee")
+  createdTasks       Task[]                    @relation("TaskCreator")
   comments           TaskComment[]
   attachments        TaskAttachment[]
-  goals              Goal[]              @relation("GoalResponsible")
-  notifications      Notification[]      @relation("NotificationRecipient")
+  goals              Goal[]                    @relation("GoalResponsible")
+  notifications      Notification[]            @relation("NotificationRecipient")
   onboardingSteps    OnboardingStep[]
-  activityLogs       ActivityLog[]       @relation("ActivityActor")
-  taskActivities     TaskActivity[]      @relation("TaskActivityActor")
-  subscriptionEvents SubscriptionEvent[] @relation("SubscriptionEventActor")
-  reportSnapshots    ReportSnapshot[]    @relation("ReportSnapshotCreator")
-  supportTickets     SupportTicket[]     @relation("SupportRequester")
+  activityLogs       ActivityLog[]             @relation("ActivityActor")
+  taskActivities     TaskActivity[]            @relation("TaskActivityActor")
+  subscriptionEvents SubscriptionEvent[]       @relation("SubscriptionEventActor")
+  reportSnapshots    ReportSnapshot[]          @relation("ReportSnapshotCreator")
+  supportTickets     SupportTicket[]           @relation("SupportRequester")
   sessions           Session[]
+  conversations      ConversationParticipant[]
+  messages           Message[]                 @relation("MessageAuthor")
 
   @@index([companyId])
   @@index([departmentId])
@@ -603,6 +613,61 @@ model SupportTicket {
 /// Contador de limite de requisicoes, compartilhado entre instancias.
 /// Em memoria cada instancia tinha o proprio contador, entao o limite real era
 /// multiplicado pelo numero de instancias rodando.
+/**
+ * Conversa, tanto entre colegas da mesma empresa quanto com o suporte.
+ * Os dois casos moram no mesmo modelo porque sao a mesma coisa: pessoas
+ * trocando mensagens numa linha do tempo. O que muda e quem participa, e isso
+ * o "kind" resolve — duas tabelas quase iguais so dobrariam o codigo de leitura,
+ * de nao lidas e de permissao.
+ */
+model Conversation {
+  id            String                    @id @default(cuid())
+  companyId     String
+  kind          ConversationKind          @default(COMPANY)
+  title         String?
+  createdById   String?
+  /// Ultima mensagem, desnormalizada: a lista de conversas ordena por ela, e
+  /// sem isso cada linha da lista viraria uma consulta a mais.
+  lastMessageAt DateTime?
+  createdAt     DateTime                  @default(now())
+  updatedAt     DateTime                  @updatedAt
+  company       Company                   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  participants  ConversationParticipant[]
+  messages      Message[]
+
+  @@index([companyId, kind, lastMessageAt])
+}
+
+model ConversationParticipant {
+  id             String       @id @default(cuid())
+  conversationId String
+  userId         String
+  /// Ate onde a pessoa ja leu. Null significa que nunca abriu a conversa.
+  lastReadAt     DateTime?
+  createdAt      DateTime     @default(now())
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+  @@index([userId])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  authorId       String?
+  /// Mensagem escrita pelo suporte da Zelo. Fica gravado na mensagem, e nao
+  /// deduzido do autor: quem responde pelo suporte hoje pode nao ser quem
+  /// responde amanha, e a conversa antiga precisa continuar dizendo a verdade.
+  fromSupport    Boolean      @default(false)
+  body           String
+  createdAt      DateTime     @default(now())
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  author         User?        @relation("MessageAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@index([conversationId, createdAt])
+}
+
 model RateLimit {
   key     String   @id
   count   Int

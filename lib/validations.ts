@@ -212,3 +212,17 @@ export const companySettingsSchema = z.object({
 export const idSchema = z.string().trim().min(1, "Identificador invalido.");
 export const onboardingKeySchema = z.string().trim().min(1).max(64).regex(/^[a-z0-9-]+$/i, "Chave invalida.");
 export const subscriptionPlanSchema = z.enum(subscriptionPlans);
+
+/** Limite de uma mensagem de chat. Comprido o bastante para explicar um
+ * problema ao suporte, curto o bastante para nao virar anexo disfarcado. */
+export const MESSAGE_MAX = 4000;
+
+export const messageSchema = z.object({
+  conversationId: idSchema,
+  body: z.string().trim().min(1, "Escreva a mensagem.").max(MESSAGE_MAX, "Mensagem muito longa."),
+});
+
+export const newConversationSchema = z.object({
+  participantIds: z.array(idSchema).min(1, "Escolha com quem falar."),
+  title: z.string().trim().max(80, "Titulo muito longo.").optional().or(z.literal("")),
+});

@@ -12,7 +12,12 @@ export function SubscriptionGate({
 }) {
   const pathname = usePathname();
 
-  if (hasActiveSubscription || pathname.startsWith("/settings")) {
+  // Telas que continuam de pe sem assinatura. Sao as duas saidas de quem esta
+  // travado: resolver o pagamento e falar com o suporte. Bloquear a conversa com
+  // o suporte fecharia a porta justamente para quem precisa dela.
+  const sempreLiberado = ["/settings", "/conversas"];
+
+  if (hasActiveSubscription || sempreLiberado.some((rota) => pathname.startsWith(rota))) {
     return children;
   }
 

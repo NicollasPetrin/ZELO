@@ -1,4 +1,4 @@
-import type { ComponentPropsWithRef, LabelHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes } from "react";
+import type { ComponentPropsWithRef, LabelHTMLAttributes, SelectHTMLAttributes } from "react";
 import { cn } from "@/lib/cn";
 
 export function Label({ className, ...props }: LabelHTMLAttributes<HTMLLabelElement>) {
@@ -33,7 +33,7 @@ export function Select({ className, ...props }: SelectHTMLAttributes<HTMLSelectE
   );
 }
 
-export function Textarea({ className, ...props }: TextareaHTMLAttributes<HTMLTextAreaElement>) {
+export function Textarea({ className, ...props }: ComponentPropsWithRef<"textarea">) {
   return (
     <textarea
       className={cn(

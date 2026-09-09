@@ -11,6 +11,7 @@ import {
   Gauge,
   Goal,
   ListTodo,
+  MessageSquare,
   Settings,
   Trophy,
   Users,
@@ -26,6 +27,8 @@ type NavItem = {
   label: string;
   icon: typeof Gauge;
   roles: UserRole[];
+  /// Continua no menu mesmo sem assinatura ativa.
+  alwaysAvailable?: boolean;
 };
 
 const navItems: NavItem[] = [
@@ -37,14 +40,25 @@ const navItems: NavItem[] = [
   { href: "/employees", label: "Funcionarios", icon: Users, roles: ["OWNER"] },
   { href: "/goals", label: "Metas", icon: Goal, roles: ["OWNER", "MANAGER", "EMPLOYEE"] },
   { href: "/pontos", label: "Pontos", icon: Trophy, roles: ["OWNER", "MANAGER", "EMPLOYEE"] },
+  { href: "/conversas", label: "Conversas", icon: MessageSquare, roles: ["OWNER", "MANAGER", "EMPLOYEE"], alwaysAvailable: true },
   { href: "/notifications", label: "Notificacoes", icon: Bell, roles: ["OWNER", "MANAGER", "EMPLOYEE"] },
-  { href: "/settings", label: "Configuracoes", icon: Settings, roles: ["OWNER"] },
+  { href: "/settings", label: "Configuracoes", icon: Settings, roles: ["OWNER"], alwaysAvailable: true },
 ];
 
-export function Sidebar({ role, plan }: { role: UserRole; plan: SubscriptionPlan | null }) {
+export function Sidebar({
+  role,
+  plan,
+  chatUnread = 0,
+}: {
+  role: UserRole;
+  plan: SubscriptionPlan | null;
+  chatUnread?: number;
+}) {
   const pathname = usePathname();
   const hasActiveSubscription = Boolean(plan);
-  const visibleItems = navItems.filter((item) => item.roles.includes(role) && (hasActiveSubscription || item.href === "/settings"));
+  const visibleItems = navItems.filter(
+    (item) => item.roles.includes(role) && (hasActiveSubscription || item.alwaysAvailable),
+  );
   const activePlan = plan ? planDetails[plan] : null;
   const access = getPlanAccess(plan);
   const maxUsersLabel = access.maxUsers === null ? "usuarios ilimitados" : `limite de ${access.maxUsers} usuarios`;
@@ -83,6 +97,19 @@ export function Sidebar({ role, plan }: { role: UserRole; plan: SubscriptionPlan
             >
               <Icon className="h-4 w-4" aria-hidden="true" />
               {item.label}
+              {item.href === "/conversas" && chatUnread > 0 ? (
+                <span
+                  className={cn(
+                    "ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-semibold",
+                    active ? "bg-white text-slate-950" : "bg-emerald-600 text-white",
+                  )}
+                >
+                  {chatUnread}
+                  <span className="sr-only">
+                    {chatUnread === 1 ? "conversa nao lida" : "conversas nao lidas"}
+                  </span>
+                </span>
+              ) : null}
             </Link>
           );
         })}

@@ -11,6 +11,7 @@ export function AppShell({
   role,
   plan,
   unreadCount,
+  chatUnread,
 }: {
   children: ReactNode;
   companyName: string;
@@ -18,12 +19,13 @@ export function AppShell({
   role: UserRole;
   plan: SubscriptionPlan | null;
   unreadCount: number;
+  chatUnread: number;
 }) {
   const hasActiveSubscription = Boolean(plan);
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <Sidebar role={role} plan={plan} />
+      <Sidebar role={role} plan={plan} chatUnread={chatUnread} />
       <div className="lg:pl-72">
         <Topbar companyName={companyName} userName={userName} role={role} plan={plan} unreadCount={unreadCount} />
         <MobileNavigation role={role} hasActiveSubscription={hasActiveSubscription} />

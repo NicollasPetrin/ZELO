@@ -63,7 +63,7 @@ test("renders the actual product with fictional data and no database", async () 
   ];
   for (const page of pages) {
     fixture.pathname = page.path;
-    const html = renderToStaticMarkup(<AppShell companyName={fixture.user.company.name} userName="Marina Costa" role="OWNER" plan="COMPLETE" unreadCount={2}>{page.element}</AppShell>);
+    const html = renderToStaticMarkup(<AppShell companyName={fixture.user.company.name} userName="Marina Costa" role="OWNER" plan="COMPLETE" unreadCount={2} chatUnread={0}>{page.element}</AppShell>);
     expect(html).toContain("Empresa fictícia");
     expect(html).toContain("Plano Completo");
     expect(html).not.toContain("@demo.com");

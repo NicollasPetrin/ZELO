@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { AlertTriangle, Building2, CreditCard, PlugZap, TrendingUp, Users } from "lucide-react";
+import { AlertTriangle, Building2, CreditCard, LifeBuoy, PlugZap, TrendingUp, Users } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 import { buttonClassName } from "@/components/ui/button";
 import { getPlatformOverview } from "@/features/admin/data";
+import { listSupportThreads } from "@/features/admin/support";
 import { requirePlatformAdmin } from "@/lib/auth/platform-admin";
 
 export const metadata: Metadata = {
@@ -52,7 +53,11 @@ function Numero({
 
 export default async function AdminPage() {
   const user = await requirePlatformAdmin();
-  const { assinantes, porPlano, receita, contas, cobranca } = await getPlatformOverview();
+  const [{ assinantes, porPlano, receita, contas, cobranca }, suporte] = await Promise.all([
+    getPlatformOverview(),
+    listSupportThreads(),
+  ]);
+  const suporteEsperando = suporte.filter((conversa) => conversa.waiting).length;
   const pagantes = assinantes.ativas + assinantes.inadimplentes;
   // Silencio prolongado da processadora ou empresa parada sem plano: os dois
   // sao sintoma do mesmo defeito, o aviso de pagamento que nao chegou.
@@ -72,9 +77,20 @@ export default async function AdminPage() {
               <p className="text-xs text-slate-500">{user.email}</p>
             </div>
           </div>
-          <Link href="/dashboard" className={buttonClassName("secondary", "sm") + " min-h-10 lg:min-h-0"}>
-            Ir para minha empresa
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link href="/admin/suporte" className={buttonClassName("secondary", "sm") + " min-h-10 lg:min-h-0"}>
+              <LifeBuoy className="h-3.5 w-3.5" aria-hidden="true" />
+              Suporte
+              {suporteEsperando > 0 ? (
+                <span className="ml-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-amber-500 px-1 text-[10px] font-semibold text-white">
+                  {suporteEsperando}
+                </span>
+              ) : null}
+            </Link>
+            <Link href="/dashboard" className={buttonClassName("secondary", "sm") + " min-h-10 lg:min-h-0"}>
+              Ir para minha empresa
+            </Link>
+          </div>
         </div>
       </header>
 

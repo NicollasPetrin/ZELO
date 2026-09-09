@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { AppShell } from "@/components/layout/app-shell";
 import { ensureSubscriptionReminder } from "@/features/billing/subscription-reminder";
+import { countUnreadConversations } from "@/features/chat/data";
 import { countUnreadNotifications } from "@/features/notifications/data";
 import { requireUser } from "@/lib/auth/session";
 import { getActivePlanCode } from "@/lib/subscription";
@@ -18,11 +19,14 @@ export default async function AuthenticatedLayout({ children }: { children: Reac
     console.error("[subscription-reminder] falha ao criar lembrete:", error);
   }
 
-  const unreadCount = await countUnreadNotifications(user);
+  const [unreadCount, chatUnread] = await Promise.all([
+    countUnreadNotifications(user),
+    countUnreadConversations(user),
+  ]);
   const activePlan = getActivePlanCode(user.company);
 
   return (
-    <AppShell companyName={user.company.name} userName={user.name} role={user.role} plan={activePlan} unreadCount={unreadCount}>
+    <AppShell companyName={user.company.name} userName={user.name} role={user.role} plan={activePlan} unreadCount={unreadCount} chatUnread={chatUnread}>
       {children}
     </AppShell>
   );
