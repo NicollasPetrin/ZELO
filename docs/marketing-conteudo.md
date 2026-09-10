@@ -241,25 +241,20 @@ de três reuniões.
 ### Post 11 — Lancamento · Google Agenda
 
 > **Arte:** lockup em destaque no topo — `(o) Zelo + [icone] Google Agenda`, simbolo e nome
-> na mesma escala dos dois lados — e a frase grande abaixo. O icone oficial do Google entra
+> na mesma escala dos dois lados — e o anuncio abaixo. O icone oficial do Google entra
 > por `public/brand/google-calendar.png`; sem ele a arte sai com o espaco marcado.
 
 **Legenda:**
 
-Ninguém vai abrir dois aplicativos.
+A Zelo agora se conecta ao Google Agenda.
 
-O prazo estava na Zelo. A agenda da pessoa estava no Google. Duas telas — e a que ela abre
-de manhã é sempre a mesma. A outra vira aquela que "eu ia ver depois".
+Toda tarefa com prazo vira compromisso na agenda de quem é responsável. Conecta uma vez, e vale para as próximas.
 
-Agora não são mais duas.
+Por que isso importa: ninguém abre dois aplicativos. O prazo estava na Zelo, a agenda da pessoa estava no Google, e a tela que ela abre de manhã é sempre a mesma.
 
-Toda tarefa com data na Zelo vira compromisso no Google Agenda de quem é responsável. O
-prazo chega onde a pessoa já olha, junto com a reunião e o almoço.
+Nada muda no seu jeito de trabalhar. Você continua criando a tarefa com responsável, prazo e setor — ela só passa a existir nos dois lugares.
 
-Nada muda no seu jeito de trabalhar: você continua criando a tarefa com responsável, prazo
-e setor. Ela só passa a existir nos dois lugares.
-
-Conecta uma vez, e vale para as tarefas seguintes.
+Já está no ar.
 
 30 dias para testar. Link na bio.
 

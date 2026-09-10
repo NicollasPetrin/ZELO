@@ -80,9 +80,9 @@ const POSTS = [
     rodape: "Não vendemos os dados da sua operação." },
   { nome: "post-11-google-agenda", tipo: "frase", escuro: false, corpo: "md",
     parceria: { logo: "public/brand/google-calendar.png", nome: "Google Agenda", destaque: true },
-    olho: "Agora conectados", titulo: "Ninguém abre<br>dois aplicativos.", corpoTitulo: "md",
-    apoio: "O prazo da tarefa vira<br>compromisso na agenda.",
-    rodape: "A tarefa chega onde a pessoa já olha." },
+    olho: "Já está no ar", titulo: "Suas tarefas agora<br>aparecem na agenda.", corpoTitulo: "md",
+    apoio: "Toda tarefa com prazo vira compromisso<br>na agenda de quem é responsável.",
+    rodape: "Conecta uma vez e vale para as próximas." },
 ];
 // Cada post tambem existe como carrossel: a legenda ja traz o argumento em etapas, e
 // um slide por etapa faz a pessoa parar em cada uma em vez de varrer o paragrafo.
