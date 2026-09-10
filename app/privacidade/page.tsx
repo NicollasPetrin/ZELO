@@ -92,11 +92,30 @@ export default function PrivacidadePage() {
             junto; concluida ou cancelada, ele sai da agenda.
           </p>
           <p className="mt-3 leading-7 text-slate-700">
-            As autorizacoes de acesso ficam cifradas no nosso banco com AES-256-GCM, e a chave fica fora do banco: uma
-            copia do banco sozinha nao abre nada. Nao vendemos esses dados, nao os usamos para publicidade, nao os
-            usamos para treinar modelos e nenhuma pessoa da Zelo os le. O uso das informacoes recebidas das APIs do
-            Google segue a Politica de Dados do Usuario dos Servicos de API do Google, incluindo os requisitos de Uso
-            Limitado.
+            Como protegemos os dados recebidos do Google:
+          </p>
+          <ul className="mt-3 space-y-2 leading-7 text-slate-700">
+            <li>
+              <strong>Em transito:</strong> todo trafego entre o seu navegador, a Zelo e as APIs do Google usa HTTPS com
+              TLS. Nenhum dado do Google trafega em canal aberto.
+            </li>
+            <li>
+              <strong>Em repouso:</strong> as autorizacoes de acesso ficam cifradas no banco com AES-256-GCM, e a chave
+              fica fora do banco, no ambiente da aplicacao. Uma copia do banco sozinha nao abre nada.
+            </li>
+            <li>
+              <strong>Quem alcanca:</strong> os dados sao isolados por empresa e por papel de acesso. As autorizacoes so
+              sao decifradas no servidor, no instante da chamada ao Google, e nenhuma pessoa da Zelo as le.
+            </li>
+            <li>
+              <strong>Ao desligar:</strong> desconectar a agenda apaga as autorizacoes e os vinculos entre tarefa e
+              compromisso na mesma operacao, sem copia guardada.
+            </li>
+          </ul>
+          <p className="mt-3 leading-7 text-slate-700">
+            Nao vendemos esses dados, nao os usamos para publicidade, nao os usamos para treinar modelos e nao os
+            compartilhamos com terceiros. O uso das informacoes recebidas das APIs do Google segue a Politica de Dados
+            do Usuario dos Servicos de API do Google, incluindo os requisitos de Uso Limitado.
           </p>
           <p className="mt-3 leading-7 text-slate-700">
             Voce desliga quando quiser, na propria tela de Agenda dentro da Zelo: as autorizacoes sao apagadas na hora e
