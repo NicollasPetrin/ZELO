@@ -3,7 +3,9 @@ import { notFound } from "next/navigation";
 import type { Prisma, TaskPriority, TaskStatus } from "@prisma/client";
 import type { CurrentUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/db/client";
+import type { BoardTask } from "@/features/tasks/task-board";
 import { canManageTasks } from "@/lib/permissions";
+import { isTaskLate } from "@/lib/task-status";
 import { DEFAULT_PAGE_SIZE, pageOffset, paginatedResult } from "@/lib/pagination";
 import { taskPriorities, taskStatuses } from "@/lib/validations";
 
@@ -103,6 +105,62 @@ export async function listTeamTasks(user: CurrentUser, filters: TaskFilters, pag
   ]);
 
   return paginatedResult(items, totalItems, page);
+}
+
+/** Quantos dias as concluidas continuam no quadro. Depois saem, para a coluna nao crescer sem fim. */
+export const BOARD_COMPLETED_DAYS = 14;
+
+/** Teto de cards no quadro: e uma tela de trabalho, nao de arquivo. A lista continua com tudo. */
+const BOARD_LIMIT = 300;
+
+/**
+ * Tarefas para o quadro: as abertas e as concluidas nos ultimos dias, sem as
+ * canceladas. Usa os mesmos filtros e o mesmo escopo das listas: "mine" sao as
+ * tarefas da pessoa, "team" as da empresa (so para quem gerencia).
+ */
+export async function listBoardTasks(user: CurrentUser, scope: "mine" | "team", filters: TaskFilters): Promise<BoardTask[]> {
+  const normalized = normalizeTaskFilters(filters);
+  const desde = new Date(Date.now() - BOARD_COMPLETED_DAYS * 86_400_000);
+  const where: Prisma.TaskWhereInput = {
+    companyId: user.companyId,
+    ...(scope === "mine" ? { assigneeId: user.id } : {}),
+    ...buildTaskSearchWhere(normalized),
+    AND: [
+      { status: { not: "CANCELED" } },
+      { OR: [{ status: { not: "COMPLETED" } }, { completedAt: { gte: desde } }] },
+    ],
+  };
+
+  const tarefas = await prisma.task.findMany({
+    where,
+    select: {
+      id: true,
+      title: true,
+      dueDate: true,
+      priority: true,
+      status: true,
+      requiresProof: true,
+      assignee: { select: { id: true, name: true } },
+      department: { select: { id: true, name: true } },
+      _count: { select: { proofs: true } },
+    },
+    orderBy: [{ dueDate: "asc" }, { id: "asc" }],
+    take: BOARD_LIMIT,
+  });
+  const agora = new Date();
+
+  return tarefas.map((tarefa) => ({
+    id: tarefa.id,
+    title: tarefa.title,
+    dueDate: tarefa.dueDate.toISOString(),
+    priority: tarefa.priority,
+    status: tarefa.status,
+    late: isTaskLate(tarefa, agora),
+    requiresProof: tarefa.requiresProof,
+    hasProof: tarefa._count.proofs > 0,
+    assigneeName: tarefa.assignee.name,
+    departmentName: tarefa.department.name,
+  }));
 }
 
 export async function getTaskFormOptions(companyId: string) {

@@ -11,9 +11,12 @@ import { StatusBadge } from "@/components/status-badge";
 import { SubscriptionRequiredCard } from "@/components/subscription-required-card";
 import { buttonClassName } from "@/components/ui/button";
 import { Input, Label, Select } from "@/components/ui/fields";
-import { getTaskFormOptions, listTeamTasks } from "@/features/tasks/data";
+import { BOARD_COMPLETED_DAYS, getTaskFormOptions, listBoardTasks, listTeamTasks } from "@/features/tasks/data";
+import { TaskBoard } from "@/features/tasks/task-board";
 import { TaskCardList } from "@/features/tasks/task-card-list";
 import { TaskForm } from "@/features/tasks/task-form";
+import { parseTaskView, TaskViewSwitch } from "@/features/tasks/task-view-switch";
+import { VoiceTaskDialog } from "@/features/tasks/voice-task-dialog";
 import { requireTeamArea } from "@/lib/auth/guards";
 import { formatDate, isTaskLate } from "@/lib/format";
 import { priorityLabels, statusLabels } from "@/lib/labels";
@@ -43,17 +46,19 @@ export default async function TeamTasksPage({
   const assigneeId = searchValue(params, "assigneeId");
   const query = searchValue(params, "q");
   const page = parsePage(searchValue(params, "page"));
+  const view = parseTaskView(searchValue(params, "view"));
   const access = getPlanAccess(activePlanCode);
   const taskFilters = access.canUseAdvancedFilters
     ? { q: query, status, priority, departmentId, assigneeId }
     : { q: query, status };
 
-  const [taskPage, options, onboardingCompleted] = await Promise.all([
-    listTeamTasks(user, taskFilters, page),
+  const [taskPage, boardTasks, options, onboardingCompleted] = await Promise.all([
+    view === "lista" ? listTeamTasks(user, taskFilters, page) : null,
+    view === "quadro" ? listBoardTasks(user, "team", taskFilters) : null,
     getTaskFormOptions(user.companyId),
     isOnboardingCompleted(user, "team-tasks"),
   ]);
-  const tasks = taskPage.items;
+  const tasks = taskPage?.items ?? [];
   const { departments, users } = options;
 
   return (
@@ -65,7 +70,17 @@ export default async function TeamTasksPage({
             ? "Crie, filtre por setor, responsavel, prioridade e acompanhe tarefas da empresa."
             : "Crie e acompanhe tarefas. Filtros avancados entram a partir do Plano Gestao."
         }
-        actions={<a href="#nova-tarefa" className={buttonClassName("primary")}><Plus className="h-4 w-4" />Nova tarefa</a>}
+        actions={
+          <div className="flex flex-wrap gap-2">
+            <VoiceTaskDialog
+              variant="secondary"
+              meId={user.id}
+              people={users.map((u) => ({ id: u.id, name: u.name, departmentId: u.departmentId }))}
+              departments={departments.map((d) => ({ id: d.id, name: d.name }))}
+            />
+            <a href="#nova-tarefa" className={buttonClassName("primary")}><Plus className="h-4 w-4" />Nova tarefa</a>
+          </div>
+        }
       />
 
       <OnboardingCard
@@ -139,6 +154,7 @@ export default async function TeamTasksPage({
             </div>
           </>
         ) : null}
+        {view === "quadro" ? <input type="hidden" name="view" value="quadro" /> : null}
         <div className={`flex items-end ${access.canUseAdvancedFilters ? "col-span-2 xl:col-span-1" : ""}`}>
           <button className={buttonClassName("secondary")} type="submit">
             Filtrar
@@ -146,7 +162,11 @@ export default async function TeamTasksPage({
         </div>
       </form>
 
-      {tasks.length ? (
+      <TaskViewSwitch basePath="/team-tasks" params={params} view={view} />
+
+      {boardTasks ? (
+        <TaskBoard tasks={boardTasks} showAssignee completedDays={BOARD_COMPLETED_DAYS} />
+      ) : tasks.length ? (
         <>
           <TaskCardList tasks={tasks} />
           <div className="hidden md:block">
@@ -189,7 +209,7 @@ export default async function TeamTasksPage({
           description="Comece criando a primeira tarefa da equipe para tirar as pendencias do WhatsApp e colocar tudo em um lugar visivel."
         />
       )}
-      <Pagination {...taskPage} searchParams={params} />
+      {taskPage ? <Pagination {...taskPage} searchParams={params} /> : null}
 
       <section id="nova-tarefa" className="space-y-3">
         <h2 className="text-lg font-semibold text-slate-950">Nova tarefa</h2>

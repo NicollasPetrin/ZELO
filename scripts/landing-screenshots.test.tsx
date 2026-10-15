@@ -22,7 +22,7 @@ const fixture = vi.hoisted(() => {
 
 vi.mock("next/link", () => ({ default: ({ href, children, ...props }: { href: string; children: React.ReactNode }) => createElement("a", { href, ...props }, children) }));
 vi.mock("next/image", () => ({ default: ({ src, alt, width, height, className }: { src: string; alt: string; width: number; height: number; className: string }) => createElement("img", { src, alt, width, height, className }) }));
-vi.mock("next/navigation", () => ({ usePathname: () => fixture.pathname, useRouter: () => ({ refresh: vi.fn() }) }));
+vi.mock("next/navigation", () => ({ usePathname: () => fixture.pathname, useSearchParams: () => new URLSearchParams(), useRouter: () => ({ refresh: vi.fn() }) }));
 vi.mock("@/lib/auth/session", () => ({ requireUser: async () => fixture.user }));
 vi.mock("@/lib/auth/guards", () => ({ requireTeamArea: async () => fixture.user }));
 vi.mock("@/lib/onboarding", () => ({ isOnboardingCompleted: async () => true }));
@@ -30,6 +30,8 @@ vi.mock("@/features/auth/actions", () => ({ logoutAction: async () => undefined 
 vi.mock("@/features/onboarding/actions", () => ({ completeOnboardingStepAction: async () => undefined }));
 vi.mock("@/features/tasks/actions", () => ({ createTaskAction: vi.fn(), updateTaskAction: vi.fn() }));
 vi.mock("@/features/tasks/data", () => ({
+  BOARD_COMPLETED_DAYS: 14,
+  listBoardTasks: async () => [],
   listTeamTasks: async () => ({ items: fixture.tasks, totalItems: 6, page: 1, pageCount: 1, pageSize: 25 }),
   getTaskFormOptions: async () => ({ users: fixture.users, departments: fixture.departments }),
 }));
@@ -63,7 +65,16 @@ test("renders the actual product with fictional data and no database", async () 
   ];
   for (const page of pages) {
     fixture.pathname = page.path;
-    const html = renderToStaticMarkup(<AppShell companyName={fixture.user.company.name} userName="Marina Costa" role="OWNER" plan="COMPLETE" unreadCount={2} chatUnread={0}>{page.element}</AppShell>);
+    const sidebar = {
+      role: "OWNER" as const,
+      plan: "COMPLETE" as const,
+      companyName: fixture.user.company.name,
+      logoUrl: null,
+      inboxUnread: 2,
+      chatUnread: 0,
+      spaces: fixture.departments.map((department, index) => ({ id: department.id, name: department.name, late: [2, 1, 0][index] })),
+    };
+    const html = renderToStaticMarkup(<AppShell userName="Marina Costa" sidebar={sidebar}>{page.element}</AppShell>);
     expect(html).toContain("Empresa fictícia");
     expect(html).toContain("Plano Completo");
     expect(html).not.toContain("@demo.com");

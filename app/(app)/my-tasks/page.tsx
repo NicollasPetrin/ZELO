@@ -10,9 +10,11 @@ import { StatusBadge } from "@/components/status-badge";
 import { SubscriptionRequiredCard } from "@/components/subscription-required-card";
 import { buttonClassName } from "@/components/ui/button";
 import { Input, Label, Select } from "@/components/ui/fields";
-import { listMyTasks } from "@/features/tasks/data";
+import { BOARD_COMPLETED_DAYS, listBoardTasks, listMyTasks } from "@/features/tasks/data";
+import { TaskBoard } from "@/features/tasks/task-board";
 import { TaskCardList } from "@/features/tasks/task-card-list";
 import { TaskStatusForm } from "@/features/tasks/task-inline-forms";
+import { parseTaskView, TaskViewSwitch } from "@/features/tasks/task-view-switch";
 import { requireUser } from "@/lib/auth/session";
 import { formatDate, isTaskLate } from "@/lib/format";
 import { priorityLabels, statusLabels } from "@/lib/labels";
@@ -37,11 +39,13 @@ export default async function MyTasksPage({
   const priority = searchValue(params, "priority");
   const query = searchValue(params, "q");
   const page = parsePage(searchValue(params, "page"));
-  const [taskPage, onboardingCompleted] = await Promise.all([
-    listMyTasks(user, { q: query, status, priority }, page),
+  const view = parseTaskView(searchValue(params, "view"));
+  const [taskPage, boardTasks, onboardingCompleted] = await Promise.all([
+    view === "lista" ? listMyTasks(user, { q: query, status, priority }, page) : null,
+    view === "quadro" ? listBoardTasks(user, "mine", { q: query, status, priority }) : null,
     isOnboardingCompleted(user, "tasks"),
   ]);
-  const tasks = taskPage.items;
+  const tasks = taskPage?.items ?? [];
 
   return (
     <div className="space-y-6">
@@ -87,6 +91,7 @@ export default async function MyTasksPage({
             ))}
           </Select>
         </div>
+        {view === "quadro" ? <input type="hidden" name="view" value="quadro" /> : null}
         <div className="col-span-2 flex items-end md:col-span-1">
           <button className={buttonClassName("secondary")} type="submit">
             Filtrar
@@ -94,7 +99,11 @@ export default async function MyTasksPage({
         </div>
       </form>
 
-      {tasks.length ? (
+      <TaskViewSwitch basePath="/my-tasks" params={params} view={view} />
+
+      {boardTasks ? (
+        <TaskBoard tasks={boardTasks} showAssignee={false} completedDays={BOARD_COMPLETED_DAYS} />
+      ) : tasks.length ? (
         <>
           <TaskCardList tasks={tasks} renderFooter={(task) => <TaskStatusForm taskId={task.id} status={task.status} />} />
           <div className="hidden md:block">
@@ -137,7 +146,7 @@ export default async function MyTasksPage({
           description="Quando uma tarefa for atribuida a voce, ela aparecera aqui com prazo, prioridade e status para acompanhamento."
         />
       )}
-      <Pagination {...taskPage} searchParams={params} />
+      {taskPage ? <Pagination {...taskPage} searchParams={params} /> : null}
     </div>
   );
 }
