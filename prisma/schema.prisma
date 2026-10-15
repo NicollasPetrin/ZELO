@@ -217,6 +217,11 @@ model Company {
   isDemo            Boolean               @default(false)
   asaasCustomerId   String?               @unique
   pendingPlanCode   SubscriptionPlan?
+  /// Logo enviada pelo dono, guardada no armazenamento (R2). Null mostra as iniciais.
+  logoKey           String?
+  logoContentType   String?
+  /// Muda a cada envio e entra na URL da imagem, para nenhum cache mostrar a logo antiga.
+  logoUpdatedAt     DateTime?
   isActive          Boolean               @default(true)
   createdAt         DateTime              @default(now())
   updatedAt         DateTime              @updatedAt

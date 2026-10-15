@@ -6,9 +6,12 @@ import { PlanCheckoutButton } from "@/features/billing/plan-checkout-button";
 import { isTrialEligible } from "@/features/billing/trial";
 import { VerifyPaymentPanel } from "@/features/billing/verify-payment-panel";
 import { SubscriptionStatusCard } from "@/features/billing/subscription-status-card";
+import { companyLogoUrl } from "@/components/company-avatar";
+import { CompanyLogoCard } from "@/features/settings/company-logo-card";
 import { CompanySettingsForm } from "@/features/settings/company-settings-form";
 import { requireCompanyManager } from "@/lib/auth/guards";
 import { prisma } from "@/lib/db/client";
+import { isStorageConfigured } from "@/lib/env";
 import { calculateMonthlyPrice, formatPriceCents, getPlanAccess, planDetails, planOrder } from "@/lib/plans";
 import { getActivePlanCode, getSubscriptionWindow, TRIAL_DAYS } from "@/lib/subscription";
 
@@ -250,6 +253,12 @@ export default async function SettingsPage({
           employeeCount: user.company.employeeCount,
           isActive: user.company.isActive,
         }}
+      />
+
+      <CompanyLogoCard
+        companyName={user.company.name}
+        logoUrl={companyLogoUrl(user.company)}
+        storageReady={isStorageConfigured()}
       />
 
       <section className="rounded-md border border-slate-200 bg-white p-4 shadow-sm">
