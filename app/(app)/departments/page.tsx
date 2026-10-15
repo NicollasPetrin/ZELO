@@ -32,13 +32,13 @@ export default async function DepartmentsPage() {
     <div className="space-y-6">
       <PageHeader
         title="Setores"
-        description="Confirme os setores da empresa. Ja deixamos setores padrao criados para facilitar o inicio."
+        description="Confirme os setores da empresa. Já deixamos setores padrão criados para facilitar o início."
       />
 
       <OnboardingCard
         stepKey="departments"
         title="Comece confirmando os setores da sua empresa"
-        description="Ja deixamos alguns setores padrao criados para facilitar. Voce pode editar, inativar ou criar novos setores."
+        description="Já deixamos alguns setores padrão criados para facilitar. Você pode editar, inativar ou criar novos setores."
         completed={onboardingCompleted}
       />
 
@@ -55,7 +55,7 @@ export default async function DepartmentsPage() {
                 <Th>Tarefas</Th>
                 <Th>Metas</Th>
                 <Th>Criado em</Th>
-                {canManage ? <Th>Acoes</Th> : null}
+                {canManage ? <Th>Ações</Th> : null}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 bg-white">
@@ -66,7 +66,7 @@ export default async function DepartmentsPage() {
                       <Building2 className="mt-0.5 h-4 w-4 text-slate-400" aria-hidden="true" />
                       <div>
                         <p className="font-medium text-slate-950">{department.name}</p>
-                        <p className="mt-1 text-xs leading-5 text-slate-500">{department.description ?? "Sem descricao cadastrada."}</p>
+                        <p className="mt-1 text-xs leading-5 text-slate-500">{department.description ?? "Sem descrição cadastrada."}</p>
                         {canManage ? (
                           <details className="mt-3">
                             <summary className="text-xs font-medium text-slate-600">Editar setor</summary>
@@ -131,7 +131,7 @@ export default async function DepartmentsPage() {
       ) : (
         <EmptyState
           title="Nenhum setor cadastrado"
-          description="Crie setores para organizar responsabilidades, tarefas e metas por area da empresa."
+          description="Crie setores para organizar responsabilidades, tarefas e metas por área da empresa."
         />
       )}
     </div>

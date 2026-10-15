@@ -99,12 +99,12 @@ export async function getDashboardData(user: CurrentUser) {
   const goalsOnTrack = goalStatusCounts.get("ON_TRACK") ?? 0;
   const goalsAttention = (goalStatusCounts.get("ATTENTION") ?? 0) + (goalStatusCounts.get("LATE") ?? 0);
 
-  const employeeHotspots = overdueByEmployeeGroups.map((item) => [userNames.get(item.assigneeId) ?? "Funcionario removido", item._count._all] as [string, number]);
+  const employeeHotspots = overdueByEmployeeGroups.map((item) => [userNames.get(item.assigneeId) ?? "Funcionário removido", item._count._all] as [string, number]);
   const departmentHotspots = overdueByDepartmentGroups.map((item) => [departmentNames.get(item.departmentId) ?? "Setor removido", item._count._all] as [string, number]);
   const attentionItems = [
     overdue > 0 ? `${overdue} tarefa${overdue === 1 ? "" : "s"} atrasada${overdue === 1 ? "" : "s"}` : null,
     urgent > 0 ? `${urgent} tarefa${urgent === 1 ? "" : "s"} urgente${urgent === 1 ? "" : "s"} em aberto` : null,
-    goalsAttention > 0 ? `${goalsAttention} meta${goalsAttention === 1 ? "" : "s"} precisam de atencao` : null,
+    goalsAttention > 0 ? `${goalsAttention} meta${goalsAttention === 1 ? "" : "s"} precisam de atenção` : null,
     departmentHotspots[0] ? `${departmentHotspots[0][0]} tem ${departmentHotspots[0][1]} atraso${departmentHotspots[0][1] === 1 ? "" : "s"}` : null,
   ].filter(Boolean) as string[];
 

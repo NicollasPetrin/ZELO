@@ -69,7 +69,7 @@ export function PaymentReturnBanner({
       <div className="mb-5 flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm leading-6 text-amber-950">
         <TriangleAlert className="mt-1 h-4 w-4 shrink-0" aria-hidden="true" />
         <p>
-          Sua conta foi criada, mas nao conseguimos abrir o pagamento agora. Nada foi cobrado. Escolha o plano
+          Sua conta foi criada, mas não conseguimos abrir o pagamento agora. Nada foi cobrado. Escolha o plano
           abaixo para tentar de novo.
         </p>
       </div>
@@ -82,7 +82,7 @@ export function PaymentReturnBanner({
         <TriangleAlert className="mt-1 h-4 w-4 shrink-0" aria-hidden="true" />
         <p>
           {status === "cancelado"
-            ? "Pagamento cancelado. Nada foi cobrado e voce pode tentar de novo quando quiser."
+            ? "Pagamento cancelado. Nada foi cobrado e você pode tentar de novo quando quiser."
             : "O tempo do pagamento expirou. Nada foi cobrado. Inicie a compra novamente."}
         </p>
       </div>
@@ -108,7 +108,7 @@ export function PaymentReturnBanner({
       <p>
         {tentativas < MAX_TENTATIVAS
           ? "Pagamento recebido. Estamos liberando seu acesso, aguarde alguns segundos..."
-          : "O pagamento foi recebido, mas a liberacao esta demorando mais que o normal. Use o botao \"Ja paguei, conferir agora\" abaixo; se ainda assim nao liberar, fale com o suporte."}
+          : "O pagamento foi recebido, mas a liberação está demorando mais que o normal. Use o botão \"Já paguei, conferir agora\" abaixo; se ainda assim não liberar, fale com o suporte."}
       </p>
     </div>
   );

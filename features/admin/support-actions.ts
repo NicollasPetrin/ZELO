@@ -26,7 +26,7 @@ export async function replyAsSupportAction(values: unknown) {
     });
 
     if (!conversa) {
-      throw new Error("Conversa de suporte nao encontrada.");
+      throw new Error("Conversa de suporte não encontrada.");
     }
 
     const agora = new Date();
@@ -43,6 +43,6 @@ export async function replyAsSupportAction(values: unknown) {
 
     return { ok: true, message: "Resposta enviada." } as const;
   } catch (error) {
-    return actionError(error, "Nao foi possivel responder.");
+    return actionError(error, "Não foi possível responder.");
   }
 }

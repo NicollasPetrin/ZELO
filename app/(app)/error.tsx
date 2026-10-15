@@ -24,14 +24,14 @@ export default function ErrorPage({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error("[zelo] falha ao carregar a pagina:", error);
+    console.error("[zelo] falha ao carregar a página:", error);
   }, [error]);
 
   return (
     <div className="rounded-md border border-rose-200 bg-white p-6">
       <h1 className="text-lg font-semibold text-slate-950">Algo saiu do caminho</h1>
       <p className="mt-2 text-sm leading-6 text-slate-600">
-        A pagina nao conseguiu carregar os dados agora. Se o problema comecou logo depois de uma atualizacao do
+        A página não conseguiu carregar os dados agora. Se o problema começou logo depois de uma atualização do
         sistema, recarregar resolve.
       </p>
       <div className="mt-4 flex flex-wrap gap-2">
@@ -39,12 +39,12 @@ export default function ErrorPage({
           Tentar novamente
         </Button>
         <Button variant="secondary" type="button" onClick={() => window.location.reload()}>
-          Recarregar a pagina
+          Recarregar a página
         </Button>
       </div>
       {error.digest ? (
         <p className="mt-3 text-xs text-slate-500">
-          Codigo do erro: <span className="font-mono">{error.digest}</span> — informe este codigo ao suporte.
+          Código do erro: <span className="font-mono">{error.digest}</span> — informe este código ao suporte.
         </p>
       ) : null}
     </div>

@@ -50,22 +50,22 @@ export default async function EmployeesPage({ searchParams }: { searchParams: Pr
     includedUsers: access.includedUsers,
     maxUsers: access.maxUsers,
     pricePerExtraUser: activePlan.pricePerExtraUser,
-    currentMonthlyTotal: currentPrice.totalPriceCents === null ? "Upgrade necessario" : formatPriceCents(currentPrice.totalPriceCents),
-    nextMonthlyTotal: nextPrice.totalPriceCents === null ? "Upgrade necessario" : formatPriceCents(nextPrice.totalPriceCents),
-    upgradePlanName: activePlanCode === "BASIC" ? "Gestao" : "Completo",
+    currentMonthlyTotal: currentPrice.totalPriceCents === null ? "Upgrade necessário" : formatPriceCents(currentPrice.totalPriceCents),
+    nextMonthlyTotal: nextPrice.totalPriceCents === null ? "Upgrade necessário" : formatPriceCents(nextPrice.totalPriceCents),
+    upgradePlanName: activePlanCode === "BASIC" ? "Gestão" : "Completo",
   };
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Funcionarios"
-        description={`Cadastre sua equipe, defina papel, setor e cargo. Plano ${activePlan.name}: ${access.includedUsers} usuarios incluidos e teto ${maxUsersLabel}.`}
+        title="Funcionários"
+        description={`Cadastre sua equipe, defina papel, setor e cargo. Plano ${activePlan.name}: ${access.includedUsers} usuários incluídos e teto ${maxUsersLabel}.`}
       />
 
       <OnboardingCard
         stepKey="employees"
-        title="Cadastre sua equipe e defina a funcao de cada pessoa"
-        description="Depois, voce podera atribuir tarefas e acompanhar o andamento por responsavel e setor."
+        title="Cadastre sua equipe e defina a função de cada pessoa"
+        description="Depois, você poderá atribuir tarefas e acompanhar o andamento por responsável e setor."
         completed={onboardingCompleted}
       />
 
@@ -74,7 +74,7 @@ export default async function EmployeesPage({ searchParams }: { searchParams: Pr
           <div>
             <h2 className="text-base font-semibold text-slate-950">Uso do plano</h2>
             <p className="mt-1 text-sm text-slate-600">
-              {activeEmployees} usuarios ativos. {access.includedUsers} incluidos no Plano {activePlan.name}; usuario extra custa {activePlan.pricePerExtraUser}/mes.
+              {activeEmployees} usuários ativos. {access.includedUsers} incluídos no Plano {activePlan.name}; usuário extra custa {activePlan.pricePerExtraUser}/mês.
             </p>
             <p className="mt-1 text-sm font-semibold text-slate-950">Mensalidade atual: {billing.currentMonthlyTotal}</p>
           </div>
@@ -86,9 +86,9 @@ export default async function EmployeesPage({ searchParams }: { searchParams: Pr
 
       {reachedLimit ? (
         <LockedFeatureCard
-          title="Limite de usuarios atingido"
+          title="Limite de usuários atingido"
           description="Para adicionar mais pessoas ativas, evolua para um plano com limite maior."
-          requiredPlan={activePlanCode === "BASIC" ? "Gestao" : "Completo"}
+          requiredPlan={activePlanCode === "BASIC" ? "Gestão" : "Completo"}
         />
       ) : (
         <EmployeeForm departments={departments} billing={billing} />
@@ -99,13 +99,13 @@ export default async function EmployeesPage({ searchParams }: { searchParams: Pr
           <table className="min-w-full divide-y divide-slate-200">
             <thead className="bg-slate-50">
               <tr>
-                <Th>Funcionario</Th>
+                <Th>Funcionário</Th>
                 <Th>Papel</Th>
                 <Th>Setor</Th>
                 <Th>Tarefas</Th>
                 <Th>Status</Th>
                 <Th>Criado em</Th>
-                <Th>Acoes</Th>
+                <Th>Ações</Th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 bg-white">
@@ -119,7 +119,7 @@ export default async function EmployeesPage({ searchParams }: { searchParams: Pr
                         <p className="mt-1 text-xs text-slate-500">{employee.email}</p>
                         <p className="mt-1 text-xs text-slate-500">{employee.position ?? "Sem cargo informado"}</p>
                         <details className="mt-3">
-                          <summary className="text-xs font-medium text-slate-600">Editar funcionario</summary>
+                          <summary className="text-xs font-medium text-slate-600">Editar funcionário</summary>
                           <div className="mt-3">
                             <EmployeeForm
                               compact
@@ -163,7 +163,7 @@ export default async function EmployeesPage({ searchParams }: { searchParams: Pr
       ) : (
         <EmptyState
           title="Cadastre sua equipe"
-          description="Cadastre sua equipe para comecar a distribuir tarefas e acompanhar responsabilidades."
+          description="Cadastre sua equipe para começar a distribuir tarefas e acompanhar responsabilidades."
         />
       )}
       <Pagination {...employeePage} searchParams={params} />

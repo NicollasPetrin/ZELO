@@ -53,7 +53,7 @@ export async function createTaskAction(values: unknown) {
     const access = getPlanAccess(activePlan);
 
     if (!access.canUseRecurringTasks && parsed.recurrenceType !== "NONE") {
-      throw new Error("Tarefas recorrentes estao disponiveis a partir do Plano Gestao.");
+      throw new Error("Tarefas recorrentes estão disponíveis a partir do Plano Gestão.");
     }
 
     const [department, assignee] = await Promise.all([
@@ -62,7 +62,7 @@ export async function createTaskAction(values: unknown) {
     ]);
 
     if (!department || !assignee) {
-      throw new Error("Responsavel ou setor invalido.");
+      throw new Error("Responsável ou setor inválido.");
     }
 
     // "Atrasada" vem do prazo, nao da escolha de quem preenche o formulario.
@@ -95,8 +95,8 @@ export async function createTaskAction(values: unknown) {
         companyId: user.companyId,
         userId: parsed.assigneeId,
         type: "TASK_ASSIGNED",
-        title: "Nova tarefa atribuida",
-        message: `${user.name} atribuiu a tarefa "${parsed.title}" para voce.`,
+        title: "Nova tarefa atribuída",
+        message: `${user.name} atribuiu a tarefa "${parsed.title}" para você.`,
         link: `/tasks/${task.id}`,
         relatedTaskId: task.id,
       },
@@ -127,7 +127,7 @@ export async function createTaskAction(values: unknown) {
     revalidatePath("/notifications");
     return { ok: true, data: { id: task.id }, message: "Tarefa criada." } as const;
   } catch (error) {
-    return actionError(error, "Nao foi possivel criar a tarefa.");
+    return actionError(error, "Não foi possível criar a tarefa.");
   }
 }
 
@@ -142,11 +142,11 @@ export async function updateTaskAction(values: unknown) {
     const access = getPlanAccess(activePlan);
 
     if (!access.canUseRecurringTasks && parsed.recurrenceType !== "NONE") {
-      throw new Error("Tarefas recorrentes estao disponiveis a partir do Plano Gestao.");
+      throw new Error("Tarefas recorrentes estão disponíveis a partir do Plano Gestão.");
     }
 
     if (!parsed.id) {
-      throw new Error("Tarefa invalida.");
+      throw new Error("Tarefa inválida.");
     }
     const parsedTaskId = idSchema.parse(parsed.id);
 
@@ -158,7 +158,7 @@ export async function updateTaskAction(values: unknown) {
     });
 
     if (!task) {
-      throw new Error("Tarefa nao encontrada.");
+      throw new Error("Tarefa não encontrada.");
     }
 
     const [department, assignee] = await Promise.all([
@@ -167,7 +167,7 @@ export async function updateTaskAction(values: unknown) {
     ]);
 
     if (!department || !assignee) {
-      throw new Error("Responsavel ou setor invalido.");
+      throw new Error("Responsável ou setor inválido.");
     }
 
     // Sem isto, adiar o prazo de uma tarefa atrasada deixava o status como
@@ -194,7 +194,7 @@ export async function updateTaskAction(values: unknown) {
     });
 
     if (updateResult.count === 0) {
-      throw new Error("Tarefa nao encontrada.");
+      throw new Error("Tarefa não encontrada.");
     }
 
     const recurrence = recurrenceData(parsed, task.id);
@@ -241,7 +241,7 @@ export async function updateTaskAction(values: unknown) {
     revalidatePath("/dashboard");
     return { ok: true, data: { id: task.id }, message: "Tarefa atualizada." } as const;
   } catch (error) {
-    return actionError(error, "Nao foi possivel atualizar a tarefa.");
+    return actionError(error, "Não foi possível atualizar a tarefa.");
   }
 }
 
@@ -255,7 +255,7 @@ export async function updateTaskStatusAction(values: unknown) {
     const task = await findTaskForUser(taskId, user);
 
     if (!task) {
-      throw new Error("Voce nao tem permissao para alterar esta tarefa.");
+      throw new Error("Você não tem permissão para alterar esta tarefa.");
     }
 
     // Aqui so o status muda, mas alguem pode marcar "Atrasada" numa tarefa
@@ -284,7 +284,7 @@ export async function updateTaskStatusAction(values: unknown) {
     });
 
     if (updateResult.count === 0) {
-      throw new Error("Tarefa nao encontrada.");
+      throw new Error("Tarefa não encontrada.");
     }
 
     const recipientId = task.creatorId === user.id ? task.assigneeId : task.creatorId;
@@ -326,7 +326,7 @@ export async function updateTaskStatusAction(values: unknown) {
     revalidatePath("/notifications");
     return { ok: true, message: "Status atualizado." } as const;
   } catch (error) {
-    return actionError(error, "Nao foi possivel atualizar o status.");
+    return actionError(error, "Não foi possível atualizar o status.");
   }
 }
 
@@ -340,7 +340,7 @@ export async function addTaskCommentAction(values: unknown) {
     const task = await findTaskForUser(taskId, user);
 
     if (!task) {
-      throw new Error("Voce nao tem permissao para comentar nesta tarefa.");
+      throw new Error("Você não tem permissão para comentar nesta tarefa.");
     }
 
     await prisma.taskComment.create({
@@ -361,7 +361,7 @@ export async function addTaskCommentAction(values: unknown) {
             companyId: user.companyId,
             userId: recipientId,
             type: "NEW_COMMENT",
-            title: "Novo comentario",
+            title: "Novo comentário",
             message: `${user.name} comentou em "${task.title}".`,
             link: `/tasks/${task.id}`,
             relatedTaskId: task.id,
@@ -376,15 +376,15 @@ export async function addTaskCommentAction(values: unknown) {
       type: "TASK_COMMENTED",
       entityType: "Task",
       entityId: task.id,
-      title: "Comentario em tarefa",
+      title: "Comentário em tarefa",
       description: task.title,
     });
 
     revalidatePath(`/tasks/${task.id}`);
     revalidatePath("/notifications");
-    return { ok: true, message: "Comentario registrado." } as const;
+    return { ok: true, message: "Comentário registrado." } as const;
   } catch (error) {
-    return actionError(error, "Nao foi possivel comentar.");
+    return actionError(error, "Não foi possível comentar.");
   }
 }
 
@@ -398,7 +398,7 @@ export async function addTaskAttachmentAction(values: unknown) {
     const task = await findTaskForUser(taskId, user);
 
     if (!task) {
-      throw new Error("Voce nao tem permissao para anexar nesta tarefa.");
+      throw new Error("Você não tem permissão para anexar nesta tarefa.");
     }
 
     await prisma.taskAttachment.create({
@@ -425,7 +425,7 @@ export async function addTaskAttachmentAction(values: unknown) {
     revalidatePath(`/tasks/${task.id}`);
     return { ok: true, message: "Anexo registrado." } as const;
   } catch (error) {
-    return actionError(error, "Nao foi possivel registrar o anexo.");
+    return actionError(error, "Não foi possível registrar o anexo.");
   }
 }
 
@@ -450,7 +450,7 @@ export async function approveTaskProofAction(values: unknown) {
     });
 
     if (!task) {
-      throw new Error("Tarefa nao encontrada.");
+      throw new Error("Tarefa não encontrada.");
     }
 
     const provas = await prisma.taskProof.count({ where: { taskId: task.id } });
@@ -471,7 +471,7 @@ export async function approveTaskProofAction(values: unknown) {
           userId: task.assigneeId,
           type: "STATUS_UPDATED",
           title: "Prova aprovada",
-          message: `${user.name} aprovou a conclusao de "${task.title}".`,
+          message: `${user.name} aprovou a conclusão de "${task.title}".`,
           link: `/tasks/${task.id}`,
           relatedTaskId: task.id,
         },
@@ -495,9 +495,9 @@ export async function approveTaskProofAction(values: unknown) {
 
     revalidatePath("/team-tasks");
 
-    return { ok: true, message: "Prova aprovada e tarefa concluida." } as const;
+    return { ok: true, message: "Prova aprovada e tarefa concluída." } as const;
   } catch (error) {
-    return actionError(error, "Nao foi possivel aprovar a prova.");
+    return actionError(error, "Não foi possível aprovar a prova.");
   }
 }
 
@@ -516,7 +516,7 @@ export async function rejectTaskProofAction(values: unknown) {
     });
 
     if (!task) {
-      throw new Error("Tarefa nao encontrada.");
+      throw new Error("Tarefa não encontrada.");
     }
 
     const motivo = parsed.reason?.trim();
@@ -573,6 +573,6 @@ export async function rejectTaskProofAction(values: unknown) {
 
     return { ok: true, message: "Prova recusada e tarefa devolvida." } as const;
   } catch (error) {
-    return actionError(error, "Nao foi possivel recusar a prova.");
+    return actionError(error, "Não foi possível recusar a prova.");
   }
 }

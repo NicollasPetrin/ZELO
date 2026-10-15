@@ -12,12 +12,12 @@ import type {
 export const roleLabels: Record<UserRole, string> = {
   OWNER: "Dono",
   MANAGER: "Gerente",
-  EMPLOYEE: "Funcionario",
+  EMPLOYEE: "Funcionário",
 };
 
 export const priorityLabels: Record<TaskPriority, string> = {
   LOW: "Baixa",
-  MEDIUM: "Media",
+  MEDIUM: "Média",
   HIGH: "Alta",
   URGENT: "Urgente",
 };
@@ -25,25 +25,25 @@ export const priorityLabels: Record<TaskPriority, string> = {
 export const statusLabels: Record<TaskStatus, string> = {
   PENDING: "Pendente",
   IN_PROGRESS: "Em andamento",
-  IN_REVIEW: "Em revisao",
-  COMPLETED: "Concluida",
+  IN_REVIEW: "Em revisão",
+  COMPLETED: "Concluída",
   OVERDUE: "Atrasada",
   CANCELED: "Cancelada",
 };
 
 export const recurrenceLabels: Record<RecurrenceType, string> = {
-  NONE: "Sem recorrencia",
-  DAILY: "Diaria",
+  NONE: "Sem recorrência",
+  DAILY: "Diária",
   WEEKLY: "Semanal",
   MONTHLY: "Mensal",
-  SPECIFIC_WEEKDAYS: "Dias especificos da semana",
-  SPECIFIC_MONTH_DAY: "Dia especifico do mes",
+  SPECIFIC_WEEKDAYS: "Dias específicos da semana",
+  SPECIFIC_MONTH_DAY: "Dia específico do mês",
 };
 
 export const goalUnitLabels: Record<GoalUnit, string> = {
   BRL: "R$",
   PERCENT: "%",
-  NUMBER: "Numero",
+  NUMBER: "Número",
   TASKS: "Tarefas",
   CLIENTS: "Clientes",
   SALES: "Vendas",
@@ -58,17 +58,17 @@ export const goalPeriodLabels: Record<GoalPeriod, string> = {
 
 export const goalStatusLabels: Record<GoalStatus, string> = {
   ON_TRACK: "No caminho",
-  ATTENTION: "Atencao",
+  ATTENTION: "Atenção",
   LATE: "Atrasada",
-  COMPLETED: "Concluida",
+  COMPLETED: "Concluída",
 };
 
 export const notificationLabels: Record<NotificationType, string> = {
   SUBSCRIPTION_PAYMENT_DUE: "Pagamento da assinatura",
-  TASK_ASSIGNED: "Tarefa atribuida",
-  TASK_DUE_SOON: "Prazo proximo",
+  TASK_ASSIGNED: "Tarefa atribuída",
+  TASK_DUE_SOON: "Prazo próximo",
   TASK_OVERDUE: "Tarefa atrasada",
-  NEW_COMMENT: "Comentario novo",
+  NEW_COMMENT: "Comentário novo",
   STATUS_UPDATED: "Status atualizado",
-  GOAL_ATTENTION: "Meta em atencao",
+  GOAL_ATTENTION: "Meta em atenção",
 };

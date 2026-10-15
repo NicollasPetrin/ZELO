@@ -37,7 +37,7 @@ export default async function PontosPage({
     <div className="space-y-6">
       <PageHeader
         title="Pontos"
-        description="Cada tarefa concluida vale pontos conforme a prioridade. Quanto mais pesada a tarefa, mais ela conta."
+        description="Cada tarefa concluída vale pontos conforme a prioridade. Quanto mais pesada a tarefa, mais ela conta."
       />
 
       <div className="flex flex-wrap items-center gap-2">
@@ -75,8 +75,8 @@ export default async function PontosPage({
 
       {board.companyTasks === 0 ? (
         <EmptyState
-          title="Nenhuma tarefa concluida no periodo"
-          description="Os pontos aparecem assim que a equipe concluir tarefas. Experimente um periodo maior."
+          title="Nenhuma tarefa concluída no período"
+          description="Os pontos aparecem assim que a equipe concluir tarefas. Experimente um período maior."
         />
       ) : (
         <>
@@ -86,14 +86,14 @@ export default async function PontosPage({
               <p className="mt-1 text-2xl font-semibold tabular-nums text-slate-950">{board.companyPoints}</p>
             </div>
             <div className="rounded-md border border-slate-200 bg-white p-4 shadow-sm">
-              <p className="text-xs font-medium uppercase tracking-normal text-slate-500">Tarefas concluidas</p>
+              <p className="text-xs font-medium uppercase tracking-normal text-slate-500">Tarefas concluídas</p>
               <p className="mt-1 text-2xl font-semibold tabular-nums text-slate-950">{board.companyTasks}</p>
             </div>
             <div className="rounded-md border border-emerald-200 bg-emerald-50 p-4 shadow-sm">
               <p className="text-xs font-medium uppercase tracking-normal text-emerald-700">Na frente</p>
               <p className="mt-1 flex items-center gap-2 text-lg font-semibold text-emerald-900">
                 <Trophy className="h-4 w-4" aria-hidden="true" />
-                {lider && lider.points > 0 ? `${lider.name} - ${lider.points} pts` : "Ninguem pontuou ainda"}
+                {lider && lider.points > 0 ? `${lider.name} - ${lider.points} pts` : "Ninguém pontuou ainda"}
               </p>
             </div>
           </div>
@@ -104,7 +104,7 @@ export default async function PontosPage({
                 <thead className="bg-slate-50 text-left text-xs uppercase tracking-normal text-slate-500">
                   <tr>
                     <th className="px-4 py-3 font-medium">#</th>
-                    <th className="px-4 py-3 font-medium">Funcionario</th>
+                    <th className="px-4 py-3 font-medium">Funcionário</th>
                     {priorityOrder.map((prioridade) => (
                       <th key={prioridade} className="px-4 py-3 text-center font-medium">
                         {priorityLabels[prioridade]}
@@ -124,7 +124,7 @@ export default async function PontosPage({
                       <td className="px-4 py-3">
                         <p className="font-medium text-slate-950">
                           {membro.name}
-                          {membro.isSelf ? <span className="ml-2 text-xs text-emerald-700">voce</span> : null}
+                          {membro.isSelf ? <span className="ml-2 text-xs text-emerald-700">você</span> : null}
                         </p>
                         <p className="text-xs text-slate-500">
                           {[membro.position_role, membro.departmentName].filter(Boolean).join(" - ") || "Sem setor"}

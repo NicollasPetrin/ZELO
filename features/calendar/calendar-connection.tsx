@@ -40,7 +40,7 @@ export function CalendarConnection({
   if (!disponivel) {
     return (
       <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm leading-6 text-amber-950">
-        A integracao com o Google Agenda ainda nao foi configurada nesta instalacao.
+        A integração com o Google Agenda ainda não foi configurada nesta instalação.
       </p>
     );
   }
@@ -53,7 +53,7 @@ export function CalendarConnection({
           Conectar minha agenda do Google
         </a>
         <p className="max-w-2xl text-xs leading-5 text-slate-500">
-          A Zelo pede permissao apenas para criar e apagar compromissos. Ela nao le os seus outros compromissos.
+          A Zelo pede permissão apenas para criar e apagar compromissos. Ela não lê os seus outros compromissos.
         </p>
         <FormMessage message={message} error={error} />
       </div>

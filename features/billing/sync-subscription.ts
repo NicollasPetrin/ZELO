@@ -37,7 +37,7 @@ export async function syncSubscriptionFromAsaas(customerId: string): Promise<Syn
     const event = paymentStatusToEvent(payment.status);
 
     if (!event) {
-      ignored.push(`${payment.id}: estado ${payment.status} nao altera assinatura`);
+      ignored.push(`${payment.id}: estado ${payment.status} não altera assinatura`);
       continue;
     }
 

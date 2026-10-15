@@ -31,7 +31,7 @@ export function StatusDistribution({ items }: { items: StatusDistributionItem[] 
   if (!total) {
     return (
       <p className="mt-4 text-sm leading-6 text-slate-500">
-        Nenhuma tarefa cadastrada ainda. A distribuicao aparece assim que a equipe comecar a registrar tarefas.
+        Nenhuma tarefa cadastrada ainda. A distribuição aparece assim que a equipe começar a registrar tarefas.
       </p>
     );
   }

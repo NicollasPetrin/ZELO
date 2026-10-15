@@ -73,7 +73,7 @@ export function buildTaskEvent(task: TaskForCalendar, appUrl?: string): GoogleEv
     `Status: ${statusLabels[task.status]}`,
     ...(task.departmentName ? [`Setor: ${task.departmentName}`] : []),
     ...(task.creatorName ? [`Solicitado por: ${task.creatorName}`] : []),
-    ...(task.requiresProof ? ["Exige foto de conclusao."] : []),
+    ...(task.requiresProof ? ["Exige foto de conclusão."] : []),
   ];
 
   if (appUrl) {

@@ -83,7 +83,7 @@ describe("pagina de configuracoes", () => {
     const html = await renderizar();
 
     expect(html).toContain("Cancelar assinatura");
-    expect(html).toContain("Ja paguei, conferir agora");
+    expect(html).toContain("Já paguei, conferir agora");
   });
 
   it("renderiza na volta do pagamento", async () => {

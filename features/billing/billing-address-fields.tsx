@@ -63,7 +63,7 @@ export function BillingAddressFields() {
           />
         </div>
         <div className="space-y-1.5">
-          <Label>Numero</Label>
+          <Label>Número</Label>
           <Input ref={numeroRef} name="addressNumber" placeholder="1000" required />
         </div>
       </div>

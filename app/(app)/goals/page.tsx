@@ -60,13 +60,13 @@ export default async function GoalsPage({ searchParams }: { searchParams: Promis
     <div className="space-y-6">
       <PageHeader
         title="Metas"
-        description="Acompanhe metas simples por empresa, setor ou responsavel, sempre com progresso claro."
+        description="Acompanhe metas simples por empresa, setor ou responsável, sempre com progresso claro."
       />
 
       <OnboardingCard
         stepKey="goals"
         title="Cadastre metas simples para acompanhar progresso"
-        description="Use metas de vendas, tarefas no prazo, atendimentos ou qualquer indicador que ajude a equipe a saber se esta no caminho certo."
+        description="Use metas de vendas, tarefas no prazo, atendimentos ou qualquer indicador que ajude a equipe a saber se está no caminho certo."
         completed={onboardingCompleted}
       />
 
@@ -74,9 +74,9 @@ export default async function GoalsPage({ searchParams }: { searchParams: Promis
         <div className="space-y-3">
           {!access.canUseGoalAssignments ? (
             <LockedFeatureCard
-              title="Metas por setor ou responsavel"
-              description="No Plano Basico a meta e simples e vale para a empresa inteira. Setor e responsavel entram a partir do Plano Gestao."
-              requiredPlan="Gestao"
+              title="Metas por setor ou responsável"
+              description="No Plano Básico a meta é simples e vale para a empresa inteira. Setor e responsável entram a partir do Plano Gestão."
+              requiredPlan="Gestão"
             />
           ) : null}
           <GoalForm departments={departments} users={users} allowAssignments={access.canUseGoalAssignments} />
@@ -95,7 +95,7 @@ export default async function GoalsPage({ searchParams }: { searchParams: Promis
                     <Target className="mt-1 h-5 w-5 text-slate-400" aria-hidden="true" />
                     <div>
                       <h2 className="font-semibold text-slate-950">{goal.title}</h2>
-                      <p className="mt-1 text-sm leading-6 text-slate-600">{goal.description ?? "Sem descricao cadastrada."}</p>
+                      <p className="mt-1 text-sm leading-6 text-slate-600">{goal.description ?? "Sem descrição cadastrada."}</p>
                     </div>
                   </div>
                   <Badge className={goalStatusClasses[goal.status]}>{goalStatusLabels[goal.status]}</Badge>
@@ -113,12 +113,12 @@ export default async function GoalsPage({ searchParams }: { searchParams: Promis
 
                 <dl className="mt-4 grid gap-3 text-sm text-slate-600 md:grid-cols-2">
                   <div>
-                    <dt className="text-xs font-medium uppercase tracking-normal text-slate-400">Periodo</dt>
+                    <dt className="text-xs font-medium uppercase tracking-normal text-slate-400">Período</dt>
                     <dd>{goalPeriodLabels[goal.period]}</dd>
                   </div>
                   <div>
                     <dt className="text-xs font-medium uppercase tracking-normal text-slate-400">Prazo</dt>
-                    <dd>{formatDate(goal.startDate)} ate {formatDate(goal.endDate)}</dd>
+                    <dd>{formatDate(goal.startDate)} até {formatDate(goal.endDate)}</dd>
                   </div>
                   {access.canUseGoalAssignments ? (
                     <>
@@ -127,14 +127,14 @@ export default async function GoalsPage({ searchParams }: { searchParams: Promis
                         <dd>{goal.department?.name ?? "Empresa inteira"}</dd>
                       </div>
                       <div>
-                        <dt className="text-xs font-medium uppercase tracking-normal text-slate-400">Responsavel</dt>
-                        <dd>{goal.responsible?.name ?? "Sem responsavel direto"}</dd>
+                        <dt className="text-xs font-medium uppercase tracking-normal text-slate-400">Responsável</dt>
+                        <dd>{goal.responsible?.name ?? "Sem responsável direto"}</dd>
                       </div>
                     </>
                   ) : (
                     <div className="md:col-span-2">
                       <dt className="text-xs font-medium uppercase tracking-normal text-slate-400">Escopo</dt>
-                      <dd>Empresa inteira - detalhamento por setor/responsavel bloqueado no Basico</dd>
+                      <dd>Empresa inteira - detalhamento por setor/responsável bloqueado no Básico</dd>
                     </div>
                   )}
                 </dl>
@@ -185,8 +185,8 @@ export default async function GoalsPage({ searchParams }: { searchParams: Promis
         </div>
       ) : (
         <EmptyState
-          title="Voce ainda nao cadastrou metas"
-          description="Crie uma meta simples para acompanhar se sua equipe esta no caminho certo."
+          title="Você ainda não cadastrou metas"
+          description="Crie uma meta simples para acompanhar se sua equipe está no caminho certo."
         />
       )}
       <Pagination {...goalPage} searchParams={params} />

@@ -134,7 +134,7 @@ describe("assertCompanyHasActivePlan", () => {
   });
 
   it("falls back to the missing-plan message when there is no subscription", () => {
-    expect(() => assertCompanyHasActivePlan({ subscriptions: [] }, now)).toThrowError(/nao possui assinatura/i);
+    expect(() => assertCompanyHasActivePlan({ subscriptions: [] }, now)).toThrowError(/não possui assinatura/i);
   });
 });
 
@@ -245,7 +245,7 @@ describe("assinatura cancelada", () => {
   it("says the trial was cancelled without charge", () => {
     const conteudo = buildReminderContent(getSubscriptionWindow(companyCanceled(2, "TRIALING"), now), "Gestao");
 
-    expect(conteudo?.message).toMatch(/nenhuma cobranca/i);
+    expect(conteudo?.message).toMatch(/nenhuma cobrança/i);
   });
 
   it("leaves an ordinary subscription untouched by the new rule", () => {
@@ -311,7 +311,7 @@ describe("teste gratuito terminado", () => {
     const conteudo = buildReminderContent(getSubscriptionWindow(testeTerminandoEm(3), now), "Gestao");
 
     expect(conteudo?.message).toMatch(/bloqueado/i);
-    expect(conteudo?.message).toMatch(/nenhum cartao/i);
+    expect(conteudo?.message).toMatch(/nenhum cartão/i);
   });
 
   it("keeps a paid subscription on the old path, unaffected by the trial rule", () => {

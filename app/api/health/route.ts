@@ -46,7 +46,7 @@ function billingStatus() {
     return {
       configured: true as const,
       consistent: false as const,
-      problem: error instanceof Error ? error.message : "configuracao invalida",
+      problem: error instanceof Error ? error.message : "configuração inválida",
     };
   }
 }
@@ -90,7 +90,7 @@ export async function GET() {
 
   try {
     if (!(await databaseReachable())) {
-      throw new Error("banco inacessivel");
+      throw new Error("banco inacessível");
     }
 
     return NextResponse.json(

@@ -29,9 +29,9 @@ export async function disconnectGoogleCalendarAction() {
 
     revalidatePath("/agenda");
 
-    return { ok: true, message: "Agenda desconectada. Os compromissos ja criados continuam no seu Google." } as const;
+    return { ok: true, message: "Agenda desconectada. Os compromissos já criados continuam no seu Google." } as const;
   } catch (error) {
-    return actionError(error, "Nao foi possivel desconectar a agenda.");
+    return actionError(error, "Não foi possível desconectar a agenda.");
   }
 }
 
@@ -80,10 +80,10 @@ export async function resyncMyTasksAction() {
       ok: true,
       message:
         enviadas === 0
-          ? "Voce nao tem tarefas em aberto para colocar na agenda."
+          ? "Você não tem tarefas em aberto para colocar na agenda."
           : `${enviadas} tarefa(s) enviadas para a sua agenda.`,
     } as const;
   } catch (error) {
-    return actionError(error, "Nao foi possivel sincronizar as tarefas.");
+    return actionError(error, "Não foi possível sincronizar as tarefas.");
   }
 }

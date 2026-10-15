@@ -41,7 +41,7 @@ function buildEstilo(window: SubscriptionWindow): Estilo {
       icone: CalendarX2,
       rotulo: "Assinatura encerrada",
       titulo: "Funcionalidades bloqueadas",
-      detalhe: "O cancelamento foi concluido e o periodo contratado terminou. Contrate um plano para voltar a usar.",
+      detalhe: "O cancelamento foi concluído e o período contratado terminou. Contrate um plano para voltar a usar.",
     };
   }
 
@@ -56,8 +56,8 @@ function buildEstilo(window: SubscriptionWindow): Estilo {
       rotulo: "Cancelamento agendado",
       titulo: `${pluralizeDays(window.daysRemaining)} de acesso`,
       detalhe: window.isTrial
-        ? "O teste foi cancelado e nenhuma cobranca sera feita. Nesta data o acesso termina."
-        : "Nenhuma nova cobranca sera feita. Nesta data o acesso termina.",
+        ? "O teste foi cancelado e nenhuma cobrança será feita. Nesta data o acesso termina."
+        : "Nenhuma nova cobrança será feita. Nesta data o acesso termina.",
     };
   }
 
@@ -70,7 +70,7 @@ function buildEstilo(window: SubscriptionWindow): Estilo {
       titulo: "Funcionalidades bloqueadas",
       detalhe:
         window.daysOverdue !== null
-          ? `Pagamento em atraso ha ${pluralizeDays(window.daysOverdue)}. Regularize para liberar o acesso.`
+          ? `Pagamento em atraso há ${pluralizeDays(window.daysOverdue)}. Regularize para liberar o acesso.`
           : "Regularize o pagamento para liberar o acesso.",
     };
   }
@@ -84,7 +84,7 @@ function buildEstilo(window: SubscriptionWindow): Estilo {
       icone: AlertTriangle,
       rotulo: "Pagamento em atraso",
       titulo: restantes === 0 ? "Bloqueio iminente" : `Bloqueio em ${pluralizeDays(restantes)}`,
-      detalhe: `Venceu ha ${pluralizeDays(window.daysOverdue)}. O acesso continua liberado durante a tolerancia.`,
+      detalhe: `Venceu há ${pluralizeDays(window.daysOverdue)}. O acesso continua liberado durante a tolerancia.`,
     };
   }
 
@@ -97,7 +97,7 @@ function buildEstilo(window: SubscriptionWindow): Estilo {
       icone: acabando ? AlertTriangle : CircleCheck,
       rotulo: "Teste gratuito",
       titulo: `${pluralizeDays(window.daysRemaining)} restantes`,
-      detalhe: "Ao terminar, o acesso e bloqueado ate o pagamento. Nenhum cartao foi guardado.",
+      detalhe: "Ao terminar, o acesso é bloqueado até o pagamento. Nenhum cartão foi guardado.",
     };
   }
 
@@ -106,9 +106,9 @@ function buildEstilo(window: SubscriptionWindow): Estilo {
       container: "border-amber-200 bg-amber-50",
       destaque: "text-amber-900",
       icone: AlertTriangle,
-      rotulo: "Vencimento proximo",
+      rotulo: "Vencimento próximo",
       titulo: `${pluralizeDays(window.daysRemaining)} restantes`,
-      detalhe: `Apos o vencimento ha ${pluralizeDays(GRACE_PERIOD_DAYS)} de tolerancia antes do bloqueio.`,
+      detalhe: `Após o vencimento há ${pluralizeDays(GRACE_PERIOD_DAYS)} de tolerância antes do bloqueio.`,
     };
   }
 
@@ -119,7 +119,7 @@ function buildEstilo(window: SubscriptionWindow): Estilo {
       icone: CircleCheck,
       rotulo: "Assinatura em dia",
       titulo: `${pluralizeDays(window.daysRemaining)} restantes`,
-      detalhe: "Nenhuma acao necessaria no momento.",
+      detalhe: "Nenhuma ação necessária no momento.",
     };
   }
 
@@ -128,7 +128,7 @@ function buildEstilo(window: SubscriptionWindow): Estilo {
     destaque: "text-slate-700",
     icone: CalendarClock,
     rotulo: "Sem assinatura ativa",
-    titulo: "Nenhum periodo em vigor",
+    titulo: "Nenhum período em vigor",
     detalhe: "Escolha um plano para liberar as funcionalidades.",
   };
 }

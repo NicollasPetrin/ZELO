@@ -56,7 +56,7 @@ export default async function TaskDetailPage({
               <div className="flex gap-3">
                 <UserRound className="mt-0.5 h-4 w-4 text-slate-400" aria-hidden="true" />
                 <div>
-                  <dt className="text-xs font-medium uppercase tracking-normal text-slate-400">Responsavel</dt>
+                  <dt className="text-xs font-medium uppercase tracking-normal text-slate-400">Responsável</dt>
                   <dd>{task.assignee.name}</dd>
                 </div>
               </div>
@@ -92,7 +92,7 @@ export default async function TaskDetailPage({
                   {recurrenceLabels[task.recurrenceRule.type]}
                 </div>
                 <p className="mt-1">
-                  Inicio em {formatDate(task.recurrenceRule.startDate)}
+                  Início em {formatDate(task.recurrenceRule.startDate)}
                   {task.recurrenceRule.endDate ? `, termina em ${formatDate(task.recurrenceRule.endDate)}` : ", sem data final definida"}.
                 </p>
               </div>
@@ -100,7 +100,7 @@ export default async function TaskDetailPage({
           </article>
 
           <article className="rounded-md border border-slate-200 bg-white p-4 shadow-sm">
-            <h2 className="text-base font-semibold text-slate-950">Comentarios</h2>
+            <h2 className="text-base font-semibold text-slate-950">Comentários</h2>
             <div className="mt-4 space-y-3">
               {task.comments.length ? (
                 task.comments.map((comment) => (
@@ -114,8 +114,8 @@ export default async function TaskDetailPage({
                 ))
               ) : (
                 <EmptyState
-                  title="Sem comentarios"
-                  description="Registre atualizacoes relevantes para manter o historico da tarefa organizado."
+                  title="Sem comentários"
+                  description="Registre atualizações relevantes para manter o histórico da tarefa organizado."
                 />
               )}
             </div>
@@ -136,7 +136,7 @@ export default async function TaskDetailPage({
             proofs={task.proofs.map((prova) => ({
               id: prova.id,
               note: prova.note,
-              authorName: prova.author?.name ?? "Usuario removido",
+              authorName: prova.author?.name ?? "Usuário removido",
               createdAt: formatDateTime(prova.createdAt),
             }))}
           />
@@ -185,9 +185,9 @@ export default async function TaskDetailPage({
                 {!access.canUseRecurringTasks ? (
                   <div className="mb-4">
                     <LockedFeatureCard
-                      title="Recorrencia bloqueada"
-                      description="A edicao de tarefas recorrentes fica disponivel a partir do Plano Gestao."
-                      requiredPlan="Gestao"
+                      title="Recorrência bloqueada"
+                      description="A edição de tarefas recorrentes fica disponível a partir do Plano Gestão."
+                      requiredPlan="Gestão"
                     />
                   </div>
                 ) : null}

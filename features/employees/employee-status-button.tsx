@@ -49,10 +49,10 @@ export function EmployeeStatusButton({
       <div className="max-w-60 space-y-2">
         <button className={buttonClassName("secondary", "sm")} type="button" disabled>
           <Power className="h-3.5 w-3.5" />
-          Upgrade necessario
+          Upgrade necessário
         </button>
         <p className="text-xs leading-5 text-rose-700">
-          O Plano {billing.planName} chegou ao limite de {billing.maxUsers} usuarios ativos. Mude para o Plano {billing.upgradePlanName}.
+          O Plano {billing.planName} chegou ao limite de {billing.maxUsers} usuários ativos. Mude para o Plano {billing.upgradePlanName}.
         </p>
       </div>
     );
@@ -64,9 +64,9 @@ export function EmployeeStatusButton({
         <div className="flex gap-2">
           <CreditCard className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
           <div>
-            <p className="font-semibold">Confirmar usuario extra</p>
+            <p className="font-semibold">Confirmar usuário extra</p>
             <p className="mt-1 leading-5">
-              Ativar este acesso adiciona {billing.pricePerExtraUser}/mes. A mensalidade estimada passa para {billing.nextMonthlyTotal}, com {nextExtraUsers} usuario{nextExtraUsers === 1 ? "" : "s"} extra{nextExtraUsers === 1 ? "" : "s"}.
+              Ativar este acesso adiciona {billing.pricePerExtraUser}/mês. A mensalidade estimada passa para {billing.nextMonthlyTotal}, com {nextExtraUsers} usuário{nextExtraUsers === 1 ? "" : "s"} extra{nextExtraUsers === 1 ? "" : "s"}.
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               <button className={buttonClassName("primary", "sm")} type="button" disabled={isPending} onClick={() => submit(true)}>

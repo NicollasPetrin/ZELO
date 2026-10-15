@@ -8,7 +8,7 @@ import { SubmitButton } from "@/components/ui/submit-button";
 import { Input, Label } from "@/components/ui/fields";
 
 const errorMessages: Record<string, string> = {
-  credenciais: "E-mail ou senha invalidos.",
+  credenciais: "E-mail ou senha inválidos.",
   preencha: "Preencha e-mail e senha para entrar.",
   rate: "Muitas tentativas. Aguarde alguns minutos e tente novamente.",
 };
@@ -36,7 +36,7 @@ export default async function LoginPage({
               <BrandLogo variant="iconDark" decorative className="h-11 w-11" preload />
               <div>
                 <h1 className="text-xl font-semibold">Zelo</h1>
-                <p className="text-sm text-slate-300">Rotina da equipe em um lugar visivel.</p>
+                <p className="text-sm text-slate-300">Rotina da equipe em um lugar visível.</p>
               </div>
             </Link>
             <p className="mt-16 max-w-lg text-3xl font-semibold leading-tight">
@@ -45,8 +45,8 @@ export default async function LoginPage({
           </div>
           <div className="grid gap-3 text-sm text-slate-300 md:grid-cols-3">
             <p>Dados separados por empresa.</p>
-            <p>Acesso protegido por sessao assinada.</p>
-            <p>Permissoes por dono, gerente e funcionario.</p>
+            <p>Acesso protegido por sessão assinada.</p>
+            <p>Permissões por dono, gerente e funcionário.</p>
           </div>
         </section>
 
@@ -74,7 +74,7 @@ export default async function LoginPage({
           </form>
 
           <p className="mt-6 text-sm text-slate-600">
-            Ainda nao tem conta?{" "}
+            Ainda não tem conta?{" "}
             <Link href="/signup" className="font-semibold text-emerald-700 hover:text-emerald-800">
               Criar conta
             </Link>

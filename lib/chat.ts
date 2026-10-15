@@ -93,7 +93,7 @@ export function conversationLabel(
   const outros = conversation.participants.filter((p) => p.userId !== currentUserId).map((p) => p.name);
 
   if (outros.length === 0) {
-    return "So voce";
+    return "Só você";
   }
 
   if (outros.length <= 2) {

@@ -43,7 +43,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
     const task = await findTaskForUser(id, user);
 
     if (!task) {
-      return NextResponse.json({ error: "Tarefa nao encontrada." }, { status: 404, headers: noStore });
+      return NextResponse.json({ error: "Tarefa não encontrada." }, { status: 404, headers: noStore });
     }
 
     const form = await request.formData();
@@ -93,8 +93,8 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
           companyId: user.companyId,
           userId: task.creatorId,
           type: "STATUS_UPDATED",
-          title: "Prova de conclusao enviada",
-          message: `${user.name} enviou a foto de "${task.title}" para revisao.`,
+          title: "Prova de conclusão enviada",
+          message: `${user.name} enviou a foto de "${task.title}" para revisão.`,
           link: `/tasks/${task.id}`,
           relatedTaskId: task.id,
         },
@@ -107,7 +107,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
       type: "TASK_UPDATED",
       entityType: "Task",
       entityId: task.id,
-      title: "Prova de conclusao enviada",
+      title: "Prova de conclusão enviada",
       description: task.title,
       metadata: { proofId, sizeBytes: arquivo.size, contentType: arquivo.type },
     });
@@ -118,7 +118,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
       console.error("[prova] falha no armazenamento:", error.message);
 
       return NextResponse.json(
-        { error: "Nao foi possivel guardar a foto agora. Tente de novo em instantes." },
+        { error: "Não foi possível guardar a foto agora. Tente de novo em instantes." },
         { status: 502, headers: noStore },
       );
     }
@@ -126,7 +126,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
     console.error("[prova] falha ao registrar a prova:", error);
 
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Nao foi possivel enviar a prova." },
+      { error: error instanceof Error ? error.message : "Não foi possível enviar a prova." },
       { status: 400, headers: noStore },
     );
   }

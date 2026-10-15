@@ -8,9 +8,9 @@ export const pointsPeriods = ["mes", "trimestre", "total"] as const;
 export type PointsPeriod = (typeof pointsPeriods)[number];
 
 export const pointsPeriodLabels: Record<PointsPeriod, string> = {
-  mes: "Este mes",
-  trimestre: "Ultimos 90 dias",
-  total: "Desde o inicio",
+  mes: "Este mês",
+  trimestre: "Últimos 90 dias",
+  total: "Desde o início",
 };
 
 export function parsePointsPeriod(value: string | undefined): PointsPeriod {

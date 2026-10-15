@@ -43,7 +43,7 @@ export function TaskCardList<T extends TaskCardItem>({
           <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
             {task.assignee ? (
               <div className="min-w-0">
-                <dt className="text-xs text-slate-500">Responsavel</dt>
+                <dt className="text-xs text-slate-500">Responsável</dt>
                 <dd className="truncate text-slate-700">{task.assignee.name}</dd>
               </div>
             ) : null}

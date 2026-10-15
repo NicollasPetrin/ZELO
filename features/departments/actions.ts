@@ -35,7 +35,7 @@ export async function saveDepartmentAction(values: unknown) {
       });
 
       if (result.count === 0) {
-        throw new Error("Setor nao encontrado.");
+        throw new Error("Setor não encontrado.");
       }
     } else {
       const department = await prisma.department.create({
@@ -61,7 +61,7 @@ export async function saveDepartmentAction(values: unknown) {
     revalidatePath("/dashboard");
     return { ok: true, message: "Setor salvo." } as const;
   } catch (error) {
-    return actionError(error, "Nao foi possivel salvar o setor.");
+    return actionError(error, "Não foi possível salvar o setor.");
   }
 }
 
@@ -84,7 +84,7 @@ export async function toggleDepartmentAction(id: string, isActive: boolean) {
     });
 
     if (result.count === 0) {
-      throw new Error("Setor nao encontrado.");
+      throw new Error("Setor não encontrado.");
     }
 
     await recordActivity({
@@ -99,7 +99,7 @@ export async function toggleDepartmentAction(id: string, isActive: boolean) {
     revalidatePath("/departments");
     return { ok: true, message: isActive ? "Setor ativado." : "Setor inativado." } as const;
   } catch (error) {
-    return actionError(error, "Nao foi possivel alterar o setor.");
+    return actionError(error, "Não foi possível alterar o setor.");
   }
 }
 
@@ -119,7 +119,7 @@ export async function deleteDepartmentAction(id: string) {
     });
 
     if (result.count === 0) {
-      throw new Error("Setor nao encontrado.");
+      throw new Error("Setor não encontrado.");
     }
 
     await recordActivity({
@@ -128,15 +128,15 @@ export async function deleteDepartmentAction(id: string) {
       type: "DEPARTMENT_UPDATED",
       entityType: "Department",
       entityId: parsedId,
-      title: "Setor excluido",
+      title: "Setor excluído",
     });
 
     revalidatePath("/departments");
-    return { ok: true, message: "Setor excluido." } as const;
+    return { ok: true, message: "Setor excluído." } as const;
   } catch {
     return {
       ok: false,
-      error: "Este setor possui pessoas, tarefas ou metas. Inative o setor para preservar o historico.",
+      error: "Este setor possui pessoas, tarefas ou metas. Inative o setor para preservar o histórico.",
     } as const;
   }
 }

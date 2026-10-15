@@ -43,7 +43,7 @@ export function TaskProofPanel({
     const arquivo = arquivoRef.current?.files?.[0];
 
     if (!arquivo) {
-      setError("Escolha a foto que comprova a conclusao.");
+      setError("Escolha a foto que comprova a conclusão.");
       return;
     }
 
@@ -70,7 +70,7 @@ export function TaskProofPanel({
       const corpo = await resposta.json().catch(() => ({}));
 
       if (!resposta.ok) {
-        setError(corpo.error ?? "Nao foi possivel enviar a foto.");
+        setError(corpo.error ?? "Não foi possível enviar a foto.");
         return;
       }
 
@@ -82,10 +82,10 @@ export function TaskProofPanel({
         notaRef.current.value = "";
       }
 
-      setMessage("Foto enviada. A tarefa foi para revisao.");
+      setMessage("Foto enviada. A tarefa foi para revisão.");
       router.refresh();
     } catch {
-      setError("Falha de conexao ao enviar a foto.");
+      setError("Falha de conexão ao enviar a foto.");
     } finally {
       setEnviando(false);
     }
@@ -117,12 +117,12 @@ export function TaskProofPanel({
     <div className="rounded-md border border-slate-200 bg-white p-4 shadow-sm">
       <h2 className="flex items-center gap-2 text-base font-semibold text-slate-950">
         <ShieldCheck className="h-4 w-4 text-emerald-700" aria-hidden="true" />
-        Prova de conclusao
+        Prova de conclusão
       </h2>
       <p className="mt-1 text-sm leading-6 text-slate-600">
         {requiresProof
-          ? "Esta tarefa so pode ser concluida com foto. Quem cobrou a tarefa aprova a prova enviada."
-          : "Esta tarefa nao exige foto, mas voce pode anexar uma para registrar o servico feito."}
+          ? "Esta tarefa só pode ser concluída com foto. Quem cobrou a tarefa aprova a prova enviada."
+          : "Esta tarefa não exige foto, mas você pode anexar uma para registrar o serviço feito."}
       </p>
 
       {proofs.length > 0 ? (
@@ -154,7 +154,7 @@ export function TaskProofPanel({
       {canSend ? (
         <div className="mt-4 space-y-3 border-t border-slate-100 pt-4">
           <div className="space-y-1.5">
-            <Label>Foto do servico concluido</Label>
+            <Label>Foto do serviço concluído</Label>
             <Input
               ref={arquivoRef}
               type="file"
@@ -163,10 +163,10 @@ export function TaskProofPanel({
               capture="environment"
               disabled={enviando}
             />
-            <p className="text-xs leading-5 text-slate-500">JPG, PNG, WEBP ou HEIC, ate {limiteMb} MB.</p>
+            <p className="text-xs leading-5 text-slate-500">JPG, PNG, WEBP ou HEIC, até {limiteMb} MB.</p>
           </div>
           <div className="space-y-1.5">
-            <Label>Observacao (opcional)</Label>
+            <Label>Observação (opcional)</Label>
             <Input ref={notaRef} maxLength={500} placeholder="Ex.: prateleira reposta e etiquetada" disabled={enviando} />
           </div>
           <button className={buttonClassName("primary", "sm")} type="button" disabled={enviando} onClick={enviar}>
@@ -183,7 +183,7 @@ export function TaskProofPanel({
       {canReview && proofs.length > 0 ? (
         <div className="mt-4 space-y-3 border-t border-slate-100 pt-4">
           <p className="text-sm font-semibold text-slate-950">
-            {emRevisao ? "Esta tarefa esta esperando sua revisao." : "Revisao da prova"}
+            {emRevisao ? "Esta tarefa está esperando sua revisão." : "Revisão da prova"}
           </p>
           <div className="flex flex-wrap gap-2">
             <button
@@ -206,7 +206,7 @@ export function TaskProofPanel({
             </button>
           </div>
           <p className="text-xs leading-5 text-slate-500">
-            Ao recusar, o texto do campo de observacao acima vira o motivo e fica registrado na tarefa.
+            Ao recusar, o texto do campo de observação acima vira o motivo e fica registrado na tarefa.
           </p>
         </div>
       ) : null}

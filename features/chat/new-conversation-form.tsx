@@ -47,7 +47,7 @@ export function NewConversationForm({ colleagues }: { colleagues: Colleague[] })
   if (colleagues.length === 0) {
     return (
       <p className="text-sm leading-6 text-slate-600">
-        Sua empresa ainda nao tem outros funcionarios cadastrados. Cadastre a equipe para comecar a conversar.
+        Sua empresa ainda não tem outros funcionários cadastrados. Cadastre a equipe para começar a conversar.
       </p>
     );
   }
@@ -63,9 +63,9 @@ export function NewConversationForm({ colleagues }: { colleagues: Colleague[] })
 
   return (
     <div className="rounded-md border border-slate-200 bg-white p-4">
-      <h3 className="text-sm font-semibold text-slate-950">Com quem voce quer falar?</h3>
+      <h3 className="text-sm font-semibold text-slate-950">Com quem você quer falar?</h3>
       <p className="mt-1 text-xs leading-5 text-slate-500">
-        Uma pessoa abre a conversa privada com ela. Varias pessoas viram um grupo.
+        Uma pessoa abre a conversa privada com ela. Várias pessoas viram um grupo.
       </p>
       <ul className="mt-3 grid gap-2 sm:grid-cols-2">
         {colleagues.map((colega) => (
@@ -94,7 +94,7 @@ export function NewConversationForm({ colleagues }: { colleagues: Colleague[] })
           <Input
             value={titulo}
             maxLength={80}
-            placeholder="Ex.: Reposicao de estoque"
+            placeholder="Ex.: Reposição de estoque"
             onChange={(event) => setTitulo(event.target.value)}
           />
         </div>

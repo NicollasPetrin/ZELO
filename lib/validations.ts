@@ -25,7 +25,7 @@ const commonPasswords = new Set([
 export const strongPasswordSchema = z
   .string()
   .min(8, "Use pelo menos 8 caracteres.")
-  .regex(/[A-Z]/, "Inclua uma letra maiuscula.")
+  .regex(/[A-Z]/, "Inclua uma letra maiúscula.")
   // Especial e tudo que nao e letra sem acento nem numero. Listar os simbolos
   // aceitos rejeitaria teclado que a pessoa usa todo dia, e a lista esquecida
   // vira senha recusada sem motivo aparente.
@@ -35,7 +35,7 @@ export const strongPasswordSchema = z
   });
 
 export const loginSchema = z.object({
-  email: z.string().email("Informe um e-mail valido.").trim().toLowerCase(),
+  email: z.string().email("Informe um e-mail válido.").trim().toLowerCase(),
   password: z.string().min(1, "Informe a senha."),
 });
 
@@ -55,25 +55,25 @@ export const signupSchema = z
       .string()
       .trim()
       .min(1, "Informe o CNPJ ou CPF da empresa.")
-      .refine(isValidDocument, "CNPJ ou CPF invalido."),
+      .refine(isValidDocument, "CNPJ ou CPF inválido."),
     phone: z
       .string()
       .trim()
       .min(1, "Informe o telefone da empresa.")
-      .refine(isValidPhone, "Telefone invalido. Use DDD + numero."),
+      .refine(isValidPhone, "Telefone inválido. Use DDD + número."),
     postalCode: z
       .string()
       .trim()
-      .refine((value) => value.replace(/D/g, "").length === 8, "CEP invalido."),
+      .refine((value) => value.replace(/D/g, "").length === 8, "CEP inválido."),
     address: z.string().trim().min(2, "Informe o logradouro."),
-    addressNumber: z.string().trim().min(1, "Informe o numero."),
+    addressNumber: z.string().trim().min(1, "Informe o número."),
     province: z.string().trim().min(2, "Informe o bairro."),
     // Complemento e o unico campo de endereco que pode faltar sem quebrar a
     // cobranca.
     addressComplement: z.string().trim().optional().or(z.literal("")),
     segment: z.string().trim().optional().or(z.literal("")),
     ownerName: z.string().trim().min(2, "Informe seu nome."),
-    email: z.string().email("Informe um e-mail valido.").trim().toLowerCase(),
+    email: z.string().email("Informe um e-mail válido.").trim().toLowerCase(),
     password: strongPasswordSchema,
     confirmPassword: z.string().min(1, "Confirme a senha."),
     /** Plano escolhido na landing. So define qual vem destacado depois; o teste
@@ -81,7 +81,7 @@ export const signupSchema = z
     plan: z.enum(subscriptionPlans).optional().or(z.literal("")),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "As senhas nao conferem.",
+    message: "As senhas não conferem.",
     path: ["confirmPassword"],
   });
 
@@ -96,7 +96,7 @@ export const employeeSchema = z
   .object({
     id: z.string().optional(),
     name: z.string().trim().min(2, "Informe o nome."),
-    email: z.string().email("Informe um e-mail valido.").trim().toLowerCase(),
+    email: z.string().email("Informe um e-mail válido.").trim().toLowerCase(),
     role: z.enum(userRoles),
     departmentId: z.string().min(1, "Selecione o setor."),
     position: z.string().trim().optional().or(z.literal("")),
@@ -129,15 +129,15 @@ export const employeeSchema = z
 
 export const taskSchema = z.object({
   id: z.string().optional(),
-  title: z.string().trim().min(3, "Informe um titulo claro."),
+  title: z.string().trim().min(3, "Informe um título claro."),
   description: z.string().trim().min(5, "Descreva a tarefa."),
-  assigneeId: z.string().min(1, "Selecione o responsavel."),
+  assigneeId: z.string().min(1, "Selecione o responsável."),
   departmentId: z.string().min(1, "Selecione o setor."),
   dueDate: z.string().min(1, "Informe o prazo."),
   /// Horario do prazo em Brasilia (HH:MM). Vazio vale o fim do expediente.
   dueTime: z
     .string()
-    .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Horario invalido.")
+    .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Horário inválido.")
     .optional()
     .or(z.literal("")),
   priority: z.enum(taskPriorities),
@@ -158,7 +158,7 @@ export const taskStatusSchema = z.object({
 
 export const commentSchema = z.object({
   taskId: z.string(),
-  text: z.string().trim().min(2, "Escreva um comentario."),
+  text: z.string().trim().min(2, "Escreva um comentário."),
 });
 
 export const attachmentSchema = z.object({
@@ -171,10 +171,10 @@ export const attachmentSchema = z.object({
 
 export const goalSchema = z.object({
   id: z.string().optional(),
-  title: z.string().trim().min(3, "Informe o titulo da meta."),
+  title: z.string().trim().min(3, "Informe o título da meta."),
   description: z.string().trim().optional().or(z.literal("")),
   targetValue: z.coerce.number().positive("Informe um valor alvo maior que zero."),
-  currentValue: z.coerce.number().min(0, "O valor atual nao pode ser negativo."),
+  currentValue: z.coerce.number().min(0, "O valor atual não pode ser negativo."),
   unit: z.enum(goalUnits),
   period: z.enum(goalPeriods),
   status: z.enum(goalStatuses),
@@ -190,14 +190,14 @@ export const companySettingsSchema = z.object({
   document: z
     .string()
     .trim()
-    .refine((value) => value === "" || isValidDocument(value), "CNPJ ou CPF invalido.")
+    .refine((value) => value === "" || isValidDocument(value), "CNPJ ou CPF inválido.")
     .optional()
     .or(z.literal("")),
   // Idem: opcional no cadastro, obrigatorio para assinar.
   phone: z
     .string()
     .trim()
-    .refine((value) => value === "" || isValidPhone(value), "Telefone invalido. Use DDD + numero.")
+    .refine((value) => value === "" || isValidPhone(value), "Telefone inválido. Use DDD + número.")
     .optional()
     .or(z.literal("")),
   // Endereco de cobranca. Exigido pela processadora na hora de assinar, e
@@ -205,7 +205,7 @@ export const companySettingsSchema = z.object({
   postalCode: z
     .string()
     .trim()
-    .refine((value) => value === "" || value.replace(/\D/g, "").length === 8, "CEP invalido.")
+    .refine((value) => value === "" || value.replace(/\D/g, "").length === 8, "CEP inválido.")
     .optional()
     .or(z.literal("")),
   address: z.string().trim().optional().or(z.literal("")),
@@ -217,8 +217,8 @@ export const companySettingsSchema = z.object({
   isActive: z.boolean().default(true),
 });
 
-export const idSchema = z.string().trim().min(1, "Identificador invalido.");
-export const onboardingKeySchema = z.string().trim().min(1).max(64).regex(/^[a-z0-9-]+$/i, "Chave invalida.");
+export const idSchema = z.string().trim().min(1, "Identificador inválido.");
+export const onboardingKeySchema = z.string().trim().min(1).max(64).regex(/^[a-z0-9-]+$/i, "Chave inválida.");
 export const subscriptionPlanSchema = z.enum(subscriptionPlans);
 
 /** Limite de uma mensagem de chat. Comprido o bastante para explicar um
@@ -232,7 +232,7 @@ export const messageSchema = z.object({
 
 export const newConversationSchema = z.object({
   participantIds: z.array(idSchema).min(1, "Escolha com quem falar."),
-  title: z.string().trim().max(80, "Titulo muito longo.").optional().or(z.literal("")),
+  title: z.string().trim().max(80, "Título muito longo.").optional().or(z.literal("")),
 });
 
 export const proofReviewSchema = z.object({

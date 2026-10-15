@@ -5,13 +5,13 @@ import { parseDocument } from "@/lib/document";
 import { parsePhone } from "@/lib/phone";
 
 export const MISSING_DOCUMENT_MESSAGE =
-  "Cadastre o CNPJ ou CPF da empresa em Configuracoes antes de assinar um plano. A processadora exige o documento para emitir a cobranca.";
+  "Cadastre o CNPJ ou CPF da empresa em Configurações antes de assinar um plano. A processadora exige o documento para emitir a cobrança.";
 
 export const MISSING_PHONE_MESSAGE =
-  "Cadastre o telefone da empresa em Configuracoes antes de assinar um plano. A processadora exige o telefone para emitir a cobranca.";
+  "Cadastre o telefone da empresa em Configurações antes de assinar um plano. A processadora exige o telefone para emitir a cobrança.";
 
 export const MISSING_ADDRESS_MESSAGE =
-  "Complete o endereco da empresa em Configuracoes antes de assinar um plano. A processadora exige CEP, logradouro, numero e bairro do pagador.";
+  "Complete o endereço da empresa em Configurações antes de assinar um plano. A processadora exige CEP, logradouro, número e bairro do pagador.";
 
 export type CompanyForBilling = {
   id: string;

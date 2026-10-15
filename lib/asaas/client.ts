@@ -68,10 +68,10 @@ export async function asaasRequest<T>(
     });
   } catch (error) {
     if (error instanceof Error && error.name === "TimeoutError") {
-      throw new AsaasError(`Asaas nao respondeu em ${timeoutMs}ms.`, 504);
+      throw new AsaasError(`Asaas não respondeu em ${timeoutMs}ms.`, 504);
     }
 
-    throw new AsaasError("Nao foi possivel contatar o Asaas.", 503);
+    throw new AsaasError("Não foi possível contatar o Asaas.", 503);
   }
 
   const text = await response.text();
@@ -81,7 +81,7 @@ export async function asaasRequest<T>(
     try {
       parsedBody = JSON.parse(text);
     } catch {
-      throw new AsaasError("Asaas retornou uma resposta que nao e JSON.", response.status);
+      throw new AsaasError("Asaas retornou uma resposta que não é JSON.", response.status);
     }
   }
 

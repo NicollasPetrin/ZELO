@@ -69,7 +69,7 @@ export function canComplete(task: { requiresProof: boolean }, proofCount: number
 }
 
 export const PROOF_REQUIRED_MESSAGE =
-  "Esta tarefa exige foto de conclusao. Envie a prova para que ela possa ser aprovada.";
+  "Esta tarefa exige foto de conclusão. Envie a prova para que ela possa ser aprovada.";
 
 /**
  * Status que a tarefa assume quando uma prova e enviada.

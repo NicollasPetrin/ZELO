@@ -26,7 +26,7 @@ export async function saveGoalAction(values: unknown) {
     const access = getPlanAccess(activePlan);
 
     if (!access.canUseGoalAssignments && (parsed.departmentId || parsed.responsibleId)) {
-      throw new Error("Metas por setor ou responsavel estao disponiveis a partir do Plano Gestao.");
+      throw new Error("Metas por setor ou responsável estão disponíveis a partir do Plano Gestão.");
     }
 
     const data = {
@@ -54,7 +54,7 @@ export async function saveGoalAction(values: unknown) {
       });
 
       if (result.count === 0) {
-        throw new Error("Meta nao encontrada.");
+        throw new Error("Meta não encontrada.");
       }
     } else {
       const goal = await prisma.goal.create({
@@ -84,7 +84,7 @@ export async function saveGoalAction(values: unknown) {
     revalidatePath("/dashboard");
     return { ok: true, message: "Meta salva." } as const;
   } catch (error) {
-    return actionError(error, "Nao foi possivel salvar a meta.");
+    return actionError(error, "Não foi possível salvar a meta.");
   }
 }
 
@@ -104,7 +104,7 @@ export async function deleteGoalAction(id: string) {
     });
 
     if (result.count === 0) {
-      throw new Error("Meta nao encontrada.");
+      throw new Error("Meta não encontrada.");
     }
 
     await recordActivity({
@@ -113,13 +113,13 @@ export async function deleteGoalAction(id: string) {
       type: "GOAL_UPDATED",
       entityType: "Goal",
       entityId: parsedId,
-      title: "Meta excluida",
+      title: "Meta excluída",
     });
 
     revalidatePath("/goals");
     revalidatePath("/dashboard");
-    return { ok: true, message: "Meta excluida." } as const;
+    return { ok: true, message: "Meta excluída." } as const;
   } catch (error) {
-    return actionError(error, "Nao foi possivel excluir a meta.");
+    return actionError(error, "Não foi possível excluir a meta.");
   }
 }

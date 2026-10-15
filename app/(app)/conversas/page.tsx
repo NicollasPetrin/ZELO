@@ -41,7 +41,7 @@ function ConversaLinha({
         <span className="shrink-0 text-xs text-slate-500">
           {conversa.lastMessageAt ? quando(conversa.lastMessageAt) : "sem mensagens"}
         </span>
-        {conversa.unread ? <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-600" aria-label="nao lida" /> : null}
+        {conversa.unread ? <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-600" aria-label="não lida" /> : null}
       </Link>
     </li>
   );
@@ -69,7 +69,7 @@ export default async function ConversasPage() {
     <div className="space-y-6">
       <PageHeader
         title="Conversas"
-        description="Fale com a empresa toda, com a sua equipe, com uma pessoa so ou com o suporte da Zelo sem sair do sistema."
+        description="Fale com a empresa toda, com a sua equipe, com uma pessoa só ou com o suporte da Zelo sem sair do sistema."
       />
 
       {planoAtivo ? (
@@ -84,7 +84,7 @@ export default async function ConversasPage() {
                 <li className="flex items-center gap-3 px-4 py-3">
                   <Users className="h-4 w-4 shrink-0 text-slate-300" aria-hidden="true" />
                   <span className="text-sm text-slate-500">
-                    Voce ainda nao esta em nenhum setor. Quando entrar em um, o chat da equipe aparece aqui.
+                    Você ainda não está em nenhum setor. Quando entrar em um, o chat da equipe aparece aqui.
                   </span>
                 </li>
               )}
@@ -105,7 +105,7 @@ export default async function ConversasPage() {
             {privadas.length === 0 ? (
               <EmptyState
                 title="Nenhuma conversa privada ainda"
-                description="Chame alguem da equipe no privado para alinhar uma tarefa sem depender de aplicativo de fora."
+                description="Chame alguém da equipe no privado para alinhar uma tarefa sem depender de aplicativo de fora."
               />
             ) : (
               <ul className="divide-y divide-slate-100 overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm">
@@ -129,7 +129,7 @@ export default async function ConversasPage() {
         <section className="rounded-md border border-slate-200 bg-slate-50 p-4">
           <h2 className="text-base font-semibold text-slate-950">Conversas da equipe</h2>
           <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-600">
-            Chat geral, chat da equipe e conversas privadas ficam disponiveis com uma assinatura ativa. O canal com o
+            Chat geral, chat da equipe e conversas privadas ficam disponíveis com uma assinatura ativa. O canal com o
             suporte abaixo continua funcionando.
           </p>
         </section>
@@ -143,7 +143,7 @@ export default async function ConversasPage() {
               Suporte da Zelo
             </h2>
             <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-600">
-              Duvida sobre o sistema, cobranca ou plano. Este canal continua aberto mesmo sem assinatura ativa.
+              Dúvida sobre o sistema, cobrança ou plano. Este canal continua aberto mesmo sem assinatura ativa.
             </p>
           </div>
           {suporte ? (

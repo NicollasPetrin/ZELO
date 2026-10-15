@@ -14,8 +14,8 @@ export function CriticalTaskList({ tasks }: { tasks: CriticalTask[] }) {
   if (!tasks.length) {
     return (
       <EmptyState
-        title="Sem tarefas criticas"
-        description="Nao ha tarefas atrasadas ou urgentes abertas neste momento."
+        title="Sem tarefas críticas"
+        description="Não há tarefas atrasadas ou urgentes abertas neste momento."
       />
     );
   }

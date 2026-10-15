@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
   const cep = (request.nextUrl.searchParams.get("cep") ?? "").replace(/\D/g, "");
 
   if (cep.length !== 8) {
-    return NextResponse.json({ error: "CEP invalido." }, { status: 400 });
+    return NextResponse.json({ error: "CEP inválido." }, { status: 400 });
   }
 
   try {
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
     });
 
     if (!resposta.ok) {
-      return NextResponse.json({ error: "CEP nao encontrado." }, { status: 404 });
+      return NextResponse.json({ error: "CEP não encontrado." }, { status: 404 });
     }
 
     dados = await resposta.json();
@@ -55,13 +55,13 @@ export async function GET(request: NextRequest) {
 
     // Preencher sozinho e conveniencia: quando falha, a pessoa digita o
     // endereco na mao e o cadastro segue.
-    return NextResponse.json({ error: "Nao foi possivel consultar o CEP agora." }, { status: 503 });
+    return NextResponse.json({ error: "Não foi possível consultar o CEP agora." }, { status: 503 });
   }
 
   // O ViaCEP responde 200 com {"erro":"true"} quando o CEP nao existe, entao
   // olhar so o status deixaria passar um endereco vazio.
   if (dados.erro || !dados.logradouro) {
-    return NextResponse.json({ error: "CEP nao encontrado." }, { status: 404 });
+    return NextResponse.json({ error: "CEP não encontrado." }, { status: 404 });
   }
 
   return NextResponse.json(

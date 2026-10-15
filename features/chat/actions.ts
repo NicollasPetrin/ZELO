@@ -39,7 +39,7 @@ export async function sendMessageAction(values: unknown) {
     });
 
     if (!conversation) {
-      throw new Error("Conversa nao encontrada.");
+      throw new Error("Conversa não encontrada.");
     }
 
     await assertPodeConversar(user, conversation.kind);
@@ -68,7 +68,7 @@ export async function sendMessageAction(values: unknown) {
 
     return { ok: true, message: "Mensagem enviada." } as const;
   } catch (error) {
-    return actionError(error, "Nao foi possivel enviar a mensagem.");
+    return actionError(error, "Não foi possível enviar a mensagem.");
   }
 }
 
@@ -99,7 +99,7 @@ export async function markConversationReadAction(conversationId: unknown) {
 
     return { ok: true } as const;
   } catch (error) {
-    return actionError(error, "Nao foi possivel marcar a conversa como lida.");
+    return actionError(error, "Não foi possível marcar a conversa como lida.");
   }
 }
 
@@ -159,7 +159,7 @@ export async function createConversationAction(values: unknown) {
 
     return { ok: true, data: { conversationId: conversation.id }, message: "Conversa criada." } as const;
   } catch (error) {
-    return actionError(error, "Nao foi possivel criar a conversa.");
+    return actionError(error, "Não foi possível criar a conversa.");
   }
 }
 
@@ -213,6 +213,6 @@ export async function openSupportConversationAction() {
 
     return { ok: true, data: { conversationId } } as const;
   } catch (error) {
-    return actionError(error, "Nao foi possivel abrir a conversa com o suporte.");
+    return actionError(error, "Não foi possível abrir a conversa com o suporte.");
   }
 }

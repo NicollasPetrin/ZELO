@@ -37,7 +37,7 @@ export async function startPlanCheckoutAction(planCode: SubscriptionPlan) {
     const parsedPlanCode = subscriptionPlanSchema.parse(planCode);
 
     if (user.company.isDemo) {
-      throw new Error("Contas demo nao podem iniciar checkout real.");
+      throw new Error("Contas demo não podem iniciar checkout real.");
     }
 
     const plan = planDetails[parsedPlanCode];
@@ -50,7 +50,7 @@ export async function startPlanCheckoutAction(planCode: SubscriptionPlan) {
     const price = calculateMonthlyPrice(parsedPlanCode, activeUserCount);
 
     if (price.requiresUpgrade || price.totalPriceCents === null) {
-      throw new Error(`O Plano ${plan.name} nao comporta ${activeUserCount} usuarios ativos. Escolha um plano maior.`);
+      throw new Error(`O Plano ${plan.name} não comporta ${activeUserCount} usuários ativos. Escolha um plano maior.`);
     }
 
     // Primeiro plano da empresa: em vez de cobrar, libera o teste gratuito. E o
@@ -78,7 +78,7 @@ export async function startPlanCheckoutAction(planCode: SubscriptionPlan) {
         return {
           ok: true,
           data: { checkoutUrl: null },
-          message: `Plano ${plan.name} liberado por ${TRIAL_DAYS} dias. Nenhuma cobranca foi feita.`,
+          message: `Plano ${plan.name} liberado por ${TRIAL_DAYS} dias. Nenhuma cobrança foi feita.`,
         } as const;
       }
     }
@@ -126,7 +126,7 @@ export async function startPlanCheckoutAction(planCode: SubscriptionPlan) {
       items: [
         {
           name: `Plano ${plan.name}`,
-          description: `Assinatura mensal da Zelo para ${activeUserCount} usuario(s) ativo(s).`,
+          description: `Assinatura mensal da Zelo para ${activeUserCount} usuário(s) ativo(s).`,
           quantity: 1,
           value: price.totalPriceCents / 100,
         },
@@ -166,7 +166,7 @@ export async function startPlanCheckoutAction(planCode: SubscriptionPlan) {
       message: `Redirecionando para o pagamento do Plano ${plan.name}, ${formatPriceCents(price.totalPriceCents)}/mes.`,
     } as const;
   } catch (error) {
-    return actionError(error, "Nao foi possivel iniciar a compra do plano.");
+    return actionError(error, "Não foi possível iniciar a compra do plano.");
   }
 }
 
@@ -185,7 +185,7 @@ export async function cancelSubscriptionAction() {
     await assertUserActionRateLimit(user.id, "billing:cancel-subscription");
 
     if (user.company.isDemo) {
-      throw new Error("Contas demo nao possuem assinatura real para cancelar.");
+      throw new Error("Contas demo não possuem assinatura real para cancelar.");
     }
 
     const subscription = await prisma.companySubscription.findFirst({
@@ -198,11 +198,11 @@ export async function cancelSubscriptionAction() {
     });
 
     if (!subscription) {
-      throw new Error("Nao ha assinatura ativa para cancelar.");
+      throw new Error("Não há assinatura ativa para cancelar.");
     }
 
     if (subscription.cancelAtPeriodEnd) {
-      throw new Error("Esta assinatura ja esta cancelada e vale ate o fim do periodo contratado.");
+      throw new Error("Esta assinatura já está cancelada e vale até o fim do período contratado.");
     }
 
     if (subscription.provider === ASAAS_PROVIDER && subscription.externalId) {
@@ -249,7 +249,7 @@ export async function cancelSubscriptionAction() {
       entityType: "CompanySubscription",
       entityId: subscription.id,
       title: "Assinatura cancelada",
-      description: `Plano ${subscription.plan.name}, acesso ate o fim do periodo contratado`,
+      description: `Plano ${subscription.plan.name}, acesso até o fim do período contratado`,
       metadata: {
         planCode: subscription.plan.code,
         currentPeriodEnd: subscription.currentPeriodEnd.toISOString(),
@@ -263,11 +263,11 @@ export async function cancelSubscriptionAction() {
     return {
       ok: true,
       message:
-        `Assinatura cancelada. O acesso continua ate ${formatBrDate(subscription.currentPeriodEnd)} ` +
-        "e nenhuma nova cobranca sera feita.",
+        `Assinatura cancelada. O acesso continua até ${formatBrDate(subscription.currentPeriodEnd)} ` +
+        "e nenhuma nova cobrança será feita.",
     } as const;
   } catch (error) {
-    return actionError(error, "Nao foi possivel cancelar a assinatura.");
+    return actionError(error, "Não foi possível cancelar a assinatura.");
   }
 }
 
@@ -286,7 +286,7 @@ export async function syncSubscriptionAction() {
     await assertUserActionRateLimit(user.id, "billing:sync-subscription");
 
     if (user.company.isDemo) {
-      throw new Error("Contas demo nao possuem cobranca real para conferir.");
+      throw new Error("Contas demo não possuem cobrança real para conferir.");
     }
 
     if (!isAsaasConfigured()) {
@@ -294,7 +294,7 @@ export async function syncSubscriptionAction() {
     }
 
     if (!user.company.asaasCustomerId) {
-      throw new Error("Nenhuma compra foi iniciada por esta empresa ainda. Escolha um plano para comecar.");
+      throw new Error("Nenhuma compra foi iniciada por esta empresa ainda. Escolha um plano para começar.");
     }
 
     const antes = getActivePlanCode(user.company);
@@ -320,8 +320,8 @@ export async function syncSubscriptionAction() {
       type: "SUBSCRIPTION_CHANGED",
       entityType: "Company",
       entityId: user.companyId,
-      title: "Conferencia de pagamento",
-      description: depois && !antes ? "Plano liberado pela conferencia" : "Sem mudanca no plano",
+      title: "Conferência de pagamento",
+      description: depois && !antes ? "Plano liberado pela conferência" : "Sem mudança no plano",
       metadata: {
         cobrancasEncontradas: resultado.found,
         cobrancasAplicadas: resultado.applied,
@@ -335,26 +335,26 @@ export async function syncSubscriptionAction() {
     if (depois && !antes) {
       return {
         ok: true,
-        message: `Pagamento encontrado. O Plano ${planDetails[depois].name} esta liberado.`,
+        message: `Pagamento encontrado. O Plano ${planDetails[depois].name} está liberado.`,
       } as const;
     }
 
     if (depois) {
-      return { ok: true, message: "Tudo certo: a assinatura ja estava em dia." } as const;
+      return { ok: true, message: "Tudo certo: a assinatura já estava em dia." } as const;
     }
 
     if (resultado.found === 0) {
       return {
         ok: true,
-        message: "Nenhuma cobranca foi encontrada para esta empresa na processadora. Se voce acabou de pagar, aguarde um minuto e tente de novo.",
+        message: "Nenhuma cobrança foi encontrada para esta empresa na processadora. Se você acabou de pagar, aguarde um minuto e tente de novo.",
       } as const;
     }
 
     return {
       ok: true,
-      message: `${resultado.found} cobranca(s) encontrada(s), nenhuma confirmada ainda. O acesso e liberado assim que o pagamento for aprovado.`,
+      message: `${resultado.found} cobrança(s) encontrada(s), nenhuma confirmada ainda. O acesso é liberado assim que o pagamento for aprovado.`,
     } as const;
   } catch (error) {
-    return actionError(error, "Nao foi possivel conferir o pagamento.");
+    return actionError(error, "Não foi possível conferir o pagamento.");
   }
 }

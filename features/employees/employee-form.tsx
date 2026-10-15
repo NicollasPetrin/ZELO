@@ -136,7 +136,7 @@ export function EmployeeForm({
         </div>
         <div className="space-y-1.5">
           <Label>{initial?.id ? "Nova senha" : "Senha inicial"}</Label>
-          <Input placeholder={initial?.id ? "Deixe em branco para manter" : "Min. 8 caracteres, maiuscula e especial"} type="password" {...register("password")} />
+          <Input placeholder={initial?.id ? "Deixe em branco para manter" : "Min. 8 caracteres, maiúscula e especial"} type="password" {...register("password")} />
           <FieldError message={errors.password?.message} />
         </div>
       </div>
@@ -145,9 +145,9 @@ export function EmployeeForm({
           <div className="flex gap-2">
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
             <div>
-              <p className="font-semibold">Limite maximo do plano atingido</p>
+              <p className="font-semibold">Limite máximo do plano atingido</p>
               <p className="mt-1 leading-6">
-                O Plano {billing.planName} permite ate {billing.maxUsers} usuarios ativos. Para ativar mais pessoas,
+                O Plano {billing.planName} permite até {billing.maxUsers} usuários ativos. Para ativar mais pessoas,
                 mude para o Plano {billing.upgradePlanName}.
               </p>
             </div>
@@ -159,18 +159,18 @@ export function EmployeeForm({
           <div className="flex gap-2">
             <CreditCard className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
             <div className="min-w-0 flex-1">
-              <p className="font-semibold">Usuario adicional faturavel</p>
+              <p className="font-semibold">Usuário adicional faturavel</p>
               <p className="mt-1 leading-6">
-                Este funcionario ultrapassa os {billing.includedUsers} usuarios incluidos no Plano {billing.planName} e
-                adiciona {billing.pricePerExtraUser}/mes a assinatura.
+                Este funcionário ultrapassa os {billing.includedUsers} usuários incluídos no Plano {billing.planName} e
+                adiciona {billing.pricePerExtraUser}/mês a assinatura.
               </p>
               <dl className="mt-3 grid gap-2 sm:grid-cols-3">
                 <div>
-                  <dt className="text-xs font-medium uppercase tracking-normal text-amber-700">Ativos apos inclusao</dt>
+                  <dt className="text-xs font-medium uppercase tracking-normal text-amber-700">Ativos após inclusão</dt>
                   <dd className="font-semibold">{billing.activeUserCount + 1}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs font-medium uppercase tracking-normal text-amber-700">Usuarios extras</dt>
+                  <dt className="text-xs font-medium uppercase tracking-normal text-amber-700">Usuários extras</dt>
                   <dd className="font-semibold">{nextExtraUsers}</dd>
                 </div>
                 <div>
@@ -180,7 +180,7 @@ export function EmployeeForm({
               </dl>
               <label className="mt-3 flex items-start gap-2 text-sm font-medium text-amber-950">
                 <input type="checkbox" className="mt-0.5 h-4 w-4 rounded border-amber-300" {...register("confirmExtraUserCharge")} />
-                <span>Estou de acordo com o acrescimo de {billing.pricePerExtraUser}/mes na assinatura.</span>
+                <span>Estou de acordo com o acréscimo de {billing.pricePerExtraUser}/mês na assinatura.</span>
               </label>
               <FieldError message={errors.confirmExtraUserCharge?.message} />
             </div>
@@ -193,7 +193,7 @@ export function EmployeeForm({
           Acesso ativo
         </label>
         <Button type="submit" disabled={isPending || reachesHardLimit || (createsExtraCharge && !confirmsExtraUserCharge)}>
-          {isPending ? "Salvando..." : initial?.id ? "Salvar funcionario" : "Cadastrar funcionario"}
+          {isPending ? "Salvando..." : initial?.id ? "Salvar funcionário" : "Cadastrar funcionário"}
         </Button>
       </div>
       <div className="mt-3">

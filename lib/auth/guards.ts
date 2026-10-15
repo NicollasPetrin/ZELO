@@ -37,13 +37,13 @@ export async function requireCompanyManager() {
 
 export function assertCanManageCompany(user: CurrentUser) {
   if (!canManageCompany(user.role)) {
-    throw new Error("Apenas o dono pode gerenciar configuracoes criticas da empresa.");
+    throw new Error("Apenas o dono pode gerenciar configurações críticas da empresa.");
   }
 }
 
 export function assertCanManageTeam(user: CurrentUser) {
   if (!canManageTeam(user.role)) {
-    throw new Error("Apenas o dono pode gerenciar funcionarios.");
+    throw new Error("Apenas o dono pode gerenciar funcionários.");
   }
 }
 

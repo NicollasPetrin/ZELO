@@ -49,7 +49,7 @@ describe("buildTaskEvent", () => {
     expect(description).toContain("Prioridade: Alta");
     expect(description).toContain("Setor: Operacao");
     expect(description).toContain("Solicitado por: Nicollas");
-    expect(description).toContain("Exige foto de conclusao");
+    expect(description).toContain("Exige foto de conclusão");
   });
 
   it("links back to the task when the address is known", () => {

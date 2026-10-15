@@ -104,17 +104,17 @@ export function TaskForm({
       <input type="hidden" {...register("id")} />
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="space-y-1.5 lg:col-span-2">
-          <Label>Titulo</Label>
+          <Label>Título</Label>
           <Input placeholder="Ex.: Conferir estoque do corredor 2" {...register("title")} />
           <FieldError message={errors.title?.message} />
         </div>
         <div className="space-y-1.5 lg:col-span-2">
-          <Label>Descricao</Label>
+          <Label>Descrição</Label>
           <Textarea placeholder="Explique o que deve ser feito e qual resultado esperado." {...register("description")} />
           <FieldError message={errors.description?.message} />
         </div>
         <div className="space-y-1.5">
-          <Label>Responsavel</Label>
+          <Label>Responsável</Label>
           <Select {...register("assigneeId")}>
             {users.map((user) => (
               <option key={user.id} value={user.id}>
@@ -139,7 +139,7 @@ export function TaskForm({
           <Label>Prazo</Label>
           <div className="grid grid-cols-[minmax(0,1fr)_120px] gap-2">
             <Input type="date" {...register("dueDate")} />
-            <Input type="time" aria-label="Horario do prazo" {...register("dueTime")} />
+            <Input type="time" aria-label="Horário do prazo" {...register("dueTime")} />
           </div>
           <FieldError message={errors.dueDate?.message ?? errors.dueTime?.message} />
         </div>
@@ -154,7 +154,7 @@ export function TaskForm({
           </Select>
         </div>
         <div className="space-y-1.5">
-          <Label>Prova de conclusao</Label>
+          <Label>Prova de conclusão</Label>
           <label className="flex h-10 items-center gap-2 text-sm text-slate-700">
             <input type="checkbox" className="h-4 w-4 rounded border-slate-300" {...register("requiresProof")} />
             Exigir foto para concluir
@@ -172,7 +172,7 @@ export function TaskForm({
         </div>
         {allowRecurrence ? (
           <div className="space-y-1.5">
-            <Label>Recorrencia</Label>
+            <Label>Recorrência</Label>
             <Select {...register("recurrenceType")}>
               {recurrenceTypes.map((type) => (
                 <option key={type} value={type}>
@@ -187,7 +187,7 @@ export function TaskForm({
         {allowRecurrence && recurrenceType !== "NONE" ? (
           <>
             <div className="space-y-1.5">
-              <Label>Inicio da recorrencia</Label>
+              <Label>Início da recorrência</Label>
               <Input type="date" {...register("recurrenceStartDate")} />
             </div>
             <div className="space-y-1.5">
@@ -202,7 +202,7 @@ export function TaskForm({
             ) : null}
             {recurrenceType === "SPECIFIC_MONTH_DAY" ? (
               <div className="space-y-1.5">
-                <Label>Dia do mes</Label>
+                <Label>Dia do mês</Label>
                 <Input type="number" min="1" max="31" {...register("monthDay")} />
               </div>
             ) : null}

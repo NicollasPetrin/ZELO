@@ -29,6 +29,6 @@ export async function testStorageAction() {
       message: `Armazenamento respondendo: gravou, leu e apagou ${objectKey}.`,
     } as const;
   } catch (error) {
-    return actionError(error, "Nao foi possivel falar com o armazenamento.");
+    return actionError(error, "Não foi possível falar com o armazenamento.");
   }
 }

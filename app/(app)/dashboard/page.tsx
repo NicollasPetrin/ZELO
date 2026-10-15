@@ -30,28 +30,28 @@ import { getActivePlanCode } from "@/lib/subscription";
 const premiumCards = [
   {
     href: "/reports",
-    title: "Relatorios completos",
-    description: "Leitura executiva com saude operacional, gargalos, prioridades e metas em risco.",
+    title: "Relatórios completos",
+    description: "Leitura executiva com saúde operacional, gargalos, prioridades e metas em risco.",
     icon: BarChart3,
   },
   {
     href: "/reports",
     title: "Score operacional",
-    description: "Indicador automatico de saude da operacao com base em atrasos, urgencias e metas.",
+    description: "Indicador automático de saúde da operação com base em atrasos, urgências e metas.",
     icon: CheckCircle2,
   },
   {
     href: "/reports",
     title: "Alertas de risco",
-    description: "Visao dos setores, responsaveis e metas que precisam de acao dentro da plataforma.",
+    description: "Visão dos setores, responsáveis e metas que precisam de ação dentro da plataforma.",
     icon: AlertTriangle,
   },
 ];
 
 const basicReportsCard = {
   href: "/reports",
-  title: "Relatorios basicos",
-  description: "Resumo de tarefas, atrasos, desempenho por setor e carga por responsavel.",
+  title: "Relatórios básicos",
+  description: "Resumo de tarefas, atrasos, desempenho por setor e carga por responsável.",
   icon: BarChart3,
 };
 
@@ -81,15 +81,15 @@ export default async function DashboardPage() {
 
       <OnboardingCard
         stepKey="dashboard"
-        title="Acompanhe onde a equipe precisa de atencao"
-        description="Acompanhe tarefas atrasadas, pendentes, concluidas e veja onde sua equipe precisa de atencao."
+        title="Acompanhe onde a equipe precisa de atenção"
+        description="Acompanhe tarefas atrasadas, pendentes, concluídas e veja onde sua equipe precisa de atenção."
         completed={onboardingCompleted}
       />
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
         <StatCard label="Pendentes" value={stats.pending} icon={<Clock className="h-5 w-5" />} />
         <StatCard label="Atrasadas" value={stats.overdue} tone={stats.overdue > 0 ? "danger" : "neutral"} icon={<AlertTriangle className="h-5 w-5" />} />
-        <StatCard label="Concluidas" value={stats.completed} tone="success" icon={<CheckCircle2 className="h-5 w-5" />} />
+        <StatCard label="Concluídas" value={stats.completed} tone="success" icon={<CheckCircle2 className="h-5 w-5" />} />
         <StatCard label="Em andamento" value={stats.inProgress} icon={<ListChecks className="h-5 w-5" />} />
         <StatCard label="Urgentes" value={stats.urgent} tone={stats.urgent > 0 ? "warning" : "neutral"} icon={<Flame className="h-5 w-5" />} />
       </section>
@@ -97,7 +97,7 @@ export default async function DashboardPage() {
       <section className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
         <div className="rounded-md border border-slate-200 bg-white p-4 shadow-sm">
           <div className="flex items-center justify-between gap-4">
-            <h2 className="text-base font-semibold text-slate-950">Proximos prazos</h2>
+            <h2 className="text-base font-semibold text-slate-950">Próximos prazos</h2>
             <span className="text-xs text-slate-500">7 dias</span>
           </div>
           <div className="mt-4 space-y-3">
@@ -119,7 +119,7 @@ export default async function DashboardPage() {
             ) : (
               <EmptyState
                 title="Sem prazos urgentes"
-                description="Nao ha tarefas com vencimento nos proximos sete dias dentro do seu escopo."
+                description="Não há tarefas com vencimento nos próximos sete dias dentro do seu escopo."
               />
             )}
           </div>
@@ -127,7 +127,7 @@ export default async function DashboardPage() {
 
         <div className="space-y-4">
           <div className="rounded-md border border-slate-200 bg-white p-4 shadow-sm">
-            <h2 className="text-base font-semibold text-slate-950">O que precisa de atencao</h2>
+            <h2 className="text-base font-semibold text-slate-950">O que precisa de atenção</h2>
             <div className="mt-4 space-y-2">
               {attentionItems.length ? (
                 attentionItems.map((item) => (
@@ -148,7 +148,7 @@ export default async function DashboardPage() {
             </h2>
             <div className="mt-4 grid grid-cols-2 gap-3">
               <StatCard label="No caminho" value={stats.goalsOnTrack} tone="success" />
-              <StatCard label="Atencao" value={stats.goalsAttention} tone={stats.goalsAttention > 0 ? "warning" : "neutral"} />
+              <StatCard label="Atenção" value={stats.goalsAttention} tone={stats.goalsAttention > 0 ? "warning" : "neutral"} />
             </div>
           </div>
         </div>
@@ -158,7 +158,7 @@ export default async function DashboardPage() {
         access.canViewPerformance ? (
           <section className="grid gap-4 lg:grid-cols-2">
             <div className="rounded-md border border-slate-200 bg-white p-4 shadow-sm">
-              <h2 className="text-base font-semibold text-slate-950">Funcionarios com mais tarefas atrasadas</h2>
+              <h2 className="text-base font-semibold text-slate-950">Funcionários com mais tarefas atrasadas</h2>
               <div className="mt-4 space-y-2">
                 {employeeHotspots.length ? (
                   employeeHotspots.map(([name, count]) => (
@@ -168,7 +168,7 @@ export default async function DashboardPage() {
                     </div>
                   ))
                 ) : (
-                  <p className="text-sm text-slate-600">Nenhum funcionario com tarefas atrasadas.</p>
+                  <p className="text-sm text-slate-600">Nenhum funcionário com tarefas atrasadas.</p>
                 )}
               </div>
             </div>
@@ -191,14 +191,14 @@ export default async function DashboardPage() {
         ) : (
           <section className="grid gap-4 lg:grid-cols-2">
             <LockedFeatureCard
-              title="Desempenho por funcionario"
-              description="O Plano Basico mostra tarefas e prazos. Ranking por funcionario entra a partir do Plano Gestao."
-              requiredPlan="Gestao"
+              title="Desempenho por funcionário"
+              description="O Plano Básico mostra tarefas e prazos. Ranking por funcionário entra a partir do Plano Gestão."
+              requiredPlan="Gestão"
             />
             <LockedFeatureCard
               title="Desempenho por setor"
               description="A leitura de gargalos por setor faz parte do painel completo do gestor."
-              requiredPlan="Gestao"
+              requiredPlan="Gestão"
             />
           </section>
         )
@@ -234,34 +234,34 @@ export default async function DashboardPage() {
               </div>
               <h2 className="mt-4 text-base font-semibold text-slate-950">{basicReportsCard.title}</h2>
               <p className="mt-2 text-sm leading-6 text-slate-600">{basicReportsCard.description}</p>
-              <p className="mt-4 text-sm font-semibold text-emerald-700">Abrir relatorios</p>
+              <p className="mt-4 text-sm font-semibold text-emerald-700">Abrir relatórios</p>
             </Link>
             <LockedFeatureCard
               title="Score operacional"
-              description="O Plano Completo calcula saude operacional com base em atrasos, urgencias e metas."
+              description="O Plano Completo calcula saúde operacional com base em atrasos, urgências e metas."
               requiredPlan="Completo"
             />
             <LockedFeatureCard
               title="Alertas de risco"
-              description="O Plano Completo destaca setores, responsaveis e metas que pedem acao."
+              description="O Plano Completo destaca setores, responsáveis e metas que pedem ação."
               requiredPlan="Completo"
             />
           </>
         ) : (
           <>
             <LockedFeatureCard
-              title="Relatorios basicos"
-              description="Relatorios de tarefas, atrasos, setores e responsaveis entram a partir do Plano Gestao."
-              requiredPlan="Gestao"
+              title="Relatórios básicos"
+              description="Relatórios de tarefas, atrasos, setores e responsáveis entram a partir do Plano Gestão."
+              requiredPlan="Gestão"
             />
             <LockedFeatureCard
               title="Score operacional"
-              description="O Plano Completo calcula saude operacional com base em atrasos, urgencias e metas."
+              description="O Plano Completo calcula saúde operacional com base em atrasos, urgências e metas."
               requiredPlan="Completo"
             />
             <LockedFeatureCard
               title="Alertas de risco"
-              description="O Plano Completo destaca setores, responsaveis e metas que pedem acao."
+              description="O Plano Completo destaca setores, responsáveis e metas que pedem ação."
               requiredPlan="Completo"
             />
           </>

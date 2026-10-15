@@ -113,7 +113,7 @@ export function CompanySettingsForm({
           <Input
             inputMode="numeric"
             autoComplete="off"
-            placeholder="Somente numeros"
+            placeholder="Somente números"
             readOnly={company.documentLocked}
             aria-describedby="ajuda-documento"
             {...register("document")}
@@ -121,8 +121,8 @@ export function CompanySettingsForm({
           <FieldError message={errors.document?.message} />
           <p id="ajuda-documento" className="text-xs leading-5 text-slate-600">
             {company.documentLocked
-              ? "Bloqueado porque a assinatura ja foi iniciada. Fale com o suporte para corrigir."
-              : "Necessario para assinar um plano. A processadora exige o documento para emitir a cobranca."}
+              ? "Bloqueado porque a assinatura já foi iniciada. Fale com o suporte para corrigir."
+              : "Necessário para assinar um plano. A processadora exige o documento para emitir a cobrança."}
           </p>
         </div>
         <div className="space-y-1.5">
@@ -130,7 +130,7 @@ export function CompanySettingsForm({
           <Input inputMode="tel" autoComplete="tel" placeholder="(11) 98765-4321" {...register("phone")} />
           <FieldError message={errors.phone?.message} />
           <p className="text-xs leading-5 text-slate-600">
-            Necessario para assinar um plano. A processadora exige o telefone do pagador.
+            Necessário para assinar um plano. A processadora exige o telefone do pagador.
           </p>
         </div>
         <div className="space-y-1.5">
@@ -161,7 +161,7 @@ export function CompanySettingsForm({
           <Input autoComplete="address-line1" placeholder="Avenida Paulista" {...register("address")} />
         </div>
         <div className="space-y-1.5">
-          <Label>Numero</Label>
+          <Label>Número</Label>
           <Input placeholder="1000" {...register("addressNumber")} />
         </div>
         <div className="space-y-1.5">
@@ -172,15 +172,15 @@ export function CompanySettingsForm({
           <Label>Bairro</Label>
           <Input placeholder="Bela Vista" {...register("province")} />
           <p className="text-xs leading-5 text-slate-600">
-            CEP, logradouro, numero e bairro sao exigidos pela processadora para assinar um plano.
+            CEP, logradouro, número e bairro são exigidos pela processadora para assinar um plano.
           </p>
         </div>
         <div className="space-y-1.5">
           <Label>Segmento</Label>
-          <Input placeholder="Ex.: Mercado, clinica, oficina" {...register("segment")} />
+          <Input placeholder="Ex.: Mercado, clínica, oficina" {...register("segment")} />
         </div>
         <div className="space-y-1.5">
-          <Label>Quantidade de funcionarios</Label>
+          <Label>Quantidade de funcionários</Label>
           <Input type="number" min="0" {...register("employeeCount")} />
         </div>
         <label className="flex items-end gap-2 pb-2 text-sm text-slate-600">
@@ -191,7 +191,7 @@ export function CompanySettingsForm({
       <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <FormMessage message={message} error={error} />
         <Button type="submit" disabled={isPending} className="sm:ml-auto">
-          {isPending ? "Salvando..." : "Salvar configuracoes"}
+          {isPending ? "Salvando..." : "Salvar configurações"}
         </Button>
       </div>
     </form>

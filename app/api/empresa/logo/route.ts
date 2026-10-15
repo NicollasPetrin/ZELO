@@ -77,7 +77,7 @@ async function apagarSemFalhar(objectKey: string | null) {
   try {
     await deleteObject(objectKey);
   } catch (error) {
-    console.error("[logo] nao foi possivel apagar a logo antiga:", error instanceof Error ? error.message : error);
+    console.error("[logo] não foi possível apagar a logo antiga:", error instanceof Error ? error.message : error);
   }
 }
 

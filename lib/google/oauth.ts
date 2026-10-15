@@ -68,7 +68,7 @@ async function pedirToken(body: URLSearchParams) {
       cache: "no-store",
     });
   } catch {
-    throw new GoogleError("Nao foi possivel falar com o Google.", 503);
+    throw new GoogleError("Não foi possível falar com o Google.", 503);
   }
 
   const texto = await resposta.text();

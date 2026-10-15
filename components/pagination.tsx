@@ -42,9 +42,9 @@ export function Pagination({
   }
 
   return (
-    <nav className="flex flex-col gap-3 rounded-md border border-slate-200 bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between" aria-label="Paginacao">
+    <nav className="flex flex-col gap-3 rounded-md border border-slate-200 bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between" aria-label="Paginação">
       <p className="text-sm text-slate-600">
-        Pagina <span className="font-semibold text-slate-950">{page}</span> de {pageCount} - {totalItems} registros
+        Página <span className="font-semibold text-slate-950">{page}</span> de {pageCount} - {totalItems} registros
       </p>
       <div className="flex items-center gap-2">
         {page > 1 ? (
@@ -55,7 +55,7 @@ export function Pagination({
         ) : null}
         {page < pageCount ? (
           <Link href={pageHref(searchParams, page + 1)} className={buttonClassName("secondary", "sm")}>
-            Proxima
+            Próxima
             <ChevronRight className="h-4 w-4" aria-hidden="true" />
           </Link>
         ) : null}

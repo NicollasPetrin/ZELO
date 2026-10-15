@@ -39,7 +39,7 @@ export function OnboardingCard({
           disabled={isPending}
           onClick={() => startTransition(() => void completeOnboardingStepAction(stepKey))}
         >
-          Marcar como concluido
+          Marcar como concluído
         </Button>
       </div>
     </div>

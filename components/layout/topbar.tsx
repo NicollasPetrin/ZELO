@@ -37,7 +37,7 @@ export function Topbar({ userName, sidebar }: { userName: string; sidebar: Sideb
           <Link
             href="/notifications"
             className={buttonClassName("secondary", "sm") + " min-h-10 lg:min-h-0"}
-            aria-label={inboxUnread > 0 ? `Abrir notificacoes, ${inboxUnread} nao lidas` : "Abrir notificacoes"}
+            aria-label={inboxUnread > 0 ? `Abrir notificações, ${inboxUnread} não lidas` : "Abrir notificações"}
           >
             <Bell className="h-4 w-4" aria-hidden="true" />
             {inboxUnread > 0 ? <span aria-hidden="true">{inboxUnread}</span> : null}

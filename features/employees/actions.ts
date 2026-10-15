@@ -16,17 +16,17 @@ import { employeeSchema, idSchema } from "@/lib/validations";
 function userLimitMessage(plan: SubscriptionPlan) {
   const maxUsers = planDetails[plan].maxUsers;
 
-  return `O Plano ${planDetails[plan].name} permite ate ${maxUsers} usuarios ativos. Para adicionar mais pessoas, faca upgrade de plano.`;
+  return `O Plano ${planDetails[plan].name} permite até ${maxUsers} usuários ativos. Para adicionar mais pessoas, faça upgrade de plano.`;
 }
 
 function extraUserApprovalMessage(plan: SubscriptionPlan) {
-  return `Este funcionario ficara acima dos usuarios incluidos no Plano ${planDetails[plan].name} e adicionara ${planDetails[plan].pricePerExtraUser}/mes a assinatura. Confirme o aceite do custo adicional para continuar.`;
+  return `Este funcionário ficará acima dos usuários incluídos no Plano ${planDetails[plan].name} e adicionará ${planDetails[plan].pricePerExtraUser}/mes a assinatura. Confirme o aceite do custo adicional para continuar.`;
 }
 
 function extraUserSavedMessage(plan: SubscriptionPlan) {
   const access = getPlanAccess(plan);
 
-  return `Funcionario salvo. Este usuario fica acima dos ${access.includedUsers} incluidos no Plano ${planDetails[plan].name} e adiciona ${planDetails[plan].pricePerExtraUser}/mes a assinatura.`;
+  return `Funcionário salvo. Este usuário fica acima dos ${access.includedUsers} incluídos no Plano ${planDetails[plan].name} e adiciona ${planDetails[plan].pricePerExtraUser}/mes a assinatura.`;
 }
 
 async function validateUserActivation({
@@ -80,7 +80,7 @@ export async function saveEmployeeAction(values: unknown) {
     });
 
     if (!department) {
-      throw new Error("Setor invalido.");
+      throw new Error("Setor inválido.");
     }
 
     const data = {
@@ -110,7 +110,7 @@ export async function saveEmployeeAction(values: unknown) {
           });
 
           if (!existingEmployee) {
-            throw new Error("Funcionario nao encontrado.");
+            throw new Error("Funcionário não encontrado.");
           }
 
           if (!existingEmployee.isActive && parsed.isActive) {
@@ -138,7 +138,7 @@ export async function saveEmployeeAction(values: unknown) {
           });
 
           if (result.count === 0) {
-            throw new Error("Funcionario nao encontrado.");
+            throw new Error("Funcionário não encontrado.");
           }
         },
         { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
@@ -178,7 +178,7 @@ export async function saveEmployeeAction(values: unknown) {
       type: parsed.id ? "USER_UPDATED" : "USER_CREATED",
       entityType: "User",
       entityId,
-      title: parsed.id ? "Funcionario atualizado" : "Funcionario criado",
+      title: parsed.id ? "Funcionário atualizado" : "Funcionário criado",
       description: data.email,
       metadata: {
         role: data.role,
@@ -189,9 +189,9 @@ export async function saveEmployeeAction(values: unknown) {
     revalidatePath("/employees");
     revalidatePath("/dashboard");
     revalidatePath("/settings");
-    return { ok: true, message: extraUserMessage ?? "Funcionario salvo." } as const;
+    return { ok: true, message: extraUserMessage ?? "Funcionário salvo." } as const;
   } catch (error) {
-    return actionError(error, "Nao foi possivel salvar o funcionario.");
+    return actionError(error, "Não foi possível salvar o funcionário.");
   }
 }
 
@@ -204,10 +204,10 @@ export async function toggleEmployeeAction(id: string, isActive: boolean, confir
     const parsedId = idSchema.parse(id);
 
     if (parsedId === user.id) {
-      throw new Error("Voce nao pode inativar o proprio acesso.");
+      throw new Error("Você não pode inativar o próprio acesso.");
     }
 
-    let successMessage = isActive ? "Funcionario ativado." : "Funcionario inativado.";
+    let successMessage = isActive ? "Funcionário ativado." : "Funcionário inativado.";
 
     await prisma.$transaction(
       async (tx) => {
@@ -223,7 +223,7 @@ export async function toggleEmployeeAction(id: string, isActive: boolean, confir
         });
 
         if (!existingEmployee) {
-          throw new Error("Funcionario nao encontrado.");
+          throw new Error("Funcionário não encontrado.");
         }
 
         if (!existingEmployee.isActive && isActive) {
@@ -250,7 +250,7 @@ export async function toggleEmployeeAction(id: string, isActive: boolean, confir
         });
 
         if (result.count === 0) {
-          throw new Error("Funcionario nao encontrado.");
+          throw new Error("Funcionário não encontrado.");
         }
       },
       { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
@@ -262,14 +262,14 @@ export async function toggleEmployeeAction(id: string, isActive: boolean, confir
       type: "USER_UPDATED",
       entityType: "User",
       entityId: parsedId,
-      title: isActive ? "Funcionario ativado" : "Funcionario inativado",
+      title: isActive ? "Funcionário ativado" : "Funcionário inativado",
     });
 
     revalidatePath("/employees");
     revalidatePath("/settings");
     return { ok: true, message: successMessage } as const;
   } catch (error) {
-    return actionError(error, "Nao foi possivel alterar o funcionario.");
+    return actionError(error, "Não foi possível alterar o funcionário.");
   }
 }
 
@@ -282,7 +282,7 @@ export async function deleteEmployeeAction(id: string) {
     const parsedId = idSchema.parse(id);
 
     if (parsedId === user.id) {
-      throw new Error("Voce nao pode excluir o proprio acesso.");
+      throw new Error("Você não pode excluir o próprio acesso.");
     }
 
     let employeeName = "";
@@ -314,26 +314,26 @@ export async function deleteEmployeeAction(id: string) {
       });
 
       if (!employee) {
-        throw new Error("Funcionario nao encontrado.");
+        throw new Error("Funcionário não encontrado.");
       }
       employeeName = employee.name;
 
       const blockers = [
-        employee._count.assignedTasks ? `${employee._count.assignedTasks} tarefa(s) atribuida(s)` : null,
+        employee._count.assignedTasks ? `${employee._count.assignedTasks} tarefa(s) atribuída(s)` : null,
         employee._count.createdTasks ? `${employee._count.createdTasks} tarefa(s) criada(s)` : null,
-        employee._count.comments ? `${employee._count.comments} comentario(s)` : null,
+        employee._count.comments ? `${employee._count.comments} comentário(s)` : null,
         employee._count.attachments ? `${employee._count.attachments} anexo(s)` : null,
         employee._count.goals ? `${employee._count.goals} meta(s)` : null,
         employee._count.activityLogs ? `${employee._count.activityLogs} registro(s) de atividade` : null,
-        employee._count.taskActivities ? `${employee._count.taskActivities} historico(s) de tarefa` : null,
+        employee._count.taskActivities ? `${employee._count.taskActivities} histórico(s) de tarefa` : null,
         employee._count.subscriptionEvents ? `${employee._count.subscriptionEvents} evento(s) de assinatura` : null,
-        employee._count.reportSnapshots ? `${employee._count.reportSnapshots} relatorio(s)` : null,
+        employee._count.reportSnapshots ? `${employee._count.reportSnapshots} relatório(s)` : null,
         employee._count.supportTickets ? `${employee._count.supportTickets} chamado(s)` : null,
       ].filter(Boolean);
 
       if (blockers.length > 0) {
         throw new Error(
-          `Nao foi possivel excluir ${employee.name}, pois existe historico vinculado: ${blockers.join(", ")}. Inative o acesso para preservar os dados da operacao.`,
+          `Não foi possível excluir ${employee.name}, pois existe histórico vinculado: ${blockers.join(", ")}. Inative o acesso para preservar os dados da operacao.`,
         );
       }
 
@@ -345,7 +345,7 @@ export async function deleteEmployeeAction(id: string) {
       });
 
       if (result.count === 0) {
-        throw new Error("Funcionario nao encontrado.");
+        throw new Error("Funcionário não encontrado.");
       }
     });
 
@@ -355,15 +355,15 @@ export async function deleteEmployeeAction(id: string) {
       type: "USER_UPDATED",
       entityType: "User",
       entityId: parsedId,
-      title: "Funcionario excluido",
+      title: "Funcionário excluído",
       description: employeeName,
     });
 
     revalidatePath("/employees");
     revalidatePath("/dashboard");
     revalidatePath("/settings");
-    return { ok: true, message: "Funcionario excluido." } as const;
+    return { ok: true, message: "Funcionário excluído." } as const;
   } catch (error) {
-    return actionError(error, "Nao foi possivel excluir o funcionario.");
+    return actionError(error, "Não foi possível excluir o funcionário.");
   }
 }

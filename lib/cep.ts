@@ -42,8 +42,8 @@ export async function lookupCep(cep: string): Promise<CepResultado> {
 }
 
 export const CEP_MENSAGENS: Record<"buscando" | "preenchido" | "naoEncontrado" | "indisponivel", string> = {
-  buscando: "Buscando endereco...",
-  preenchido: "Endereco preenchido pelo CEP. Confira o numero.",
-  naoEncontrado: "CEP nao encontrado. Preencha o endereco manualmente.",
-  indisponivel: "Nao foi possivel consultar o CEP. Preencha o endereco manualmente.",
+  buscando: "Buscando endereço...",
+  preenchido: "Endereço preenchido pelo CEP. Confira o número.",
+  naoEncontrado: "CEP não encontrado. Preencha o endereço manualmente.",
+  indisponivel: "Não foi possível consultar o CEP. Preencha o endereço manualmente.",
 };

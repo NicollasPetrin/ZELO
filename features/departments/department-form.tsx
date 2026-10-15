@@ -63,7 +63,7 @@ export function DepartmentForm({
           <FieldError message={errors.name?.message} />
         </div>
         <div className="space-y-1.5">
-          <Label>Descricao</Label>
+          <Label>Descrição</Label>
           {compact ? (
             <Input placeholder="Rotina e responsabilidade do setor" {...register("description")} />
           ) : (

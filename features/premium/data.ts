@@ -197,21 +197,21 @@ export async function getPremiumWorkspaceData(user: CurrentUser) {
       ? `Atacar ${overdueTasks.length} tarefa${overdueTasks.length === 1 ? "" : "s"} atrasada${overdueTasks.length === 1 ? "" : "s"} antes de abrir novas prioridades.`
       : null,
     topDepartment?.overdueTasks
-      ? `${topDepartment.name} deve entrar primeiro na revisao: ${topDepartment.overdueTasks} atraso${topDepartment.overdueTasks === 1 ? "" : "s"} ativo${topDepartment.overdueTasks === 1 ? "" : "s"}.`
+      ? `${topDepartment.name} deve entrar primeiro na revisão: ${topDepartment.overdueTasks} atraso${topDepartment.overdueTasks === 1 ? "" : "s"} ativo${topDepartment.overdueTasks === 1 ? "" : "s"}.`
       : null,
     topEmployee?.openTasks
       ? `Revisar carga de ${topEmployee.name}: ${topEmployee.openTasks} tarefa${topEmployee.openTasks === 1 ? "" : "s"} em aberto.`
       : null,
     goalsAtRisk.length > 0
-      ? `Atualizar plano de acao para ${goalsAtRisk.length} meta${goalsAtRisk.length === 1 ? "" : "s"} em atencao ou atraso.`
+      ? `Atualizar plano de ação para ${goalsAtRisk.length} meta${goalsAtRisk.length === 1 ? "" : "s"} em atenção ou atraso.`
       : null,
     dueSoonTasks.length > 0
-      ? `Confirmar responsaveis de ${dueSoonTasks.length} prazo${dueSoonTasks.length === 1 ? "" : "s"} dos proximos 14 dias.`
+      ? `Confirmar responsáveis de ${dueSoonTasks.length} prazo${dueSoonTasks.length === 1 ? "" : "s"} dos próximos 14 dias.`
       : null,
   ].filter(Boolean) as string[];
 
   if (!recommendations.length) {
-    recommendations.push("Operacao sem alertas criticos. Use os relatorios completos para manter o padrao que funcionou bem.");
+    recommendations.push("Operação sem alertas críticos. Use os relatórios completos para manter o padrão que funcionou bem.");
   }
 
   const criticalTasks = Array.from(new Map(overdueTasks.concat(urgentTasks).map((task) => [task.id, task])).values());

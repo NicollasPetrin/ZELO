@@ -50,7 +50,7 @@ export function parseWebhookPayload(rawBody: string): ParsedWebhook {
   try {
     json = JSON.parse(rawBody);
   } catch {
-    return { ok: false, error: "Corpo do webhook nao e JSON valido." };
+    return { ok: false, error: "Corpo do webhook não é JSON válido." };
   }
 
   const parsed = asaasWebhookEventSchema.safeParse(json);

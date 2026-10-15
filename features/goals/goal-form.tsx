@@ -83,13 +83,13 @@ export function GoalForm({
       <input type="hidden" {...register("id")} />
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-1.5 md:col-span-2">
-          <Label>Titulo da meta</Label>
-          <Input placeholder="Ex.: Vender R$ 50.000 no mes" {...register("title")} />
+          <Label>Título da meta</Label>
+          <Input placeholder="Ex.: Vender R$ 50.000 no mês" {...register("title")} />
           <FieldError message={errors.title?.message} />
         </div>
         <div className="space-y-1.5 md:col-span-2">
-          <Label>Descricao</Label>
-          <Textarea placeholder="Explique o que sera acompanhado." {...register("description")} />
+          <Label>Descrição</Label>
+          <Textarea placeholder="Explique o que será acompanhado." {...register("description")} />
         </div>
         <div className="space-y-1.5">
           <Label>Valor alvo</Label>
@@ -111,7 +111,7 @@ export function GoalForm({
           </Select>
         </div>
         <div className="space-y-1.5">
-          <Label>Periodo</Label>
+          <Label>Período</Label>
           <Select {...register("period")}>
             {goalPeriods.map((period) => (
               <option key={period} value={period}>
@@ -144,9 +144,9 @@ export function GoalForm({
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label>Responsavel opcional</Label>
+              <Label>Responsável opcional</Label>
               <Select {...register("responsibleId")}>
-                <option value="">Sem responsavel direto</option>
+                <option value="">Sem responsável direto</option>
                 {users.map((user) => (
                   <option key={user.id} value={user.id}>
                     {user.name}

@@ -38,9 +38,9 @@ export function EmployeeDeleteButton({
   if (confirming) {
     return (
       <div className="max-w-72 rounded-md border border-rose-200 bg-rose-50 p-3 text-sm text-rose-950">
-        <p className="font-semibold">Excluir funcionario?</p>
+        <p className="font-semibold">Excluir funcionário?</p>
         <p className="mt-1 leading-5">
-          {employeeName} sera removido se ainda nao houver historico operacional vinculado.
+          {employeeName} será removido se ainda não houver histórico operacional vinculado.
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
           <button className={buttonClassName("ghost", "sm")} type="button" disabled={isPending} onClick={submit}>

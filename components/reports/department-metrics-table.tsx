@@ -25,7 +25,7 @@ export function DepartmentMetricsTable({
             <Th>Abertas</Th>
             <Th>Atrasadas</Th>
             {showGoalsAtRisk ? <Th>Metas em risco</Th> : null}
-            <Th>Conclusao</Th>
+            <Th>Conclusão</Th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100 bg-white">

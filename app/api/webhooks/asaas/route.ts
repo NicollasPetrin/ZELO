@@ -24,13 +24,13 @@ export async function POST(request: NextRequest) {
   // Sem token configurado nao ha como distinguir o Asaas de qualquer outro
   // emissor, entao nada e aceito.
   if (!expectedToken) {
-    console.error("[asaas-webhook] ASAAS_WEBHOOK_TOKEN nao configurado.");
+    console.error("[asaas-webhook] ASAAS_WEBHOOK_TOKEN não configurado.");
 
-    return NextResponse.json({ error: "Webhook nao configurado." }, { status: 503, headers: noStore });
+    return NextResponse.json({ error: "Webhook não configurado." }, { status: 503, headers: noStore });
   }
 
   if (!isValidWebhookToken(request.headers.get(ASAAS_WEBHOOK_TOKEN_HEADER), expectedToken)) {
-    return NextResponse.json({ error: "Token invalido." }, { status: 401, headers: noStore });
+    return NextResponse.json({ error: "Token inválido." }, { status: 401, headers: noStore });
   }
 
   const rawBody = await request.text();

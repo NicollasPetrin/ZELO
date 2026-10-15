@@ -51,13 +51,13 @@ export default async function MyTasksPage({
     <div className="space-y-6">
       <PageHeader
         title="Minhas Tarefas"
-        description="Veja suas responsabilidades, atualize o andamento e registre comentarios quando houver progresso."
+        description="Veja suas responsabilidades, atualize o andamento e registre comentários quando houver progresso."
       />
 
       <OnboardingCard
         stepKey="tasks"
-        title="Crie tarefas com responsavel, prazo, prioridade e setor"
-        description="Assim cada pessoa sabe exatamente o que precisa fazer e o gestor acompanha o andamento sem cobrancas soltas."
+        title="Crie tarefas com responsável, prazo, prioridade e setor"
+        description="Assim cada pessoa sabe exatamente o que precisa fazer e o gestor acompanha o andamento sem cobranças soltas."
         completed={onboardingCompleted}
       />
 
@@ -66,7 +66,7 @@ export default async function MyTasksPage({
           <Label>Buscar</Label>
           <div className="relative">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />
-            <Input className="pl-9" name="q" placeholder="Titulo ou descricao" defaultValue={query ?? ""} />
+            <Input className="pl-9" name="q" placeholder="Título ou descrição" defaultValue={query ?? ""} />
           </div>
         </div>
         <div className="space-y-1.5">
@@ -142,8 +142,8 @@ export default async function MyTasksPage({
         </>
       ) : (
         <EmptyState
-          title="Voce ainda nao tem tarefas"
-          description="Quando uma tarefa for atribuida a voce, ela aparecera aqui com prazo, prioridade e status para acompanhamento."
+          title="Você ainda não tem tarefas"
+          description="Quando uma tarefa for atribuída a você, ela aparecerá aqui com prazo, prioridade e status para acompanhamento."
         />
       )}
       {taskPage ? <Pagination {...taskPage} searchParams={params} /> : null}

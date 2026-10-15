@@ -40,24 +40,24 @@ export function CancelSubscriptionPanel({
     });
   }
 
-  const ate = endsAt ? formatDate(endsAt) : "o fim do periodo contratado";
+  const ate = endsAt ? formatDate(endsAt) : "o fim do período contratado";
 
   return (
     <div className="mt-6 border-t border-slate-100 pt-5">
       <h3 className="text-sm font-semibold text-slate-950">Cancelar assinatura</h3>
       <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-600">
         {isTrial
-          ? `O teste segue liberado ate ${ate} e nenhuma cobranca sera feita. Depois dessa data as funcionalidades sao bloqueadas.`
-          : `O acesso continua ate ${ate}, que ja esta pago. A partir dai nao ha nova cobranca e as funcionalidades sao bloqueadas.`}
+          ? `O teste segue liberado até ${ate} e nenhuma cobrança será feita. Depois dessa data as funcionalidades são bloqueadas.`
+          : `O acesso continua até ${ate}, que já está pago. A partir daí não há nova cobrança e as funcionalidades são bloqueadas.`}
       </p>
 
       {confirming ? (
         <div className="mt-3 max-w-2xl rounded-md border border-rose-200 bg-rose-50 p-4">
           <p className="text-sm font-semibold text-rose-900">Confirmar o cancelamento do Plano {planName}?</p>
           <ul className="mt-2 space-y-1 text-sm leading-6 text-rose-900">
-            <li>Nenhuma cobranca sera feita a partir de {ate}.</li>
-            <li>Ate essa data nada muda: a equipe continua usando normalmente.</li>
-            <li>Depois dela, tarefas, metas e relatorios ficam bloqueados ate a contratacao de um novo plano.</li>
+            <li>Nenhuma cobrança será feita a partir de {ate}.</li>
+            <li>Até essa data nada muda: a equipe continua usando normalmente.</li>
+            <li>Depois dela, tarefas, metas e relatórios ficam bloqueados até a contratação de um novo plano.</li>
             <li>Seus dados continuam guardados.</li>
           </ul>
           <div className="mt-4 flex flex-wrap gap-2">

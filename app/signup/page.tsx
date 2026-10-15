@@ -11,11 +11,11 @@ import { planDetails, planOrder } from "@/lib/plans";
 
 const errorMessages: Record<string, string> = {
   dados:
-    "Algum campo esta invalido. Confira o CNPJ, o telefone, o endereco, o e-mail e a senha (8 caracteres, com letra maiuscula e caractere especial).",
-  email: "Este e-mail ja esta cadastrado. Entre na conta ou use outro e-mail.",
+    "Algum campo está inválido. Confira o CNPJ, o telefone, o endereço, o e-mail e a senha (8 caracteres, com letra maiúscula e caractere especial).",
+  email: "Este e-mail já está cadastrado. Entre na conta ou use outro e-mail.",
   rate: "Muitas tentativas. Aguarde alguns minutos e tente novamente.",
-  documento: "Este CNPJ ou CPF ja esta cadastrado em outra conta.",
-  dadosCobranca: "Complete os dados de cobranca para assinar o plano.",
+  documento: "Este CNPJ ou CPF já está cadastrado em outra conta.",
+  dadosCobranca: "Complete os dados de cobrança para assinar o plano.",
 };
 
 export default async function SignupPage({
@@ -47,24 +47,24 @@ export default async function SignupPage({
               <BrandLogo variant="iconDark" decorative className="h-11 w-11" preload />
               <div>
                 <h1 className="text-xl font-semibold">Zelo</h1>
-                <p className="text-sm text-slate-300">Gestao simples da operacao</p>
+                <p className="text-sm text-slate-300">Gestão simples da operação</p>
               </div>
             </Link>
             <p className="mt-16 max-w-lg text-3xl font-semibold leading-tight">
-              Crie sua empresa e comece com tarefas, setores e metas salvos em um ambiente proprio.
+              Crie sua empresa e comece com tarefas, setores e metas salvos em um ambiente próprio.
             </p>
           </div>
           <div className="grid gap-3 text-sm text-slate-300 md:grid-cols-3">
             <p>Conta isolada por empresa.</p>
-            <p>Sessao protegida por cookie seguro.</p>
-            <p>Senha forte obrigatoria.</p>
+            <p>Sessão protegida por cookie seguro.</p>
+            <p>Senha forte obrigatória.</p>
           </div>
         </section>
 
         <section className="p-8">
           <div className="mb-8 flex items-center gap-2 text-sm font-medium text-slate-500">
             <Building2 className="h-4 w-4" aria-hidden="true" />
-            {comTeste ? "Teste gratuito de 30 dias" : "Cadastro sem cobranca automatica"}
+            {comTeste ? "Teste gratuito de 30 dias" : "Cadastro sem cobrança automática"}
           </div>
           <h2 className="text-2xl font-semibold text-slate-950">
             {comTeste ? `Testar o Plano ${plan?.name} por 30 dias` : "Criar conta"}
@@ -72,19 +72,19 @@ export default async function SignupPage({
           {plan ? (
             <div className="mt-3 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm leading-6 text-emerald-900">
               <>
-                <strong>30 dias gratis</strong>, depois {plan.price}/mes — {plan.includedUsers} usuarios incluidos.{" "}
-                <strong>Nenhum cartao e pedido</strong>: crie a conta e comece o teste na tela seguinte. Ao fim dos 30
-                dias o acesso e bloqueado ate o pagamento, e seus dados continuam guardados.
+                <strong>30 dias grátis</strong>, depois {plan.price}/mês — {plan.includedUsers} usuários incluídos.{" "}
+                <strong>Nenhum cartão é pedido</strong>: crie a conta e comece o teste na tela seguinte. Ao fim dos 30
+                dias o acesso é bloqueado até o pagamento, e seus dados continuam guardados.
               </>{" "}
               <Link href="/signup" className="font-semibold underline">
-                Prefiro so criar a conta
+                Prefiro só criar a conta
               </Link>
             </div>
           ) : (
             <p className="mt-2 text-sm leading-6 text-slate-600">
-              Crie a conta da empresa e escolha o plano na tela seguinte, com 30 dias gratuitos e sem cartao.{" "}
+              Crie a conta da empresa e escolha o plano na tela seguinte, com 30 dias gratuitos e sem cartão.{" "}
               <Link href="/#planos" className="font-semibold text-emerald-700 underline hover:text-emerald-800">
-                Ver planos e testar 30 dias gratis
+                Ver planos e testar 30 dias grátis
               </Link>
             </p>
           )}
@@ -96,11 +96,11 @@ export default async function SignupPage({
             </div>
             <div className="space-y-1.5">
               <Label>CNPJ ou CPF</Label>
-              <Input name="document" inputMode="numeric" autoComplete="off" placeholder="Somente numeros" required />
+              <Input name="document" inputMode="numeric" autoComplete="off" placeholder="Somente números" required />
             </div>
             <div className="space-y-1.5">
               <Label>Segmento</Label>
-              <Input name="segment" placeholder="Ex.: varejo, clinica, servicos" />
+              <Input name="segment" placeholder="Ex.: varejo, clínica, serviços" />
             </div>
             {/* Os dados de cobranca sao pedidos uma vez, aqui, mesmo sem plano
                 escolhido: e o que faz o pagamento no fim do teste ser um clique
@@ -139,7 +139,7 @@ export default async function SignupPage({
 
           <div className="mt-6 flex items-center gap-2 text-sm text-slate-600">
             <LockKeyhole className="h-4 w-4 text-slate-400" aria-hidden="true" />
-            Ja tem conta?
+            Já tem conta?
             <Link href="/login" className="font-semibold text-emerald-700 hover:text-emerald-800">
               Entrar
             </Link>

@@ -15,9 +15,9 @@ import { companySettingsSchema } from "@/lib/validations";
 // Nao exportadas: um arquivo "use server" so pode exportar funcoes async, e
 // exportar constantes aqui quebra o build sem que o TypeScript reclame.
 const DOCUMENT_LOCKED_MESSAGE =
-  "O documento nao pode ser alterado depois que a assinatura foi iniciada. Fale com o suporte para corrigir o cadastro.";
+  "O documento não pode ser alterado depois que a assinatura foi iniciada. Fale com o suporte para corrigir o cadastro.";
 
-const DOCUMENT_TAKEN_MESSAGE = "Este CNPJ ou CPF ja esta cadastrado em outra empresa.";
+const DOCUMENT_TAKEN_MESSAGE = "Este CNPJ ou CPF já está cadastrado em outra empresa.";
 
 export async function saveCompanySettingsAction(values: unknown) {
   try {
@@ -70,7 +70,7 @@ export async function saveCompanySettingsAction(values: unknown) {
       type: "COMPANY_UPDATED",
       entityType: "Company",
       entityId: user.companyId,
-      title: "Configuracoes da empresa atualizadas",
+      title: "Configurações da empresa atualizadas",
       // Registra que o documento mudou sem reproduzi-lo por inteiro no historico.
       description:
         mudouDocumento && documento ? "Documento definido: " + maskDocument(documento.digits) : undefined,
@@ -78,13 +78,13 @@ export async function saveCompanySettingsAction(values: unknown) {
 
     revalidatePath("/settings");
     revalidatePath("/", "layout");
-    return { ok: true, message: "Configuracoes salvas." } as const;
+    return { ok: true, message: "Configurações salvas." } as const;
   } catch (error) {
     // A unicidade e garantida pelo banco; aqui so traduzimos para o usuario.
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
-      return actionError(new Error(DOCUMENT_TAKEN_MESSAGE), "Nao foi possivel salvar as configuracoes.");
+      return actionError(new Error(DOCUMENT_TAKEN_MESSAGE), "Não foi possível salvar as configurações.");
     }
 
-    return actionError(error, "Nao foi possivel salvar as configuracoes.");
+    return actionError(error, "Não foi possível salvar as configurações.");
   }
 }

@@ -6,20 +6,20 @@ import { prisma } from "@/lib/db/client";
 import { isGoogleCalendarConfigured } from "@/lib/env";
 
 const avisos: Record<string, { tom: "ok" | "erro"; texto: string }> = {
-  conectado: { tom: "ok", texto: "Agenda conectada. Suas proximas tarefas aparecem nela automaticamente." },
-  recusado: { tom: "erro", texto: "A permissao foi recusada no Google. Nada foi conectado." },
+  conectado: { tom: "ok", texto: "Agenda conectada. Suas próximas tarefas aparecem nela automaticamente." },
+  recusado: { tom: "erro", texto: "A permissão foi recusada no Google. Nada foi conectado." },
   "estado-invalido": {
     tom: "erro",
-    texto: "O retorno do Google nao conferiu com o pedido que saiu daqui. Tente conectar de novo.",
+    texto: "O retorno do Google não conferiu com o pedido que saiu daqui. Tente conectar de novo.",
   },
-  "sem-codigo": { tom: "erro", texto: "O Google nao devolveu o codigo de autorizacao. Tente de novo." },
+  "sem-codigo": { tom: "erro", texto: "O Google não devolveu o código de autorização. Tente de novo." },
   "sem-refresh": {
     tom: "erro",
     texto:
-      "O Google nao devolveu a autorizacao de longo prazo. Remova o acesso da Zelo na sua Conta Google e conecte novamente.",
+      "O Google não devolveu a autorização de longo prazo. Remova o acesso da Zelo na sua Conta Google e conecte novamente.",
   },
-  indisponivel: { tom: "erro", texto: "A integracao com o Google Agenda ainda nao foi configurada." },
-  falhou: { tom: "erro", texto: "Nao foi possivel concluir a conexao. Tente de novo em instantes." },
+  indisponivel: { tom: "erro", texto: "A integração com o Google Agenda ainda não foi configurada." },
+  falhou: { tom: "erro", texto: "Não foi possível concluir a conexão. Tente de novo em instantes." },
 };
 
 export default async function AgendaPage({ searchParams }: { searchParams: Promise<{ google?: string }> }) {
@@ -71,17 +71,17 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
       <section className="rounded-md border border-slate-200 bg-white p-4 shadow-sm">
         <h2 className="text-base font-semibold text-slate-950">Como funciona</h2>
         <ul className="mt-3 space-y-2 text-sm leading-6 text-slate-600">
-          <li>Toda tarefa atribuida a voce vira um compromisso que termina na hora do prazo.</li>
-          <li>O titulo leva a prioridade; a descricao leva o que fazer, o setor, quem pediu e o link da tarefa.</li>
-          <li>Voce recebe aviso na vespera e uma hora antes do prazo.</li>
+          <li>Toda tarefa atribuída a você vira um compromisso que termina na hora do prazo.</li>
+          <li>O título leva a prioridade; a descrição leva o que fazer, o setor, quem pediu e o link da tarefa.</li>
+          <li>Você recebe aviso na véspera e uma hora antes do prazo.</li>
           <li>Mudou o prazo ou a prioridade, o compromisso muda junto. Concluiu ou cancelou, ele sai da agenda.</li>
-          <li>A conexao e sua: o dono da empresa nao liga nem desliga a agenda de ninguem.</li>
+          <li>A conexão é sua: o dono da empresa não liga nem desliga a agenda de ninguém.</li>
         </ul>
         {conta ? (
           <p className="mt-4 text-xs text-slate-500">
             {tarefasNaAgenda === 0
-              ? "Nenhuma tarefa na agenda ainda. Use o botao acima para enviar as que ja estao em aberto."
-              : `${tarefasNaAgenda} tarefa(s) sua(s) estao na agenda agora.`}
+              ? "Nenhuma tarefa na agenda ainda. Use o botão acima para enviar as que já estão em aberto."
+              : `${tarefasNaAgenda} tarefa(s) sua(s) estão na agenda agora.`}
           </p>
         ) : null}
       </section>

@@ -11,7 +11,7 @@ import { assertIpRateLimit, assertRateLimit } from "@/lib/rate-limit";
 import { loginSchema, signupSchema } from "@/lib/validations";
 
 const DUMMY_PASSWORD_HASH = hashPassword("SenhaFalsaSegura123");
-const DEFAULT_DEPARTMENTS = ["Gestao", "Operacao", "Atendimento"];
+const DEFAULT_DEPARTMENTS = ["Gestão", "Operação", "Atendimento"];
 
 export async function loginAction(formData: FormData) {
   try {
@@ -162,7 +162,7 @@ export async function signupAction(formData: FormData) {
       data: {
         companyId: company.id,
         name: DEFAULT_DEPARTMENTS[0],
-        description: "Gestao geral da empresa.",
+        description: "Gestão geral da empresa.",
       },
     });
 
@@ -195,7 +195,7 @@ export async function signupAction(formData: FormData) {
         entityType: "Company",
         entityId: company.id,
         title: "Empresa cadastrada",
-        description: "Conta criada pelo cadastro publico.",
+        description: "Conta criada pelo cadastro público.",
       },
     });
 

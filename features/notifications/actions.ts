@@ -28,9 +28,9 @@ export async function markNotificationReadAction(id: string) {
 
     revalidatePath("/notifications");
     revalidatePath("/", "layout");
-    return { ok: true, message: "Notificacao lida." } as const;
+    return { ok: true, message: "Notificação lida." } as const;
   } catch (error) {
-    return actionError(error, "Nao foi possivel marcar como lida.");
+    return actionError(error, "Não foi possível marcar como lida.");
   }
 }
 
@@ -53,8 +53,8 @@ export async function markAllNotificationsReadAction() {
 
     revalidatePath("/notifications");
     revalidatePath("/", "layout");
-    return { ok: true, message: "Notificacoes atualizadas." } as const;
+    return { ok: true, message: "Notificações atualizadas." } as const;
   } catch (error) {
-    return actionError(error, "Nao foi possivel atualizar notificacoes.");
+    return actionError(error, "Não foi possível atualizar notificações.");
   }
 }

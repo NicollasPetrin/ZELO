@@ -83,7 +83,7 @@ export default async function AdminSuporteConversaPage({ params }: { params: Pro
                       )}
                     >
                       <p className={cn("text-xs font-semibold", mensagem.fromSupport ? "text-emerald-100" : "text-slate-500")}>
-                        {mensagem.fromSupport ? "Voce (Suporte)" : (mensagem.author?.name ?? "Usuario removido")}
+                        {mensagem.fromSupport ? "Você (Suporte)" : (mensagem.author?.name ?? "Usuário removido")}
                       </p>
                       <p className="whitespace-pre-wrap break-words">{mensagem.body}</p>
                       <p className={cn("mt-1 text-right text-[11px]", mensagem.fromSupport ? "text-emerald-100" : "text-slate-400")}>

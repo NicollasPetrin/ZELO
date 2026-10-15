@@ -10,9 +10,9 @@ export function SubscriptionRequiredCard() {
           <LockKeyhole className="h-5 w-5" aria-hidden="true" />
         </div>
         <div>
-          <h1 className="text-xl font-semibold text-slate-950">Assinatura necessaria</h1>
+          <h1 className="text-xl font-semibold text-slate-950">Assinatura necessária</h1>
           <p className="mt-2 text-sm leading-6 text-slate-600">
-            Sua conta foi criada, mas as funcionalidades operacionais ficam bloqueadas ate que exista uma assinatura ativa.
+            Sua conta foi criada, mas as funcionalidades operacionais ficam bloqueadas até que exista uma assinatura ativa.
           </p>
           <Link href="/settings#gerenciamento-assinatura" className={buttonClassName("primary") + " mt-5"}>
             <CreditCard className="h-4 w-4" aria-hidden="true" />

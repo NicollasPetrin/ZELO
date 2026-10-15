@@ -63,7 +63,7 @@ function normalizeUrl(value: string | undefined) {
   try {
     return new URL(withScheme).origin;
   } catch {
-    console.error("[env] APP_URL invalida, ignorando o valor recebido.");
+    console.error("[env] APP_URL inválida, ignorando o valor recebido.");
 
     return undefined;
   }
@@ -99,11 +99,11 @@ if (!parsedEnv.success) {
 
   throw new Error(
     [
-      "Variaveis de ambiente ausentes ou invalidas:",
+      "Variáveis de ambiente ausentes ou inválidas:",
       problemas,
       "",
-      "Defina-as no ambiente de build e de execucao da plataforma.",
-      "O arquivo .env.example lista todas as variaveis esperadas.",
+      "Defina-as no ambiente de build e de execução da plataforma.",
+      "O arquivo .env.example lista todas as variáveis esperadas.",
     ].join("\n"),
   );
 }
@@ -115,10 +115,10 @@ export function getSessionSecret() {
 }
 
 export const ASAAS_NOT_CONFIGURED_MESSAGE =
-  "Checkout de pagamento ainda nao configurado. Configure a processadora para permitir a compra online do plano.";
+  "Checkout de pagamento ainda não configurado. Configure a processadora para permitir a compra online do plano.";
 
 export const ASAAS_WEBHOOK_NOT_CONFIGURED_MESSAGE =
-  "Webhook da processadora ainda nao configurado. Defina ASAAS_WEBHOOK_TOKEN para receber eventos.";
+  "Webhook da processadora ainda não configurado. Defina ASAAS_WEBHOOK_TOKEN para receber eventos.";
 
 export type AsaasConfig = {
   apiKey: string;
@@ -172,7 +172,7 @@ export function getAsaasConfig(): AsaasConfig {
   // acreditava estar testando.
   if (doTipoDaChave && doTipoDaChave !== env.ASAAS_ENVIRONMENT) {
     throw new Error(
-      `A ASAAS_API_KEY e do ambiente "${doTipoDaChave}", mas ASAAS_ENVIRONMENT esta como ` +
+      `A ASAAS_API_KEY é do ambiente "${doTipoDaChave}", mas ASAAS_ENVIRONMENT está como ` +
         `"${env.ASAAS_ENVIRONMENT}". Ajuste uma das duas para que fiquem iguais.`,
     );
   }
@@ -186,7 +186,7 @@ export function getAsaasConfig(): AsaasConfig {
 }
 
 export const APP_URL_NOT_CONFIGURED_MESSAGE =
-  "APP_URL nao configurada. Ela e necessaria para o Asaas devolver o cliente ao site depois do pagamento.";
+  "APP_URL não configurada. Ela é necessária para o Asaas devolver o cliente ao site depois do pagamento.";
 
 /** Base publica da aplicacao, ja normalizada (sem barra final). */
 export function getAppUrl() {
@@ -213,7 +213,7 @@ export function getAsaasWebhookToken() {
   if (token.length < WEBHOOK_TOKEN_MIN_LENGTH) {
     console.error(
       `[env] ASAAS_WEBHOOK_TOKEN tem menos de ${WEBHOOK_TOKEN_MIN_LENGTH} caracteres. ` +
-        "O webhook fica desligado ate que seja corrigido.",
+        "O webhook fica desligado até que seja corrigido.",
     );
 
     return null;
@@ -233,7 +233,7 @@ export function getPlatformAdminEmails() {
 }
 
 export const STORAGE_NOT_CONFIGURED_MESSAGE =
-  "O armazenamento de fotos nao esta configurado. Defina R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY e R2_BUCKET.";
+  "O armazenamento de fotos não está configurado. Defina R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY e R2_BUCKET.";
 
 export type StorageConfig = {
   accountId: string;
@@ -266,7 +266,7 @@ export function getStorageConfig(): StorageConfig {
 }
 
 export const GOOGLE_NOT_CONFIGURED_MESSAGE =
-  "A integracao com o Google Agenda nao esta configurada. Defina GOOGLE_CLIENT_ID e GOOGLE_CLIENT_SECRET.";
+  "A integração com o Google Agenda não está configurada. Defina GOOGLE_CLIENT_ID e GOOGLE_CLIENT_SECRET.";
 
 export function isGoogleCalendarConfigured() {
   return Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET);

@@ -41,8 +41,8 @@ export default async function ReportsPage() {
     return (
       <div className="space-y-6">
         <PageHeader
-          title="Relatorios"
-          description="Relatorios de tarefas, setores e responsaveis entram a partir do Plano Gestao."
+          title="Relatórios"
+          description="Relatórios de tarefas, setores e responsáveis entram a partir do Plano Gestão."
           actions={
             canManageCompany(user.role) ? (
               <Link href="/settings#gerenciamento-assinatura" className={buttonClassName("primary")}>
@@ -57,9 +57,9 @@ export default async function ReportsPage() {
           }
         />
         <LockedFeatureCard
-          title="Relatorios basicos"
-          description="O Plano Basico acompanha tarefas e prazos. Relatorios por setor, responsavel e status ficam disponiveis no Plano Gestao."
-          requiredPlan="Gestao"
+          title="Relatórios básicos"
+          description="O Plano Básico acompanha tarefas e prazos. Relatórios por setor, responsável e status ficam disponíveis no Plano Gestão."
+          requiredPlan="Gestão"
         />
       </div>
     );
@@ -71,16 +71,16 @@ export default async function ReportsPage() {
     return (
       <div className="space-y-6">
         <PageHeader
-          title="Relatorios basicos"
-          description={`Visao operacional de ${report.companyName}: tarefas, atrasos, setores e responsaveis.`}
+          title="Relatórios básicos"
+          description={`Visão operacional de ${report.companyName}: tarefas, atrasos, setores e responsáveis.`}
           actions={<Link href="/team-tasks" className={buttonClassName("primary")}>Ver tarefas</Link>}
         />
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <StatCard label="Tarefas abertas" value={report.totals.openTasks} hint={`${report.totals.totalTasks} tarefas cadastradas`} icon={<ListChecks className="h-5 w-5" />} />
           <StatCard label="Atrasadas" value={report.totals.overdueTasks} hint={`${report.totals.overdueRate}% das tarefas abertas`} icon={<AlertTriangle className="h-5 w-5" />} tone={report.totals.overdueTasks > 0 ? "danger" : "success"} />
-          <StatCard label="Concluidas" value={report.totals.completedTasks} hint={`${report.totals.completionRate}% de conclusao`} icon={<CheckCircle2 className="h-5 w-5" />} tone="success" />
-          <StatCard label="Proximos prazos" value={report.totals.dueSoonTasks} hint="Vencem nos proximos 14 dias" icon={<Clock className="h-5 w-5" />} />
+          <StatCard label="Concluídas" value={report.totals.completedTasks} hint={`${report.totals.completionRate}% de conclusão`} icon={<CheckCircle2 className="h-5 w-5" />} tone="success" />
+          <StatCard label="Próximos prazos" value={report.totals.dueSoonTasks} hint="Vencem nos próximos 14 dias" icon={<Clock className="h-5 w-5" />} />
         </section>
 
         <section className="grid gap-4 xl:grid-cols-2">
@@ -90,19 +90,19 @@ export default async function ReportsPage() {
           </div>
 
           <div className="space-y-3">
-            <h2 className="text-lg font-semibold text-slate-950">Resumo por responsavel</h2>
+            <h2 className="text-lg font-semibold text-slate-950">Resumo por responsável</h2>
             <EmployeeMetricsTable employees={report.employeeMetrics} />
           </div>
         </section>
 
         <section className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
           <div className="rounded-md border border-slate-200 bg-white p-4 shadow-sm">
-            <h2 className="text-base font-semibold text-slate-950">Distribuicao por status</h2>
+            <h2 className="text-base font-semibold text-slate-950">Distribuição por status</h2>
             <StatusDistribution items={report.statusDistribution} />
           </div>
 
           <div className="rounded-md border border-slate-200 bg-white p-4 shadow-sm">
-            <h2 className="text-base font-semibold text-slate-950">Tarefas que pedem atencao</h2>
+            <h2 className="text-base font-semibold text-slate-950">Tarefas que pedem atenção</h2>
             <div className="mt-4">
               <CriticalTaskList tasks={report.criticalTasks} />
             </div>
@@ -110,8 +110,8 @@ export default async function ReportsPage() {
         </section>
 
         <LockedFeatureCard
-          title="Relatorios completos"
-          description="O Plano Completo adiciona saude operacional, leitura executiva, metas em risco e recomendacoes automaticas."
+          title="Relatórios completos"
+          description="O Plano Completo adiciona saúde operacional, leitura executiva, metas em risco e recomendações automáticas."
           requiredPlan="Completo"
         />
       </div>
@@ -121,8 +121,8 @@ export default async function ReportsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Relatorios completos"
-        description={`Visao executiva de ${report.companyName}, atualizada com os dados atuais da operacao.`}
+        title="Relatórios completos"
+        description={`Visão executiva de ${report.companyName}, atualizada com os dados atuais da operação.`}
         actions={
           <>
             <Link href="/team-tasks" className={buttonClassName("secondary")}>
@@ -136,10 +136,10 @@ export default async function ReportsPage() {
       />
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-        <StatCard label="Saude operacional" value={`${report.totals.healthScore}%`} hint="Score combinado de atrasos, urgencias e metas" icon={<BarChart3 className="h-5 w-5" />} tone={report.totals.healthScore < 70 ? "warning" : "success"} />
-        <StatCard label="Conclusao" value={`${report.totals.completionRate}%`} hint={`${report.totals.completedTasks} de ${report.totals.totalTasks} tarefas`} icon={<CheckCircle2 className="h-5 w-5" />} />
+        <StatCard label="Saúde operacional" value={`${report.totals.healthScore}%`} hint="Score combinado de atrasos, urgências e metas" icon={<BarChart3 className="h-5 w-5" />} tone={report.totals.healthScore < 70 ? "warning" : "success"} />
+        <StatCard label="Conclusão" value={`${report.totals.completionRate}%`} hint={`${report.totals.completedTasks} de ${report.totals.totalTasks} tarefas`} icon={<CheckCircle2 className="h-5 w-5" />} />
         <StatCard label="Atrasadas" value={report.totals.overdueTasks} hint={`${report.totals.overdueRate}% das tarefas abertas`} icon={<AlertTriangle className="h-5 w-5" />} tone={report.totals.overdueTasks > 0 ? "danger" : "success"} />
-        <StatCard label="Metas em risco" value={report.totals.goalsAtRisk} hint={`${report.totals.averageGoalProgress}% de progresso medio`} icon={<Target className="h-5 w-5" />} tone={report.totals.goalsAtRisk > 0 ? "warning" : "success"} />
+        <StatCard label="Metas em risco" value={report.totals.goalsAtRisk} hint={`${report.totals.averageGoalProgress}% de progresso médio`} icon={<Target className="h-5 w-5" />} tone={report.totals.goalsAtRisk > 0 ? "warning" : "success"} />
         <StatCard label="Equipe ativa" value={report.totals.activeUsers} hint={`${report.totals.activeDepartments} setores ativos`} icon={<Users className="h-5 w-5" />} />
       </section>
 
@@ -156,7 +156,7 @@ export default async function ReportsPage() {
         </div>
 
         <div className="rounded-md border border-slate-200 bg-white p-4 shadow-sm">
-          <h2 className="text-base font-semibold text-slate-950">Distribuicao por prioridade</h2>
+          <h2 className="text-base font-semibold text-slate-950">Distribuição por prioridade</h2>
           <div className="mt-4 space-y-3">
             {report.priorityDistribution.map((item) => (
               <div key={item.priority} className="space-y-2">
@@ -178,21 +178,21 @@ export default async function ReportsPage() {
         </div>
 
         <div className="space-y-3">
-          <h2 className="text-lg font-semibold text-slate-950">Carga por responsavel</h2>
+          <h2 className="text-lg font-semibold text-slate-950">Carga por responsável</h2>
           <EmployeeMetricsTable employees={report.employeeMetrics} />
         </div>
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
         <div className="rounded-md border border-slate-200 bg-white p-4 shadow-sm">
-          <h2 className="text-base font-semibold text-slate-950">Tarefas criticas</h2>
+          <h2 className="text-base font-semibold text-slate-950">Tarefas críticas</h2>
           <div className="mt-4">
             <CriticalTaskList tasks={report.criticalTasks} />
           </div>
         </div>
 
         <div className="rounded-md border border-slate-200 bg-white p-4 shadow-sm">
-          <h2 className="text-base font-semibold text-slate-950">Metas que precisam de revisao</h2>
+          <h2 className="text-base font-semibold text-slate-950">Metas que precisam de revisão</h2>
           <div className="mt-4 space-y-3">
             {report.goalsAtRisk.length ? (
               report.goalsAtRisk.map((goal) => {
@@ -204,7 +204,7 @@ export default async function ReportsPage() {
                       <div>
                         <p className="font-medium text-slate-950">{goal.title}</p>
                         <p className="mt-1 text-sm text-slate-500">
-                          {goal.department?.name ?? "Empresa inteira"} - {goal.responsible?.name ?? "Sem responsavel"}
+                          {goal.department?.name ?? "Empresa inteira"} - {goal.responsible?.name ?? "Sem responsável"}
                         </p>
                       </div>
                       <Badge className={goalStatusClasses[goal.status]}>{goalStatusLabels[goal.status]}</Badge>
@@ -222,14 +222,14 @@ export default async function ReportsPage() {
                 );
               })
             ) : (
-              <EmptyState title="Metas estaveis" description="Nenhuma meta esta em atencao ou atraso agora." />
+              <EmptyState title="Metas estáveis" description="Nenhuma meta está em atenção ou atraso agora." />
             )}
           </div>
         </div>
       </section>
 
       <section className="rounded-md border border-slate-200 bg-white p-4 shadow-sm">
-        <h2 className="text-base font-semibold text-slate-950">Distribuicao por status</h2>
+        <h2 className="text-base font-semibold text-slate-950">Distribuição por status</h2>
         <StatusDistribution items={report.statusDistribution} />
       </section>
     </div>

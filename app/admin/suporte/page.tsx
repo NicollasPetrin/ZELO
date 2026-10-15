@@ -38,8 +38,8 @@ export default async function AdminSuportePage() {
 
         {conversas.length === 0 ? (
           <p className="mt-8 rounded-md border border-slate-200 bg-white p-6 text-sm text-slate-600">
-            Ninguem abriu conversa com o suporte ainda. O canal aparece para o cliente em Conversas, e fica disponivel
-            mesmo para quem esta sem assinatura ativa.
+            Ninguém abriu conversa com o suporte ainda. O canal aparece para o cliente em Conversas, e fica disponível
+            mesmo para quem está sem assinatura ativa.
           </p>
         ) : (
           <ul className="mt-6 divide-y divide-slate-100 overflow-hidden rounded-lg border border-slate-200 bg-white">

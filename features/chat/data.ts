@@ -201,7 +201,7 @@ export async function getConversation(user: CurrentUser, conversationId: string)
       id: m.id,
       authorId: m.authorId,
       // Conta apagada nao apaga a conversa: a mensagem continua, sem dono.
-      authorName: m.author?.name ?? "Usuario removido",
+      authorName: m.author?.name ?? "Usuário removido",
       fromSupport: m.fromSupport,
       body: m.body,
       createdAt: m.createdAt,

@@ -44,44 +44,44 @@ export default async function SettingsPage({
   const monthlyPrice = activePlanCode ? calculateMonthlyPrice(activePlanCode, activeUserCount) : null;
   const currentMonthlyTotal =
     monthlyPrice?.totalPriceCents === null
-      ? "Upgrade necessario"
+      ? "Upgrade necessário"
       : monthlyPrice
         ? formatPriceCents(monthlyPrice.totalPriceCents)
         : "A contratar";
   const extraUsers = monthlyPrice?.extraUsers ?? 0;
   const extraUsersPrice = formatPriceCents(monthlyPrice?.extraUsersPriceCents ?? 0);
-  const maxUsersLabel = activePlan ? (access.maxUsers === null ? "Ilimitado" : `Ate ${access.maxUsers}`) : "Nenhum";
+  const maxUsersLabel = activePlan ? (access.maxUsers === null ? "Ilimitado" : `Até ${access.maxUsers}`) : "Nenhum";
   const activeFeatures = activePlan?.features ?? [
     "Cadastro da empresa criado",
     "Dados separados por empresa",
-    "Funcionalidades operacionais liberadas apos assinatura ativa",
+    "Funcionalidades operacionais liberadas após assinatura ativa",
   ];
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Configuracoes"
-        description="Ajustes basicos da empresa, assinatura e informacoes do usuario logado."
+        title="Configurações"
+        description="Ajustes básicos da empresa, assinatura e informações do usuário logado."
       />
 
       <section id="gerenciamento-assinatura" className="rounded-md border border-slate-200 bg-white p-4 shadow-sm">
         <div className="mb-5">
           <h2 className="text-base font-semibold text-slate-950">Gerenciamento de assinatura</h2>
           <p className="mt-1 text-sm leading-6 text-slate-600">
-            Consulte o plano ativo, usuarios incluidos, custo por usuario extra e funcionalidades contratadas.
+            Consulte o plano ativo, usuários incluídos, custo por usuário extra e funcionalidades contratadas.
           </p>
           <div className="mt-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm leading-6 text-amber-950">
-            O acesso as funcionalidades e liberado somente quando o pagamento do plano for confirmado pela processadora.
-            Criar conta ou iniciar checkout nao ativa assinatura automaticamente.
+            O acesso às funcionalidades é liberado somente quando o pagamento do plano for confirmado pela processadora.
+            Criar conta ou iniciar checkout não ativa assinatura automaticamente.
           </div>
         </div>
         {recemCadastrada && trialEligible ? (
           <div className="mb-5 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm leading-6 text-emerald-900">
             Conta criada e cadastro completo.{" "}
             {planoSugerido
-              ? `Comece agora os ${TRIAL_DAYS} dias gratuitos do Plano ${planDetails[planoSugerido].name}, sem cartao.`
-              : `Escolha um plano abaixo para comecar ${TRIAL_DAYS} dias gratuitos, sem cartao.`}{" "}
-            No fim do teste, pagar e um clique: nao pedimos os dados de novo.
+              ? `Comece agora os ${TRIAL_DAYS} dias gratuitos do Plano ${planDetails[planoSugerido].name}, sem cartão.`
+              : `Escolha um plano abaixo para começar ${TRIAL_DAYS} dias gratuitos, sem cartão.`}{" "}
+            No fim do teste, pagar é um clique: não pedimos os dados de novo.
           </div>
         ) : null}
         {paymentStatus ? (
@@ -101,12 +101,12 @@ export default async function SettingsPage({
             </div>
             <h3 className="mt-3 text-xl font-semibold text-slate-950">{activePlan?.name ?? "Assinatura pendente"}</h3>
             <p className="mt-2 text-sm leading-6 text-slate-600">
-              {activePlan?.description ?? "Escolha um plano para liberar tarefas, metas, funcionarios, relatorios e demais rotinas da empresa."}
+              {activePlan?.description ?? "Escolha um plano para liberar tarefas, metas, funcionários, relatórios e demais rotinas da empresa."}
             </p>
             <p className="mt-4 text-xs font-medium uppercase tracking-normal text-slate-400">Mensalidade atual</p>
             <p className="mt-1 text-2xl font-semibold text-slate-950">
               {currentMonthlyTotal}
-              {activePlan ? <span className="text-sm font-medium text-slate-500">/mes</span> : null}
+              {activePlan ? <span className="text-sm font-medium text-slate-500">/mês</span> : null}
             </p>
             <dl className="mt-4 grid gap-3 text-sm text-slate-600 sm:grid-cols-2">
               <div className="rounded-md bg-slate-50 p-3">
@@ -114,15 +114,15 @@ export default async function SettingsPage({
                 <dd className="mt-1 font-semibold text-slate-950">{activePlan?.price ?? "-"}</dd>
               </div>
               <div className="rounded-md bg-slate-50 p-3">
-                <dt className="text-xs font-medium uppercase tracking-normal text-slate-400">Incluidos</dt>
-                <dd className="mt-1 font-semibold text-slate-950">{activePlan ? `Ate ${access.includedUsers}` : "0"}</dd>
+                <dt className="text-xs font-medium uppercase tracking-normal text-slate-400">Incluídos</dt>
+                <dd className="mt-1 font-semibold text-slate-950">{activePlan ? `Até ${access.includedUsers}` : "0"}</dd>
               </div>
               <div className="rounded-md bg-slate-50 p-3">
-                <dt className="text-xs font-medium uppercase tracking-normal text-slate-400">Usuarios ativos</dt>
+                <dt className="text-xs font-medium uppercase tracking-normal text-slate-400">Usuários ativos</dt>
                 <dd className="mt-1 font-semibold text-slate-950">{activeUserCount}</dd>
               </div>
               <div className="rounded-md bg-slate-50 p-3">
-                <dt className="text-xs font-medium uppercase tracking-normal text-slate-400">Usuario extra</dt>
+                <dt className="text-xs font-medium uppercase tracking-normal text-slate-400">Usuário extra</dt>
                 <dd className="mt-1 font-semibold text-slate-950">{activePlan ? `${activePlan.pricePerExtraUser}/mes` : "-"}</dd>
               </div>
               <div className="rounded-md bg-slate-50 p-3">
@@ -158,7 +158,7 @@ export default async function SettingsPage({
           </div>
         </div>
         <div className="mt-6 border-t border-slate-100 pt-5">
-          <h3 className="text-sm font-semibold text-slate-950">Planos disponiveis</h3>
+          <h3 className="text-sm font-semibold text-slate-950">Planos disponíveis</h3>
           <div className="mt-3 grid gap-3 md:grid-cols-3">
             {planOrder.map((planCode) => {
               const plan = planDetails[planCode];
@@ -172,7 +172,7 @@ export default async function SettingsPage({
               // volta seria esperar o acesso acabar.
               const checkoutLabel = !activePlanCode
                 ? trialEligible
-                  ? "Comecar teste de 30 dias"
+                  ? "Começar teste de 30 dias"
                   : "Comprar plano"
                 : isCurrent
                   ? subscriptionWindow.cancelAtPeriodEnd
@@ -182,7 +182,7 @@ export default async function SettingsPage({
                     ? "Aprimorar plano"
                     : "Trocar plano";
               const disabledReason = targetDoesNotFit
-                ? `Este plano nao comporta ${activeUserCount} usuarios ativos.`
+                ? `Este plano não comporta ${activeUserCount} usuários ativos.`
                 : undefined;
 
               return (
@@ -205,13 +205,13 @@ export default async function SettingsPage({
                   </div>
                   <p className="mt-3 text-lg font-semibold text-slate-950">
                     {plan.price}
-                    <span className="text-xs font-medium text-slate-500">/mes</span>
+                    <span className="text-xs font-medium text-slate-500">/mês</span>
                   </p>
                   <p className="mt-2 text-xs leading-5 text-slate-600">
-                    {plan.includedUsers} usuarios incluidos, {plan.pricePerExtraUser}/mes por usuario extra.
+                    {plan.includedUsers} usuários incluídos, {plan.pricePerExtraUser}/mês por usuário extra.
                   </p>
                   <p className="mt-2 text-xs font-semibold text-slate-950">
-                    Total estimado agora: {planPrice.totalPriceCents === null ? "Upgrade necessario" : formatPriceCents(planPrice.totalPriceCents)}/mes
+                    Total estimado agora: {planPrice.totalPriceCents === null ? "Upgrade necessário" : formatPriceCents(planPrice.totalPriceCents)}/mês
                   </p>
                   <PlanCheckoutButton
                     planCode={planCode}

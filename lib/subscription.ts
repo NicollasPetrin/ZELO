@@ -1,16 +1,16 @@
 import type { SubscriptionPlan } from "@prisma/client";
 
 export const NO_ACTIVE_SUBSCRIPTION_MESSAGE =
-  "Sua empresa ainda nao possui assinatura ativa. Escolha um plano para liberar as funcionalidades.";
+  "Sua empresa ainda não possui assinatura ativa. Escolha um plano para liberar as funcionalidades.";
 
 export const SUBSCRIPTION_SUSPENDED_MESSAGE =
-  "A assinatura esta suspensa por falta de pagamento. Regularize para liberar as funcionalidades novamente.";
+  "A assinatura está suspensa por falta de pagamento. Regularize para liberar as funcionalidades novamente.";
 
 export const TRIAL_ENDED_MESSAGE =
   "Seu teste gratuito terminou. Assine o plano para liberar as funcionalidades novamente.";
 
 export const SUBSCRIPTION_ENDED_MESSAGE =
-  "A assinatura foi cancelada e o periodo contratado terminou. Contrate um plano para voltar a usar as funcionalidades.";
+  "A assinatura foi cancelada e o período contratado terminou. Contrate um plano para voltar a usar as funcionalidades.";
 
 /** A partir de quantos dias antes do vencimento o cliente comeca a ser lembrado. */
 export const REMINDER_WINDOW_DAYS = 5;
@@ -233,10 +233,10 @@ export function buildReminderContent(window: SubscriptionWindow, planName: strin
     return {
       title: `Seu acesso termina em ${pluralizeDays(window.daysRemaining)}`,
       message: window.isTrial
-        ? `O teste do Plano ${planName} foi cancelado e nenhuma cobranca sera feita. ` +
+        ? `O teste do Plano ${planName} foi cancelado e nenhuma cobrança será feita. ` +
           "Para continuar usando, contrate um plano antes dessa data."
-        : `A assinatura do Plano ${planName} foi cancelada e nao sera renovada. ` +
-          "Ate la nada muda; depois disso as funcionalidades sao bloqueadas.",
+        : `A assinatura do Plano ${planName} foi cancelada e não será renovada. ` +
+          "Até lá nada muda; depois disso as funcionalidades são bloqueadas.",
     };
   }
 
@@ -244,7 +244,7 @@ export function buildReminderContent(window: SubscriptionWindow, planName: strin
     return {
       title: "Seu teste gratuito terminou",
       message:
-        `As funcionalidades estao bloqueadas ate a assinatura do Plano ${planName} ser paga. ` +
+        `As funcionalidades estão bloqueadas até a assinatura do Plano ${planName} ser paga. ` +
         "Seus dados continuam guardados e voltam assim que o pagamento for confirmado.",
     };
   }
@@ -253,8 +253,8 @@ export function buildReminderContent(window: SubscriptionWindow, planName: strin
     return {
       title: `Seu teste gratuito termina em ${pluralizeDays(window.daysRemaining)}`,
       message:
-        `Depois dessa data o acesso e bloqueado ate o pagamento do Plano ${planName} ser confirmado. ` +
-        "Nada e cobrado automaticamente: nenhum cartao foi guardado.",
+        `Depois dessa data o acesso é bloqueado até o pagamento do Plano ${planName} ser confirmado. ` +
+        "Nada é cobrado automaticamente: nenhum cartão foi guardado.",
     };
   }
 
@@ -262,8 +262,8 @@ export function buildReminderContent(window: SubscriptionWindow, planName: strin
     return {
       title: `Plano ${planName} vence em ${pluralizeDays(window.daysRemaining)}`,
       message:
-        `Realize o pagamento para manter o acesso. Apos o vencimento voce ainda tem ` +
-        `${pluralizeDays(GRACE_PERIOD_DAYS)} de tolerancia antes das funcionalidades serem bloqueadas.`,
+        `Realize o pagamento para manter o acesso. Após o vencimento você ainda tem ` +
+        `${pluralizeDays(GRACE_PERIOD_DAYS)} de tolerância antes das funcionalidades serem bloqueadas.`,
     };
   }
 
@@ -274,13 +274,13 @@ export function buildReminderContent(window: SubscriptionWindow, planName: strin
       title: "Pagamento do plano em atraso",
       message:
         diasRestantes === 0
-          ? "O acesso as funcionalidades sera bloqueado a qualquer momento. Regularize a assinatura agora."
-          : `O acesso as funcionalidades sera bloqueado em ${pluralizeDays(diasRestantes)}. Regularize a assinatura.`,
+          ? "O acesso às funcionalidades será bloqueado a qualquer momento. Regularize a assinatura agora."
+          : `O acesso às funcionalidades será bloqueado em ${pluralizeDays(diasRestantes)}. Regularize a assinatura.`,
     };
   }
 
   return {
     title: "Assinatura suspensa por falta de pagamento",
-    message: `As funcionalidades do Plano ${planName} estao bloqueadas ate a regularizacao do pagamento.`,
+    message: `As funcionalidades do Plano ${planName} estão bloqueadas até a regularização do pagamento.`,
   };
 }

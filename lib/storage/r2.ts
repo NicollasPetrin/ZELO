@@ -46,10 +46,10 @@ async function enviar(
     });
   } catch (error) {
     if (error instanceof Error && error.name === "TimeoutError") {
-      throw new StorageError(`O armazenamento nao respondeu em ${TIMEOUT_MS}ms.`, 504);
+      throw new StorageError(`O armazenamento não respondeu em ${TIMEOUT_MS}ms.`, 504);
     }
 
-    throw new StorageError("Nao foi possivel contatar o armazenamento.", 503);
+    throw new StorageError("Não foi possível contatar o armazenamento.", 503);
   }
 
   if (!resposta.ok) {

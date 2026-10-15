@@ -19,7 +19,7 @@ export function LockedFeatureCard({
           <p className="text-sm font-semibold text-slate-950">{title}</p>
           <p className="mt-1 text-sm leading-6 text-slate-600">{description}</p>
           <p className="mt-3 inline-flex rounded-md bg-white px-2.5 py-1 text-xs font-semibold text-emerald-700">
-            Disponivel no Plano {requiredPlan}
+            Disponível no Plano {requiredPlan}
           </p>
         </div>
       </div>

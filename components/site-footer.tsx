@@ -14,13 +14,13 @@ import { BrandLogo } from "@/components/brand-logo";
 const empresa = {
   // Validado com isValidDocument de lib/document: os digitos verificadores conferem.
   cnpj: "68.648.134/0001-57",
-  razaoSocial: "Zelo Solucoes Digitais LTDA",
+  razaoSocial: "Zelo Soluções Digitais LTDA",
   email: "zelosolucoesdigitais@gmail.com",
 };
 
 const rotulos: Record<keyof typeof empresa, string> = {
   cnpj: "CNPJ",
-  razaoSocial: "razao social",
+  razaoSocial: "razão social",
   email: "e-mail de contato",
 };
 

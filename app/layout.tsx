@@ -14,7 +14,7 @@ const manrope = Manrope({
 
 export const metadata: Metadata = {
   title: "Zelo",
-  description: "Gestao simples de tarefas, setores, metas e equipe para microempresas.",
+  description: "Gestão simples de tarefas, setores, metas e equipe para microempresas.",
   icons: {
     icon: "/brand/zelo-icon.svg",
   },

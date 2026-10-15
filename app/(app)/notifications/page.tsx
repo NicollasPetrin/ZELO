@@ -31,8 +31,8 @@ export default async function NotificationsPage({ searchParams }: { searchParams
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Notificacoes"
-        description="Acompanhe eventos importantes sobre tarefas, comentarios, prazos e metas."
+        title="Notificações"
+        description="Acompanhe eventos importantes sobre tarefas, comentários, prazos e metas."
         actions={
           unreadCount > 0 ? (
             <form
@@ -55,11 +55,11 @@ export default async function NotificationsPage({ searchParams }: { searchParams
           <table className="min-w-full divide-y divide-slate-200">
             <thead className="bg-slate-50">
               <tr>
-                <Th>Notificacao</Th>
+                <Th>Notificação</Th>
                 <Th>Tipo</Th>
                 <Th>Status</Th>
                 <Th>Data</Th>
-                <Th>Acoes</Th>
+                <Th>Ações</Th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 bg-white">
@@ -77,7 +77,7 @@ export default async function NotificationsPage({ searchParams }: { searchParams
                   <Td>{notificationLabels[notification.type]}</Td>
                   <Td>
                     <Badge className={notification.isRead ? "bg-slate-100 text-slate-600" : "bg-sky-100 text-sky-800"}>
-                      {notification.isRead ? "Lida" : "Nao lida"}
+                      {notification.isRead ? "Lida" : "Não lida"}
                     </Badge>
                   </Td>
                   <Td>{formatDateTime(notification.createdAt)}</Td>
@@ -109,8 +109,8 @@ export default async function NotificationsPage({ searchParams }: { searchParams
         </DataTable>
       ) : (
         <EmptyState
-          title="Sem notificacoes"
-          description="Eventos como nova tarefa, comentario, atraso e meta em atencao aparecerao aqui."
+          title="Sem notificações"
+          description="Eventos como nova tarefa, comentário, atraso e meta em atenção aparecerão aqui."
         />
       )}
       <Pagination {...notificationPage} searchParams={params} />

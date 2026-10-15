@@ -23,7 +23,7 @@ export default async function ConversaPage({ params }: { params: Promise<{ id: s
   const pessoas = `${conversa.participants.length} pessoa${conversa.participants.length === 1 ? "" : "s"}`;
   // No geral a lista de nomes seria a empresa inteira; ali basta a contagem.
   const quemParticipa = ehSuporte
-    ? "Resposta em horario comercial. O historico fica guardado aqui."
+    ? "Resposta em horário comercial. O histórico fica guardado aqui."
     : conversa.kind === "GENERAL"
       ? `Todo mundo da empresa - ${pessoas}`
       : conversa.kind === "DEPARTMENT"
@@ -53,7 +53,7 @@ export default async function ConversaPage({ params }: { params: Promise<{ id: s
           {conversa.messages.length === 0 ? (
             <p className="py-8 text-center text-sm text-slate-500">
               {ehSuporte
-                ? "Escreva sua duvida abaixo. Voce recebe a resposta nesta mesma conversa."
+                ? "Escreva sua dúvida abaixo. Você recebe a resposta nesta mesma conversa."
                 : conversa.kind === "GENERAL"
                   ? "Nenhuma mensagem ainda. O que for escrito aqui chega para todo mundo da empresa."
                   : conversa.kind === "DEPARTMENT"
@@ -95,7 +95,7 @@ export default async function ConversaPage({ params }: { params: Promise<{ id: s
                           meu ? "text-slate-300" : mensagem.fromSupport ? "text-emerald-800" : "text-slate-500",
                         )}
                       >
-                        {mensagem.fromSupport ? SUPPORT_AUTHOR_LABEL : meu ? "Voce" : mensagem.authorName}
+                        {mensagem.fromSupport ? SUPPORT_AUTHOR_LABEL : meu ? "Você" : mensagem.authorName}
                       </p>
                     )}
                     <p className="whitespace-pre-wrap break-words">{mensagem.body}</p>

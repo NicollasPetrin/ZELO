@@ -34,7 +34,7 @@ export async function applyPaymentEvent(
   const payment = event.payment;
 
   if (!payment) {
-    return { handled: false, reason: "evento sem objeto de cobranca" };
+    return { handled: false, reason: "evento sem objeto de cobrança" };
   }
 
   const company = await tx.company.findUnique({
@@ -58,7 +58,7 @@ export async function applyPaymentEvent(
   const planCode: SubscriptionPlan | null = company.pendingPlanCode ?? existing?.plan.code ?? null;
 
   if (!planCode) {
-    return { handled: false, reason: "nao foi possivel determinar o plano da cobranca" };
+    return { handled: false, reason: "não foi possível determinar o plano da cobrança" };
   }
 
   const plan = await tx.planCatalog.findUnique({
@@ -67,7 +67,7 @@ export async function applyPaymentEvent(
   });
 
   if (!plan) {
-    return { handled: false, reason: `plano ${planCode} ausente do catalogo` };
+    return { handled: false, reason: `plano ${planCode} ausente do catálogo` };
   }
 
   if (GRANTING_EVENTS.has(event.event)) {

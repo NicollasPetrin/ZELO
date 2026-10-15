@@ -8,11 +8,11 @@ export function EmployeeMetricsTable({ employees }: { employees: EmployeeMetric[
       <table className="min-w-full divide-y divide-slate-200">
         <thead className="bg-slate-50">
           <tr>
-            <Th>Responsavel</Th>
+            <Th>Responsável</Th>
             <Th>Setor</Th>
             <Th>Abertas</Th>
             <Th>Atrasadas</Th>
-            <Th>Conclusao</Th>
+            <Th>Conclusão</Th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100 bg-white">
@@ -31,7 +31,7 @@ export function EmployeeMetricsTable({ employees }: { employees: EmployeeMetric[
           ) : (
             <tr>
               <Td colSpan={5}>
-                <span className="text-slate-500">Nenhum funcionario cadastrado ainda.</span>
+                <span className="text-slate-500">Nenhum funcionário cadastrado ainda.</span>
               </Td>
             </tr>
           )}

@@ -41,7 +41,7 @@ export function StorageCheck({ configured }: { configured: boolean }) {
           {isPending ? "Testando..." : "Testar armazenamento de fotos"}
         </button>
         <span className={`text-sm ${configured ? "text-slate-600" : "text-amber-700"}`}>
-          {configured ? "Credenciais presentes" : "Credenciais ausentes: a prova por foto esta desligada"}
+          {configured ? "Credenciais presentes" : "Credenciais ausentes: a prova por foto está desligada"}
         </span>
       </div>
       <div className="mt-2 max-w-2xl">

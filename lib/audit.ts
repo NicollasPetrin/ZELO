@@ -37,6 +37,6 @@ export async function recordActivity({
       },
     });
   } catch (error) {
-    console.error("Nao foi possivel registrar ActivityLog.", error);
+    console.error("Não foi possível registrar ActivityLog.", error);
   }
 }

@@ -77,8 +77,8 @@ export function TaskCommentForm({ taskId }: { taskId: string }) {
       }}
     >
       <div className="space-y-1.5">
-        <Label>Novo comentario</Label>
-        <Textarea value={text} onChange={(event) => setText(event.target.value)} placeholder="Registre uma atualizacao objetiva sobre a tarefa." />
+        <Label>Novo comentário</Label>
+        <Textarea value={text} onChange={(event) => setText(event.target.value)} placeholder="Registre uma atualização objetiva sobre a tarefa." />
         <FieldError message={text.length === 1 ? "Escreva ao menos 2 caracteres." : undefined} />
       </div>
       <div className="flex items-center justify-between gap-3">

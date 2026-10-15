@@ -67,8 +67,8 @@ export default async function TeamTasksPage({
         title="Tarefas da Equipe"
         description={
           access.canUseAdvancedFilters
-            ? "Crie, filtre por setor, responsavel, prioridade e acompanhe tarefas da empresa."
-            : "Crie e acompanhe tarefas. Filtros avancados entram a partir do Plano Gestao."
+            ? "Crie, filtre por setor, responsável, prioridade e acompanhe tarefas da empresa."
+            : "Crie e acompanhe tarefas. Filtros avançados entram a partir do Plano Gestão."
         }
         actions={
           <div className="flex flex-wrap gap-2">
@@ -85,16 +85,16 @@ export default async function TeamTasksPage({
 
       <OnboardingCard
         stepKey="team-tasks"
-        title="Crie tarefas com responsavel, prazo, prioridade e setor"
-        description="Assim cada pessoa sabe exatamente o que precisa fazer e voce acompanha pendencias por responsavel, setor e prazo."
+        title="Crie tarefas com responsável, prazo, prioridade e setor"
+        description="Assim cada pessoa sabe exatamente o que precisa fazer e você acompanha pendências por responsável, setor e prazo."
         completed={onboardingCompleted}
       />
 
       {!access.canUseAdvancedFilters ? (
         <LockedFeatureCard
-          title="Filtros avancados de tarefas"
-          description="Setor, responsavel e prioridade ficam bloqueados no Basico. O Plano Gestao libera a triagem operacional completa."
-          requiredPlan="Gestao"
+          title="Filtros avançados de tarefas"
+          description="Setor, responsável e prioridade ficam bloqueados no Básico. O Plano Gestão libera a triagem operacional completa."
+          requiredPlan="Gestão"
         />
       ) : null}
 
@@ -103,7 +103,7 @@ export default async function TeamTasksPage({
           <Label>Buscar</Label>
           <div className="relative">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />
-            <Input className="pl-9" name="q" placeholder="Titulo ou descricao" defaultValue={query ?? ""} />
+            <Input className="pl-9" name="q" placeholder="Título ou descrição" defaultValue={query ?? ""} />
           </div>
         </div>
         <div className="space-y-1.5">
@@ -142,7 +142,7 @@ export default async function TeamTasksPage({
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label>Responsavel</Label>
+              <Label>Responsável</Label>
               <Select name="assigneeId" defaultValue={assigneeId ?? ""}>
                 <option value="">Todos</option>
                 {users.map((teamUser) => (
@@ -175,7 +175,7 @@ export default async function TeamTasksPage({
                 <thead className="bg-slate-50">
                   <tr>
                     <Th>Tarefa</Th>
-                    <Th>Responsavel</Th>
+                    <Th>Responsável</Th>
                     <Th>Setor</Th>
                     <Th>Prazo</Th>
                     <Th>Prioridade</Th>
@@ -205,8 +205,8 @@ export default async function TeamTasksPage({
         </>
       ) : (
         <EmptyState
-          title="Voce ainda nao criou nenhuma tarefa"
-          description="Comece criando a primeira tarefa da equipe para tirar as pendencias do WhatsApp e colocar tudo em um lugar visivel."
+          title="Você ainda não criou nenhuma tarefa"
+          description="Comece criando a primeira tarefa da equipe para tirar as pendências do WhatsApp e colocar tudo em um lugar visível."
         />
       )}
       {taskPage ? <Pagination {...taskPage} searchParams={params} /> : null}
@@ -216,8 +216,8 @@ export default async function TeamTasksPage({
         {!access.canUseRecurringTasks ? (
           <LockedFeatureCard
             title="Tarefas recorrentes"
-            description="No Plano Basico as tarefas sao criadas uma a uma. Recorrencia diaria, semanal ou mensal entra no Plano Gestao."
-            requiredPlan="Gestao"
+            description="No Plano Básico as tarefas são criadas uma a uma. Recorrência diária, semanal ou mensal entra no Plano Gestão."
+            requiredPlan="Gestão"
           />
         ) : null}
         <TaskForm users={users} departments={departments} allowRecurrence={access.canUseRecurringTasks} />

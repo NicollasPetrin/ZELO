@@ -61,7 +61,7 @@ async function chamar(token: string, caminho: string, init: { method: string; bo
       cache: "no-store",
     });
   } catch {
-    throw new GoogleError("Nao foi possivel falar com o Google Agenda.", 503);
+    throw new GoogleError("Não foi possível falar com o Google Agenda.", 503);
   }
 
   if (!resposta.ok) {
@@ -117,7 +117,7 @@ export async function syncTaskCalendar(taskId: string) {
   const conta = await accessTokenDe(task.assigneeId);
 
   if (!conta) {
-    return { skipped: "responsavel sem agenda conectada" } as const;
+    return { skipped: "responsável sem agenda conectada" } as const;
   }
 
   if (shouldRemoveFromCalendar(task.status)) {
