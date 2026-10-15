@@ -12,6 +12,7 @@ import { SubscriptionRequiredCard } from "@/components/subscription-required-car
 import { buttonClassName } from "@/components/ui/button";
 import { Input, Label, Select } from "@/components/ui/fields";
 import { getTaskFormOptions, listTeamTasks } from "@/features/tasks/data";
+import { TaskCardList } from "@/features/tasks/task-card-list";
 import { TaskForm } from "@/features/tasks/task-form";
 import { requireTeamArea } from "@/lib/auth/guards";
 import { formatDate, isTaskLate } from "@/lib/format";
@@ -82,8 +83,8 @@ export default async function TeamTasksPage({
         />
       ) : null}
 
-      <form className={`grid gap-3 rounded-md border border-slate-200 bg-white p-4 shadow-sm ${access.canUseAdvancedFilters ? "xl:grid-cols-[1fr_160px_160px_180px_180px_auto]" : "md:grid-cols-[1fr_180px_auto]"}`}>
-        <div className="space-y-1.5">
+      <form className={`grid grid-cols-2 gap-3 rounded-md border border-slate-200 bg-white p-4 shadow-sm ${access.canUseAdvancedFilters ? "xl:grid-cols-[1fr_160px_160px_180px_180px_auto]" : "md:grid-cols-[1fr_180px_auto]"}`}>
+        <div className={`col-span-2 space-y-1.5 ${access.canUseAdvancedFilters ? "xl:col-span-1" : "md:col-span-1"}`}>
           <Label>Buscar</Label>
           <div className="relative">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />
@@ -138,7 +139,7 @@ export default async function TeamTasksPage({
             </div>
           </>
         ) : null}
-        <div className="flex items-end">
+        <div className={`flex items-end ${access.canUseAdvancedFilters ? "col-span-2 xl:col-span-1" : ""}`}>
           <button className={buttonClassName("secondary")} type="submit">
             Filtrar
           </button>
@@ -146,37 +147,42 @@ export default async function TeamTasksPage({
       </form>
 
       {tasks.length ? (
-        <DataTable>
-          <table className="min-w-full divide-y divide-slate-200">
-            <thead className="bg-slate-50">
-              <tr>
-                <Th>Tarefa</Th>
-                <Th>Responsavel</Th>
-                <Th>Setor</Th>
-                <Th>Prazo</Th>
-                <Th>Prioridade</Th>
-                <Th>Status</Th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 bg-white">
-              {tasks.map((task) => (
-                <tr key={task.id}>
-                  <Td>
-                    <Link href={`/tasks/${task.id}`} className="font-medium text-slate-950 hover:underline">
-                      {task.title}
-                    </Link>
-                    <p className="mt-1 line-clamp-2 text-xs leading-5 text-slate-500">{task.description}</p>
-                  </Td>
-                  <Td>{task.assignee.name}</Td>
-                  <Td>{task.department.name}</Td>
-                  <Td>{formatDate(task.dueDate)}</Td>
-                  <Td><PriorityBadge priority={task.priority} /></Td>
-                  <Td><StatusBadge status={task.status} late={isTaskLate(task.status, task.dueDate)} /></Td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </DataTable>
+        <>
+          <TaskCardList tasks={tasks} />
+          <div className="hidden md:block">
+            <DataTable>
+              <table className="min-w-full divide-y divide-slate-200">
+                <thead className="bg-slate-50">
+                  <tr>
+                    <Th>Tarefa</Th>
+                    <Th>Responsavel</Th>
+                    <Th>Setor</Th>
+                    <Th>Prazo</Th>
+                    <Th>Prioridade</Th>
+                    <Th>Status</Th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 bg-white">
+                  {tasks.map((task) => (
+                    <tr key={task.id}>
+                      <Td>
+                        <Link href={`/tasks/${task.id}`} className="font-medium text-slate-950 hover:underline">
+                          {task.title}
+                        </Link>
+                        <p className="mt-1 line-clamp-2 text-xs leading-5 text-slate-500">{task.description}</p>
+                      </Td>
+                      <Td>{task.assignee.name}</Td>
+                      <Td>{task.department.name}</Td>
+                      <Td>{formatDate(task.dueDate)}</Td>
+                      <Td><PriorityBadge priority={task.priority} /></Td>
+                      <Td><StatusBadge status={task.status} late={isTaskLate(task.status, task.dueDate)} /></Td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </DataTable>
+          </div>
+        </>
       ) : (
         <EmptyState
           title="Voce ainda nao criou nenhuma tarefa"
