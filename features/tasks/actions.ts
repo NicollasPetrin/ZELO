@@ -1,5 +1,6 @@
 "use server";
 
+import { DEFAULT_DUE_TIME, dueDateAt } from "@/lib/due-date";
 import { revalidatePath } from "next/cache";
 import { actionError } from "@/lib/action-result";
 import { recordActivity } from "@/lib/audit";
@@ -22,9 +23,8 @@ import {
   taskStatusSchema,
 } from "@/lib/validations";
 
-function taskDate(value: string) {
-  const date = new Date(`${value}T17:00:00`);
-  return Number.isNaN(date.getTime()) ? new Date(value) : date;
+function taskDate(value: string, time?: string) {
+  return dueDateAt(value, time || DEFAULT_DUE_TIME) ?? new Date(value);
 }
 
 function recurrenceData(parsed: ReturnType<typeof taskSchema.parse>, taskId: string) {
@@ -66,7 +66,7 @@ export async function createTaskAction(values: unknown) {
     }
 
     // "Atrasada" vem do prazo, nao da escolha de quem preenche o formulario.
-    const novaData = taskDate(parsed.dueDate);
+    const novaData = taskDate(parsed.dueDate, parsed.dueTime);
     const statusCriacao = reconcileTaskStatus(parsed.status, novaData);
 
     const task = await prisma.task.create({
@@ -172,7 +172,7 @@ export async function updateTaskAction(values: unknown) {
 
     // Sem isto, adiar o prazo de uma tarefa atrasada deixava o status como
     // estava e ela continuava aparecendo atrasada para sempre.
-    const dataAtualizada = taskDate(parsed.dueDate);
+    const dataAtualizada = taskDate(parsed.dueDate, parsed.dueTime);
     const statusAtualizado = reconcileTaskStatus(parsed.status, dataAtualizada);
 
     const updateResult = await prisma.task.updateMany({

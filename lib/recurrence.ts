@@ -1,6 +1,24 @@
 import type { RecurrenceRule } from "@prisma/client";
+import { DEFAULT_DUE_TIME, dueDateAt } from "@/lib/due-date";
+
+/**
+ * O calculo abaixo anda de dia em dia no relogio do servidor; no fim, o dia
+ * encontrado recebe o horario padrao de Brasilia, o mesmo das tarefas criadas
+ * pelo formulario.
+ */
+function noHorarioPadrao(date: Date) {
+  const dia = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+
+  return dueDateAt(dia, DEFAULT_DUE_TIME) ?? date;
+}
 
 export function getNextRecurrenceDate(rule: Pick<RecurrenceRule, "type" | "weekDays" | "monthDay" | "startDate" | "endDate">, from = new Date()) {
+  const next = calcularProxima(rule, from);
+
+  return next ? noHorarioPadrao(next) : null;
+}
+
+function calcularProxima(rule: Pick<RecurrenceRule, "type" | "weekDays" | "monthDay" | "startDate" | "endDate">, from: Date) {
   if (rule.type === "NONE") {
     return null;
   }

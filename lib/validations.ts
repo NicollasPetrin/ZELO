@@ -134,6 +134,12 @@ export const taskSchema = z.object({
   assigneeId: z.string().min(1, "Selecione o responsavel."),
   departmentId: z.string().min(1, "Selecione o setor."),
   dueDate: z.string().min(1, "Informe o prazo."),
+  /// Horario do prazo em Brasilia (HH:MM). Vazio vale o fim do expediente.
+  dueTime: z
+    .string()
+    .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Horario invalido.")
+    .optional()
+    .or(z.literal("")),
   priority: z.enum(taskPriorities),
   status: z.enum(taskStatuses),
   /// Checkbox do formulario: chega "on" quando marcado, ausente quando nao.

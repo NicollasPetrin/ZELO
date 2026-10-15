@@ -1,3 +1,4 @@
+import { brasiliaDay, FUSO_OPERACAO } from "@/lib/due-date";
 import { goalUnitLabels } from "@/lib/labels";
 import type { GoalUnit, TaskStatus } from "@prisma/client";
 
@@ -6,6 +7,9 @@ export function formatDate(date: Date | string) {
     day: "2-digit",
     month: "short",
     year: "numeric",
+    // Fuso fixo: no servidor (UTC) um prazo das 22h de Brasilia ja seria o dia
+    // seguinte, e a tela mostraria a data errada.
+    timeZone: FUSO_OPERACAO,
   }).format(new Date(date));
 }
 
@@ -15,6 +19,7 @@ export function formatDateTime(date: Date | string) {
     month: "short",
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: FUSO_OPERACAO,
   }).format(new Date(date));
 }
 
@@ -23,7 +28,7 @@ export function toDateInputValue(date?: Date | string | null) {
     return "";
   }
 
-  return new Date(date).toISOString().slice(0, 10);
+  return brasiliaDay(new Date(date));
 }
 
 export function getGoalProgress(currentValue: number, targetValue: number) {

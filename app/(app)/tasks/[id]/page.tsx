@@ -12,6 +12,7 @@ import { TaskAttachmentForm, TaskCommentForm, TaskStatusForm } from "@/features/
 import { TaskForm } from "@/features/tasks/task-form";
 import { TaskProofPanel } from "@/features/tasks/task-proof-panel";
 import { requireUser } from "@/lib/auth/session";
+import { brasiliaTime } from "@/lib/due-date";
 import { formatDate, formatDateTime, isTaskLate, toDateInputValue } from "@/lib/format";
 import { recurrenceLabels } from "@/lib/labels";
 import { getPlanAccess } from "@/lib/plans";
@@ -201,6 +202,7 @@ export default async function TaskDetailPage({
                     assigneeId: task.assigneeId,
                     departmentId: task.departmentId,
                     dueDate: toDateInputValue(task.dueDate),
+                    dueTime: brasiliaTime(task.dueDate),
                     priority: task.priority,
                     requiresProof: task.requiresProof,
                     status: task.status,

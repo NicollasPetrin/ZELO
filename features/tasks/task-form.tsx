@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { FieldError, Input, Label, Select, Textarea } from "@/components/ui/fields";
 import { FormMessage } from "@/components/form-message";
 import { createTaskAction, updateTaskAction } from "@/features/tasks/actions";
+import { DEFAULT_DUE_TIME } from "@/lib/due-date";
 import { priorityLabels, recurrenceLabels, statusLabels } from "@/lib/labels";
 import { recurrenceTypes, taskPriorities, taskSchema, taskStatuses } from "@/lib/validations";
 
@@ -50,6 +51,7 @@ export function TaskForm({
       assigneeId: initial?.assigneeId ?? users[0]?.id ?? "",
       departmentId: initial?.departmentId ?? departments[0]?.id ?? "",
       dueDate: initial?.dueDate ?? "",
+      dueTime: initial?.dueTime ?? DEFAULT_DUE_TIME,
       priority: initial?.priority ?? "MEDIUM",
       requiresProof: initial?.requiresProof ?? false,
       status: initial?.status ?? "PENDING",
@@ -77,6 +79,7 @@ export function TaskForm({
             assigneeId: users[0]?.id ?? "",
             departmentId: departments[0]?.id ?? "",
             dueDate: "",
+            dueTime: DEFAULT_DUE_TIME,
             priority: "MEDIUM",
             status: "PENDING",
             recurrenceType: "NONE",
@@ -134,8 +137,11 @@ export function TaskForm({
         </div>
         <div className="space-y-1.5">
           <Label>Prazo</Label>
-          <Input type="date" {...register("dueDate")} />
-          <FieldError message={errors.dueDate?.message} />
+          <div className="grid grid-cols-[minmax(0,1fr)_120px] gap-2">
+            <Input type="date" {...register("dueDate")} />
+            <Input type="time" aria-label="Horario do prazo" {...register("dueTime")} />
+          </div>
+          <FieldError message={errors.dueDate?.message ?? errors.dueTime?.message} />
         </div>
         <div className="space-y-1.5">
           <Label>Prioridade</Label>
