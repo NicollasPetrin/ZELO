@@ -143,10 +143,14 @@ enum ReportSnapshotType {
 }
 
 enum ConversationKind {
-  /// Conversa entre pessoas da mesma empresa.
+  /// Conversa privada entre pessoas da mesma empresa (duas pessoas ou um grupo).
   COMPANY
   /// Conversa da empresa com o suporte da Zelo.
   SUPPORT
+  /// Chat geral: todo mundo ativo da empresa.
+  GENERAL
+  /// Chat da equipe: todo mundo do setor.
+  DEPARTMENT
 }
 
 enum SupportTicketStatus {
@@ -287,17 +291,18 @@ model Session {
 }
 
 model Department {
-  id          String   @id @default(cuid())
-  companyId   String
-  name        String
-  description String?
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  users       User[]
-  tasks       Task[]
-  goals       Goal[]
+  id            String         @id @default(cuid())
+  companyId     String
+  name          String
+  description   String?
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  company       Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  users         User[]
+  tasks         Task[]
+  goals         Goal[]
+  conversations Conversation[]
 
   @@unique([companyId, name])
   @@index([companyId])
@@ -648,6 +653,11 @@ model SupportTicket {
  * trocando mensagens numa linha do tempo. O que muda e quem participa, e isso
  * o "kind" resolve — duas tabelas quase iguais so dobrariam o codigo de leitura,
  * de nao lidas e de permissao.
+ * No chat geral e no chat da equipe, quem participa nao e guardado: e derivado
+ * da empresa e do setor de cada pessoa (features/chat/access.ts). Assim quem
+ * entra num setor ja esta no chat dele, e quem sai deixa de ver, sem nenhuma
+ * rotina de sincronizar participantes. Nesses dois tipos a linha em
+ * ConversationParticipant serve so para guardar ate onde a pessoa leu.
  */
 model Conversation {
   id            String                    @id @default(cuid())
@@ -655,16 +665,24 @@ model Conversation {
   kind          ConversationKind          @default(COMPANY)
   title         String?
   createdById   String?
+  /// Setor dono do chat da equipe. So preenchido quando kind = DEPARTMENT.
+  departmentId  String?
+  /// Chave que garante um so chat geral por empresa e um so chat por setor
+  /// ("general:<empresa>", "department:<setor>"). Com ela, duas pessoas abrindo
+  /// as Conversas ao mesmo tempo nao criam dois canais iguais.
+  channelKey    String?                   @unique
   /// Ultima mensagem, desnormalizada: a lista de conversas ordena por ela, e
   /// sem isso cada linha da lista viraria uma consulta a mais.
   lastMessageAt DateTime?
   createdAt     DateTime                  @default(now())
   updatedAt     DateTime                  @updatedAt
   company       Company                   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  department    Department?               @relation(fields: [departmentId], references: [id], onDelete: Cascade)
   participants  ConversationParticipant[]
   messages      Message[]
 
   @@index([companyId, kind, lastMessageAt])
+  @@index([departmentId])
 }
 
 model ConversationParticipant {

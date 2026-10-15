@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, LifeBuoy } from "lucide-react";
+import { ArrowLeft, Hash, LifeBuoy, Users } from "lucide-react";
 import { getConversation } from "@/features/chat/data";
 import { MessageComposer } from "@/features/chat/message-composer";
 import { requireUser } from "@/lib/auth/session";
@@ -20,6 +20,15 @@ export default async function ConversaPage({ params }: { params: Promise<{ id: s
   }
 
   const ehSuporte = conversa.kind === "SUPPORT";
+  const pessoas = `${conversa.participants.length} pessoa${conversa.participants.length === 1 ? "" : "s"}`;
+  // No geral a lista de nomes seria a empresa inteira; ali basta a contagem.
+  const quemParticipa = ehSuporte
+    ? "Resposta em horario comercial. O historico fica guardado aqui."
+    : conversa.kind === "GENERAL"
+      ? `Todo mundo da empresa - ${pessoas}`
+      : conversa.kind === "DEPARTMENT"
+        ? `Todo mundo do setor - ${conversa.participants.map((p) => p.name).join(", ")}`
+        : conversa.participants.map((p) => p.name).join(", ");
   const somenteLeitura = !ehSuporte && !getActivePlanCode(user.company);
 
   return (
@@ -33,13 +42,11 @@ export default async function ConversaPage({ params }: { params: Promise<{ id: s
         <header className="border-b border-slate-200 px-4 py-3">
           <h1 className="flex items-center gap-2 text-base font-semibold text-slate-950">
             {ehSuporte ? <LifeBuoy className="h-4 w-4 text-emerald-700" aria-hidden="true" /> : null}
+            {conversa.kind === "GENERAL" ? <Hash className="h-4 w-4 text-slate-500" aria-hidden="true" /> : null}
+            {conversa.kind === "DEPARTMENT" ? <Users className="h-4 w-4 text-slate-500" aria-hidden="true" /> : null}
             {conversa.label}
           </h1>
-          <p className="mt-0.5 text-xs text-slate-500">
-            {ehSuporte
-              ? "Resposta em horario comercial. O historico fica guardado aqui."
-              : conversa.participants.map((p) => p.name).join(", ")}
-          </p>
+          <p className="mt-0.5 line-clamp-2 text-xs text-slate-500">{quemParticipa}</p>
         </header>
 
         <div className="flex-1 space-y-1 overflow-y-auto bg-slate-50 px-4 py-4">
@@ -47,7 +54,11 @@ export default async function ConversaPage({ params }: { params: Promise<{ id: s
             <p className="py-8 text-center text-sm text-slate-500">
               {ehSuporte
                 ? "Escreva sua duvida abaixo. Voce recebe a resposta nesta mesma conversa."
-                : "Nenhuma mensagem ainda. Comece a conversa abaixo."}
+                : conversa.kind === "GENERAL"
+                  ? "Nenhuma mensagem ainda. O que for escrito aqui chega para todo mundo da empresa."
+                  : conversa.kind === "DEPARTMENT"
+                    ? "Nenhuma mensagem ainda. O que for escrito aqui chega para todo mundo do setor."
+                    : "Nenhuma mensagem ainda. Comece a conversa abaixo."}
             </p>
           ) : null}
 

@@ -64,6 +64,9 @@ export function NewConversationForm({ colleagues }: { colleagues: Colleague[] })
   return (
     <div className="rounded-md border border-slate-200 bg-white p-4">
       <h3 className="text-sm font-semibold text-slate-950">Com quem voce quer falar?</h3>
+      <p className="mt-1 text-xs leading-5 text-slate-500">
+        Uma pessoa abre a conversa privada com ela. Varias pessoas viram um grupo.
+      </p>
       <ul className="mt-3 grid gap-2 sm:grid-cols-2">
         {colleagues.map((colega) => (
           <li key={colega.id}>

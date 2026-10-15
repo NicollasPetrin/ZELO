@@ -1,6 +1,8 @@
-import type { ConversationKind } from "@prisma/client";
+import type { ConversationKind, Prisma } from "@prisma/client";
 
 export const SUPPORT_LABEL = "Suporte Zelo";
+
+export const GENERAL_LABEL = "Geral";
 
 /** Quem responde pelo suporte aparece sempre com o mesmo nome para o cliente. */
 export const SUPPORT_AUTHOR_LABEL = "Suporte Zelo";
@@ -10,6 +12,50 @@ export type ParticipantSummary = {
   name: string;
 };
 
+/** Chat geral e chat da equipe: canais em que ninguem e convidado, quem participa vem do cadastro. */
+export function isChannel(kind: ConversationKind) {
+  return kind === "GENERAL" || kind === "DEPARTMENT";
+}
+
+export function generalChannelKey(companyId: string) {
+  return `general:${companyId}`;
+}
+
+export function departmentChannelKey(departmentId: string) {
+  return `department:${departmentId}`;
+}
+
+/**
+ * Quais conversas a pessoa enxerga. E a unica regra de acesso do chat: lista,
+ * conversa aberta, envio e marcacao de lida passam todos por aqui, para que um
+ * caminho novo nao tenha como esquecer um filtro.
+ *
+ * - Privada e suporte: so quem esta na lista de participantes.
+ * - Geral: todo mundo da empresa.
+ * - Equipe: quem esta no setor hoje, e o setor precisa estar ativo. Mudar a
+ *   pessoa de setor ja a coloca no chat novo e tira do antigo.
+ *
+ * Nos canais a linha de participante nao conta como acesso. Ela fica para tras
+ * quando a pessoa muda de setor (guardava ate onde ela leu), e contar com ela
+ * deixaria quem saiu da equipe lendo a conversa da equipe antiga.
+ */
+export function visibleConversationsWhere(user: {
+  id: string;
+  companyId: string;
+  departmentId: string | null;
+}): Prisma.ConversationWhereInput {
+  const acessos: Prisma.ConversationWhereInput[] = [
+    { kind: { in: ["COMPANY", "SUPPORT"] }, participants: { some: { userId: user.id } } },
+    { kind: "GENERAL" },
+  ];
+
+  if (user.departmentId) {
+    acessos.push({ kind: "DEPARTMENT", departmentId: user.departmentId, department: { isActive: true } });
+  }
+
+  return { companyId: user.companyId, OR: acessos };
+}
+
 /**
  * Nome que a conversa recebe na tela de quem esta olhando.
  *
@@ -18,11 +64,26 @@ export type ParticipantSummary = {
  * campo guardado — guardar daria um titulo errado para um dos dois lados.
  */
 export function conversationLabel(
-  conversation: { kind: ConversationKind; title: string | null; participants: ParticipantSummary[] },
+  conversation: {
+    kind: ConversationKind;
+    title: string | null;
+    participants: ParticipantSummary[];
+    department?: { name: string } | null;
+  },
   currentUserId: string,
 ): string {
   if (conversation.kind === "SUPPORT") {
     return SUPPORT_LABEL;
+  }
+
+  if (conversation.kind === "GENERAL") {
+    return GENERAL_LABEL;
+  }
+
+  // O nome vem do setor, e nao de um titulo guardado: renomear o setor ja
+  // renomeia o chat.
+  if (conversation.kind === "DEPARTMENT") {
+    return `Equipe ${conversation.department?.name ?? ""}`.trim();
   }
 
   if (conversation.title?.trim()) {

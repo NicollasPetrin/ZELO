@@ -1,9 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import type { ConversationKind } from "@prisma/client";
 import { actionError } from "@/lib/action-result";
 import { requireUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/db/client";
+import { visibleConversationsWhere } from "@/lib/chat";
 import { assertUserActionRateLimit } from "@/lib/rate-limit";
 import { assertCompanyHasActivePlan } from "@/lib/subscription";
 import { idSchema, messageSchema, newConversationSchema } from "@/lib/validations";
@@ -15,7 +17,7 @@ import { idSchema, messageSchema, newConversationSchema } from "@/lib/validation
  * consegue pagar ou por que o plano nao liberou. Bloquear esse canal por falta
  * de assinatura fecharia a porta exatamente para quem mais precisa dela.
  */
-async function assertPodeConversar(user: Awaited<ReturnType<typeof requireUser>>, kind: "COMPANY" | "SUPPORT") {
+async function assertPodeConversar(user: Awaited<ReturnType<typeof requireUser>>, kind: ConversationKind) {
   if (kind === "SUPPORT") {
     return;
   }
@@ -29,14 +31,10 @@ export async function sendMessageAction(values: unknown) {
     await assertUserActionRateLimit(user.id, "chat:send-message");
     const parsed = messageSchema.parse(values);
 
-    // Participar da conversa e a unica credencial que vale aqui; sem isso,
+    // Enxergar a conversa e a unica credencial que vale aqui; sem isso,
     // conhecer o id bastaria para escrever em qualquer conversa da empresa.
     const conversation = await prisma.conversation.findFirst({
-      where: {
-        id: parsed.conversationId,
-        companyId: user.companyId,
-        participants: { some: { userId: user.id } },
-      },
+      where: { AND: [visibleConversationsWhere(user), { id: parsed.conversationId }] },
       select: { id: true, kind: true },
     });
 
@@ -56,10 +54,12 @@ export async function sendMessageAction(values: unknown) {
         where: { id: conversation.id },
         data: { lastMessageAt: agora },
       }),
-      // Quem escreveu ja leu o que escreveu.
-      prisma.conversationParticipant.updateMany({
-        where: { conversationId: conversation.id, userId: user.id },
-        data: { lastReadAt: agora },
+      // Quem escreveu ja leu o que escreveu. Upsert porque no chat geral e no
+      // da equipe a pessoa pode estar escrevendo pela primeira vez.
+      prisma.conversationParticipant.upsert({
+        where: { conversationId_userId: { conversationId: conversation.id, userId: user.id } },
+        create: { conversationId: conversation.id, userId: user.id, lastReadAt: agora },
+        update: { lastReadAt: agora },
       }),
     ]);
 
@@ -77,12 +77,22 @@ export async function markConversationReadAction(conversationId: unknown) {
     const user = await requireUser();
     const id = idSchema.parse(conversationId);
 
-    const atualizadas = await prisma.conversationParticipant.updateMany({
-      where: { conversationId: id, userId: user.id, conversation: { companyId: user.companyId } },
-      data: { lastReadAt: new Date() },
+    const conversation = await prisma.conversation.findFirst({
+      where: { AND: [visibleConversationsWhere(user), { id }] },
+      select: { id: true },
     });
 
-    if (atualizadas.count > 0) {
+    if (conversation) {
+      // A marca de lida so e gravada depois de conferir o acesso. Nos canais a
+      // linha nasce aqui, na primeira leitura; nas privadas e no suporte ela ja
+      // existia, porque e ela que da o acesso.
+      const agora = new Date();
+      await prisma.conversationParticipant.upsert({
+        where: { conversationId_userId: { conversationId: id, userId: user.id } },
+        create: { conversationId: id, userId: user.id, lastReadAt: agora },
+        update: { lastReadAt: agora },
+      });
+
       revalidatePath("/conversas");
       revalidatePath("/", "layout");
     }
@@ -112,12 +122,33 @@ export async function createConversationAction(values: unknown) {
     }
 
     const participantes = [...new Set([user.id, ...convidados.map((c) => c.id)])];
+    const titulo = parsed.title?.trim() || null;
+
+    // Conversa privada entre duas pessoas e uma so: chamar de novo a mesma
+    // pessoa reabre a conversa que ja existe, em vez de espalhar o historico
+    // em varias.
+    if (participantes.length === 2 && !titulo) {
+      const existente = await prisma.conversation.findFirst({
+        where: {
+          companyId: user.companyId,
+          kind: "COMPANY",
+          title: null,
+          participants: { every: { userId: { in: participantes } } },
+          AND: participantes.map((userId) => ({ participants: { some: { userId } } })),
+        },
+        select: { id: true },
+      });
+
+      if (existente) {
+        return { ok: true, data: { conversationId: existente.id }, message: "Conversa aberta." } as const;
+      }
+    }
 
     const conversation = await prisma.conversation.create({
       data: {
         companyId: user.companyId,
         kind: "COMPANY",
-        title: parsed.title?.trim() || null,
+        title: titulo,
         createdById: user.id,
         participants: { create: participantes.map((userId) => ({ userId })) },
       },
