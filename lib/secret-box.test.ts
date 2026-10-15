@@ -29,8 +29,12 @@ describe("secret-box", () => {
   it("refuses content that was tampered with", () => {
     const guardado = encryptSecret(token, segredo);
     const partes = guardado.split(".");
-    // Troca um caractere do texto cifrado.
-    partes[3] = partes[3].slice(0, -1) + (partes[3].endsWith("A") ? "B" : "A");
+    // Troca um bit do texto cifrado. Mexer no ultimo caractere do base64 nao
+    // basta: os bits finais dele podem ser sobra que a decodificacao descarta,
+    // e ai o conteudo cifrado continua identico e o teste falhava de vez em quando.
+    const cifrado = Buffer.from(partes[3], "base64url");
+    cifrado[0] ^= 0x01;
+    partes[3] = cifrado.toString("base64url");
 
     expect(() => decryptSecret(partes.join("."), segredo)).toThrow();
   });
