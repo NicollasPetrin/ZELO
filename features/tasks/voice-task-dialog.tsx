@@ -44,6 +44,7 @@ const EXEMPLOS = [
 ];
 
 const corDoTrecho: Record<VoiceSpanKind, string> = {
+  command: "bg-slate-200 text-slate-600",
   person: "bg-violet-100 text-violet-900",
   date: "bg-sky-100 text-sky-900",
   time: "bg-sky-100 text-sky-900",
@@ -323,6 +324,7 @@ export function VoiceTaskDialog({
                 )}
               </p>
               <p className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-slate-500">
+                <span><span className="mr-1 inline-block h-2 w-2 rounded-sm bg-slate-300" />Pedido</span>
                 <span><span className="mr-1 inline-block h-2 w-2 rounded-sm bg-violet-200" />Pessoa</span>
                 <span><span className="mr-1 inline-block h-2 w-2 rounded-sm bg-sky-200" />Prazo e horário</span>
                 <span><span className="mr-1 inline-block h-2 w-2 rounded-sm bg-rose-200" />Prioridade</span>

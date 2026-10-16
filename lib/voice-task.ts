@@ -20,7 +20,7 @@ export type VoiceContext = {
   departments: VoiceDepartment[];
 };
 
-export type VoiceSpanKind = "person" | "date" | "time" | "priority" | "department";
+export type VoiceSpanKind = "command" | "person" | "date" | "time" | "priority" | "department";
 
 export type VoiceSpan = { start: number; end: number; kind: VoiceSpanKind; remove: boolean };
 
@@ -64,6 +64,26 @@ function foldAligned(original: string) {
   return out;
 }
 
+/**
+ * Chave para comparar nomes pelo som, e nao pela grafia.
+ *
+ * O reconhecimento de voz escreve o nome do jeito mais comum ("Nicolas"),
+ * nao do jeito que esta no cadastro ("Nicollas"). Letra dobrada, y/i, k/c,
+ * w/v, th/t, ph/f, h mudo e z/s no fim viram a mesma coisa dos dois lados.
+ */
+export function nameKey(word: string) {
+  return fold(word)
+    .replace(/ph/g, "f")
+    .replace(/th/g, "t")
+    .replace(/([^cln])h/g, "$1")
+    .replace(/^h/, "")
+    .replace(/y/g, "i")
+    .replace(/w/g, "v")
+    .replace(/k/g, "c")
+    .replace(/z$/, "s")
+    .replace(/(.)\1+/g, "$1");
+}
+
 function escapeRegex(text: string) {
   return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
@@ -82,6 +102,10 @@ const ANTES_DO_PRAZO = /(?:\b(?:ate|para|pra|em|no|na|nesta|nessa|essa|esta|de|d
 const ANTES_DA_PESSOA =
   /(?:\b(?:pede|peca|pedir|manda|mandar|lembra|lembrar|avisa|avisar|fala|falar|diz|diga|chama)\s+)?(?:\b(?:pro|pra|para|ao|a|o)\s+)?(?:\b(?:o|a)\s+)?$/;
 const DEPOIS_DA_PESSOA = /^\s*[,:-]?\s*(?:\b(?:de|que|para|pra)\b)?/;
+// O pedido em si ("adicionar tarefa", "cria uma tarefa pro...") nao faz parte
+// do que precisa ser feito: sai do titulo.
+const COMANDO =
+  /^\s*(?:(?:ok|zelo|por favor)[\s,]+)*(?:(?:adiciona(?:r)?|cria(?:r)?|coloca(?:r)?|cadastra(?:r)?|registra(?:r)?|anota(?:r)?|lanca(?:r)?|abre|abrir|inclui(?:r)?|bota(?:r)?)\s+(?:(?:uma|um|a|essa|esta)\s+)?(?:nova\s+)?tarefa|(?:uma\s+)?nova\s+tarefa|tarefa)\b\s*[:,.-]?/;
 const INICIO_SOBRANDO =
   /^(?:lembrar de|lembrar|por favor|tem que|tem de|precisa|preciso|pra|para|que|de|e|ele|ela|vai|pode|favor|ok|entao|tipo|a|o)\s+/;
 const FIM_SOBRANDO = /\s+(?:por favor|e|eh|ate|para|pra|com|de|do|da|no|na|as|a|o|ok|que)$/;
@@ -173,12 +197,19 @@ export function parseVoiceTask(phrase: string, ctx: VoiceContext): ParsedVoiceTa
     spans,
   };
 
+  // 0. O pedido ("adicionar tarefa pro...") no comeco da frase.
+  const comando = COMANDO.exec(norm);
+  if (comando && comando[0].trim()) {
+    marcar(comando.index, comando.index + comando[0].length, "command");
+  }
+
   // 1. Prioridade. A negacao vem antes, para "nao e urgente" nao virar urgente.
+  // O "de"/"com" da frente ("de alta prioridade") sai junto, para nao sobrar no titulo.
   const prioridades: Array<[RegExp, TaskPriority]> = [
-    [/\b(?:nao (?:e|eh) (?:urgente|prioridade|importante|pra ja)|sem pressa|quando (?:der|puder)|prioridade baixa|baixa prioridade)\b/, "LOW"],
-    [/\b(?:prioridade urgente|urgentissim[oa]|urgente|com urgencia|o quanto antes|o mais rapido possivel)\b/, "URGENT"],
-    [/\b(?:prioridade alta|alta prioridade|importante)\b/, "HIGH"],
-    [/\bprioridade (?:media|normal)\b/, "MEDIUM"],
+    [/\b(?:nao (?:e|eh) (?:urgente|prioridade|importante|pra ja)|sem pressa|quando (?:der|puder)|(?:(?:de|com)\s+)?(?:prioridade baixa|baixa prioridade))\b/, "LOW"],
+    [/\b(?:(?:(?:de|com)\s+)?prioridade (?:urgente|maxima)|urgentissim[oa]|urgente|com urgencia|o quanto antes|o mais rapido possivel)\b/, "URGENT"],
+    [/\b(?:(?:(?:de|com)\s+)?(?:prioridade alta|alta prioridade)|importante)\b/, "HIGH"],
+    [/\b(?:(?:de|com)\s+)?(?:prioridade (?:media|normal)|media prioridade)\b/, "MEDIUM"],
   ];
 
   for (const [regra, prioridade] of prioridades) {
@@ -191,30 +222,36 @@ export function parseVoiceTask(phrase: string, ctx: VoiceContext): ParsedVoiceTa
   }
 
   // 2. Pessoa. Nome completo vale mais que so o primeiro nome; primeiro nome
-  // repetido na equipe vira escolha, e nao chute.
+  // repetido na equipe vira escolha, e nao chute. A comparacao e pelo som
+  // (nameKey), palavra a palavra.
   const achados: Array<{ inicio: number; fim: number; ids: string[] }> = [];
-  const procurar = (chave: string, ids: string[]) => {
-    const regra = new RegExp(`\\b${escapeRegex(chave)}\\b`, "g");
-    let m: RegExpExecArray | null;
-    while ((m = regra.exec(norm))) {
-      achados.push({ inicio: m.index, fim: m.index + m[0].length, ids });
+  const palavras = [...norm.matchAll(/[a-z0-9]+/g)].map((m) => ({
+    inicio: m.index,
+    fim: m.index + m[0].length,
+    chave: nameKey(m[0]),
+  }));
+  const procurar = (chaves: string[], ids: string[]) => {
+    for (let i = 0; i + chaves.length <= palavras.length; i += 1) {
+      if (chaves.every((chave, j) => palavras[i + j].chave === chave)) {
+        achados.push({ inicio: palavras[i].inicio, fim: palavras[i + chaves.length - 1].fim, ids });
+      }
     }
   };
   const porPrimeiroNome = new Map<string, string[]>();
 
   for (const pessoa of ctx.people) {
-    const partes = fold(pessoa.name).trim().split(/\s+/).filter(Boolean);
+    const partes = fold(pessoa.name).trim().split(/\s+/).filter(Boolean).map(nameKey);
     if (partes.length === 0) {
       continue;
     }
     if (partes.length > 1) {
-      procurar(partes.join(" "), [pessoa.id]);
+      procurar(partes, [pessoa.id]);
     }
     porPrimeiroNome.set(partes[0], [...(porPrimeiroNome.get(partes[0]) ?? []), pessoa.id]);
   }
 
   for (const [primeiro, ids] of porPrimeiroNome) {
-    procurar(primeiro, ids);
+    procurar([primeiro], ids);
   }
 
   achados.sort((a, b) => a.inicio - b.inicio || b.fim - b.inicio - (a.fim - a.inicio));
@@ -426,6 +463,10 @@ export function parseVoiceTask(phrase: string, ctx: VoiceContext): ParsedVoiceTa
     sobra += removido ? " " : original[i];
   }
   resultado.title = cleanTitle(sobra);
+
+  if (!resultado.title) {
+    resultado.notes.push({ kind: "info", text: "Não entendemos o que precisa ser feito. Escreva o título." });
+  }
 
   return resultado;
 }

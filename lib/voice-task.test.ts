@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cleanTitle, parseVoiceTask, type VoiceContext } from "./voice-task";
+import { cleanTitle, nameKey, parseVoiceTask, type VoiceContext } from "./voice-task";
 
 // Quinta-feira, 15/10/2026, 14h em Brasilia.
 const agora = new Date("2026-10-15T17:00:00.000Z");
@@ -161,6 +161,57 @@ describe("parseVoiceTask", () => {
 
     expect(trecho("person")).toEqual(["Bruno,"]);
     expect(trecho("date")).toEqual(["amanhã"]);
+  });
+});
+
+describe("parseVoiceTask: o pedido e a grafia do nome", () => {
+  it("takes the request itself out of the title", () => {
+    const r = ler("Adicionar tarefa pro Bruno limpar o estoque amanhã");
+    expect(r.title).toBe("Limpar o estoque");
+    expect(r.assigneeId).toBe("bruno");
+
+    expect(ler("Criar uma tarefa para o Bruno revisar as notas fiscais").title).toBe("Revisar as notas fiscais");
+    expect(ler("Nova tarefa: Bruno, conferir o caixa hoje").title).toBe("Conferir o caixa");
+  });
+
+  it("recognises the name however speech recognition spells it", () => {
+    // No cadastro e "Nicollas Petrin"; a voz escreve "Nicolas".
+    const r = ler("adicionar tarefa pro Nicolas de alta prioridade limpar o estoque amanhã");
+
+    expect(r.assigneeId).toBe("eu");
+    expect(r.priority).toBe("HIGH");
+    expect(r.title).toBe("Limpar o estoque");
+  });
+
+  it("takes 'de'/'com' along with the priority", () => {
+    expect(ler("Bruno com prioridade alta revisar o pedido").title).toBe("Revisar o pedido");
+    expect(ler("Bruno lavar a calçada de baixa prioridade").priority).toBe("LOW");
+    expect(ler("Bruno lavar a calçada de baixa prioridade").title).toBe("Lavar a calçada");
+  });
+
+  it("leaves the title empty, with a note, when only the request was said", () => {
+    const r = ler("adicionar tarefa pro Bruno de alta prioridade");
+
+    expect(r.title).toBe("");
+    expect(r.assigneeId).toBe("bruno");
+    expect(r.notes.some((n) => /o que precisa ser feito/.test(n.text))).toBe(true);
+  });
+});
+
+describe("nameKey", () => {
+  it("treats common spelling variants of a name as the same", () => {
+    expect(nameKey("Nicollas")).toBe(nameKey("Nicolas"));
+    expect(nameKey("Matheus")).toBe(nameKey("Mateus"));
+    expect(nameKey("Raphael")).toBe(nameKey("Rafael"));
+    expect(nameKey("Kelly")).toBe(nameKey("Keli"));
+    expect(nameKey("Luiz")).toBe(nameKey("Luis"));
+    expect(nameKey("Thaís")).toBe(nameKey("Tais"));
+    expect(nameKey("Jhonatan")).toBe(nameKey("Jonathan"));
+  });
+
+  it("keeps different names apart", () => {
+    expect(nameKey("Carla")).not.toBe(nameKey("Carlos"));
+    expect(nameKey("Michele")).not.toBe(nameKey("Mikaela"));
   });
 });
 
