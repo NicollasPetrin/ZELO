@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Building2 } from "lucide-react";
-import { BrandLogo } from "@/components/brand-logo";
+import { AuthError, AuthShell } from "@/components/auth/auth-shell";
+import { ProductPreview } from "@/components/auth/product-preview";
 import { loginAction } from "@/features/auth/actions";
 import { getCurrentUser } from "@/lib/auth/session";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { Input, Label } from "@/components/ui/fields";
+import { PasswordInput } from "@/components/ui/password-input";
+import { TRIAL_DAYS } from "@/lib/subscription";
 
 const errorMessages: Record<string, string> = {
   credenciais: "E-mail ou senha inválidos.",
@@ -28,59 +30,53 @@ export default async function LoginPage({
   const error = params.error ? errorMessages[params.error] : null;
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-100 px-4 py-10">
-      <div className="grid w-full max-w-5xl overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm lg:grid-cols-[1fr_420px]">
-        <section className="flex min-h-[520px] flex-col justify-between bg-slate-950 p-8 text-white">
-          <div>
-            <Link href="/" className="flex items-center gap-3">
-              <BrandLogo variant="iconDark" decorative className="h-11 w-11" preload />
-              <div>
-                <h1 className="text-xl font-semibold">Zelo</h1>
-                <p className="text-sm text-slate-300">Rotina da equipe em um lugar visível.</p>
-              </div>
-            </Link>
-            <p className="mt-16 max-w-lg text-3xl font-semibold leading-tight">
-              Entre para continuar gerenciando tarefas, prazos, setores e metas da sua empresa.
+    <AuthShell
+      topLink={
+        <>
+          Não tem conta?{" "}
+          <Link href="/signup" className="font-semibold text-emerald-700 hover:text-emerald-800">
+            Criar conta
+          </Link>
+        </>
+      }
+      aside={
+        <>
+          <div className="max-w-md">
+            <h2 className="text-2xl font-semibold leading-tight text-slate-950">Cada tarefa com dono, prazo e lugar certo.</h2>
+            <p className="mt-3 text-sm leading-6 text-slate-600">
+              O seu dia no Início, os setores com o que está atrasado e o quadro da equipe. Tudo no mesmo lugar.
             </p>
           </div>
-          <div className="grid gap-3 text-sm text-slate-300 md:grid-cols-3">
-            <p>Dados separados por empresa.</p>
-            <p>Acesso protegido por sessão assinada.</p>
-            <p>Permissões por dono, gerente e funcionário.</p>
-          </div>
-        </section>
+          <ProductPreview />
+        </>
+      }
+    >
+      <h1 className="text-2xl font-semibold tracking-tight text-slate-950">Entrar na Zelo</h1>
+      <p className="mt-2 text-sm leading-6 text-slate-600">Use o e-mail e a senha da sua conta.</p>
 
-        <section className="p-8">
-          <div className="mb-8 flex items-center gap-2 text-sm font-medium text-slate-500">
-            <Building2 className="h-4 w-4" aria-hidden="true" />
-            Acesso seguro
-          </div>
-          <h2 className="text-2xl font-semibold text-slate-950">Entrar</h2>
-          <p className="mt-2 text-sm leading-6 text-slate-600">Use o e-mail e a senha cadastrados na sua conta.</p>
+      {error ? <AuthError>{error}</AuthError> : null}
 
-          <form action={loginAction} className="mt-8 space-y-4">
-            <div className="space-y-1.5">
-              <Label>E-mail</Label>
-              <Input name="email" type="email" autoComplete="email" required />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Senha</Label>
-              <Input name="password" type="password" autoComplete="current-password" required />
-            </div>
-            {error ? <p className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</p> : null}
-            <SubmitButton className="w-full" pendingLabel="Entrando...">
-              Entrar no painel
-            </SubmitButton>
-          </form>
+      <form action={loginAction} className="mt-8 space-y-5">
+        <div className="space-y-1.5">
+          <Label htmlFor="email">E-mail</Label>
+          <Input id="email" name="email" type="email" autoComplete="email" placeholder="voce@empresa.com" required autoFocus />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="password">Senha</Label>
+          <PasswordInput id="password" name="password" autoComplete="current-password" required />
+        </div>
+        <SubmitButton className="h-11 w-full" pendingLabel="Entrando...">
+          Entrar
+        </SubmitButton>
+      </form>
 
-          <p className="mt-6 text-sm text-slate-600">
-            Ainda não tem conta?{" "}
-            <Link href="/signup" className="font-semibold text-emerald-700 hover:text-emerald-800">
-              Criar conta
-            </Link>
-          </p>
-        </section>
+      <div className="mt-8 rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-600">
+        Primeira vez por aqui?{" "}
+        <Link href="/signup" className="font-semibold text-emerald-700 hover:text-emerald-800">
+          Crie a conta da sua empresa
+        </Link>{" "}
+        e teste {TRIAL_DAYS} dias grátis, sem cartão.
       </div>
-    </main>
+    </AuthShell>
   );
 }

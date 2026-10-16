@@ -1,13 +1,17 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowRight, Building2, LockKeyhole } from "lucide-react";
-import { BrandLogo } from "@/components/brand-logo";
+import type { ReactNode } from "react";
+import { ArrowRight, Check } from "lucide-react";
+import { AuthError, AuthShell } from "@/components/auth/auth-shell";
+import { ProductPreview } from "@/components/auth/product-preview";
 import { signupAction } from "@/features/auth/actions";
 import { getCurrentUser } from "@/lib/auth/session";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { Input, Label } from "@/components/ui/fields";
+import { PasswordInput } from "@/components/ui/password-input";
 import { BillingAddressFields } from "@/features/billing/billing-address-fields";
 import { planDetails, planOrder } from "@/lib/plans";
+import { TRIAL_DAYS } from "@/lib/subscription";
 
 const errorMessages: Record<string, string> = {
   dados:
@@ -17,6 +21,30 @@ const errorMessages: Record<string, string> = {
   documento: "Este CNPJ ou CPF já está cadastrado em outra conta.",
   dadosCobranca: "Complete os dados de cobrança para assinar o plano.",
 };
+
+function Bloco({ numero, titulo, descricao, children }: { numero: number; titulo: string; descricao?: string; children: ReactNode }) {
+  return (
+    <fieldset className="space-y-4">
+      <legend className="flex items-center gap-2 text-sm font-semibold text-slate-950">
+        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-50 text-xs font-semibold text-emerald-800 ring-1 ring-emerald-200">
+          {numero}
+        </span>
+        {titulo}
+      </legend>
+      {descricao ? <p className="-mt-2 text-xs leading-5 text-slate-500">{descricao}</p> : null}
+      {children}
+    </fieldset>
+  );
+}
+
+function Vantagem({ children }: { children: ReactNode }) {
+  return (
+    <li className="flex gap-2 text-sm leading-6 text-slate-700">
+      <Check className="mt-1 h-4 w-4 shrink-0 text-emerald-600" aria-hidden="true" />
+      <span>{children}</span>
+    </li>
+  );
+}
 
 export default async function SignupPage({
   searchParams,
@@ -38,114 +66,144 @@ export default async function SignupPage({
   // Escolher plano e comecar o teste sao a mesma coisa agora: o mes gratuito e
   // da empresa, nao do link por onde ela entrou. Nao ha mais dois caminhos.
   const comTeste = Boolean(plan);
+
+  // O resumo do plano aparece no painel lateral em tela larga e no topo do
+  // formulario no celular, onde o painel nao existe.
+  const resumoDoPlano = plan ? (
+    <div className="rounded-lg border border-emerald-200 bg-white p-4 shadow-sm">
+      <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700">Plano {plan.name}</p>
+      <p className="mt-1 text-lg font-semibold text-slate-950">{TRIAL_DAYS} dias grátis</p>
+      <p className="text-sm text-slate-600">
+        Depois, {plan.price}/mês · {plan.includedUsers} usuários incluídos
+      </p>
+      <ul className="mt-3 space-y-1">
+        <Vantagem>Nenhum cartão é pedido: o teste começa na tela seguinte.</Vantagem>
+        <Vantagem>Ao fim do teste o acesso é bloqueado até o pagamento, e seus dados continuam guardados.</Vantagem>
+      </ul>
+      <Link href="/signup" className="mt-3 inline-block text-xs font-semibold text-emerald-700 underline hover:text-emerald-800">
+        Prefiro só criar a conta
+      </Link>
+    </div>
+  ) : null;
+
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-100 px-4 py-10">
-      <div className="grid w-full max-w-5xl overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm lg:grid-cols-[1fr_440px]">
-        <section className="flex min-h-[620px] flex-col justify-between bg-slate-950 p-8 text-white">
-          <div>
-            <Link href="/" className="flex items-center gap-3">
-              <BrandLogo variant="iconDark" decorative className="h-11 w-11" preload />
-              <div>
-                <h1 className="text-xl font-semibold">Zelo</h1>
-                <p className="text-sm text-slate-300">Gestão simples da operação</p>
-              </div>
-            </Link>
-            <p className="mt-16 max-w-lg text-3xl font-semibold leading-tight">
-              Crie sua empresa e comece com tarefas, setores e metas salvos em um ambiente próprio.
+    <AuthShell
+      wide
+      topLink={
+        <>
+          Já tem conta?{" "}
+          <Link href="/login" className="font-semibold text-emerald-700 hover:text-emerald-800">
+            Entrar
+          </Link>
+        </>
+      }
+      aside={
+        <>
+          <div className="max-w-md">
+            <h2 className="text-2xl font-semibold leading-tight text-slate-950">Tire a equipe do grupo de WhatsApp.</h2>
+            <p className="mt-3 text-sm leading-6 text-slate-600">
+              Tarefas com responsável, prazo e prova de conclusão, separadas por setor, num ambiente só da sua empresa.
             </p>
           </div>
-          <div className="grid gap-3 text-sm text-slate-300 md:grid-cols-3">
-            <p>Conta isolada por empresa.</p>
-            <p>Sessão protegida por cookie seguro.</p>
-            <p>Senha forte obrigatória.</p>
-          </div>
-        </section>
-
-        <section className="p-8">
-          <div className="mb-8 flex items-center gap-2 text-sm font-medium text-slate-500">
-            <Building2 className="h-4 w-4" aria-hidden="true" />
-            {comTeste ? "Teste gratuito de 30 dias" : "Cadastro sem cobrança automática"}
-          </div>
-          <h2 className="text-2xl font-semibold text-slate-950">
-            {comTeste ? `Testar o Plano ${plan?.name} por 30 dias` : "Criar conta"}
-          </h2>
-          {plan ? (
-            <div className="mt-3 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm leading-6 text-emerald-900">
-              <>
-                <strong>30 dias grátis</strong>, depois {plan.price}/mês — {plan.includedUsers} usuários incluídos.{" "}
-                <strong>Nenhum cartão é pedido</strong>: crie a conta e comece o teste na tela seguinte. Ao fim dos 30
-                dias o acesso é bloqueado até o pagamento, e seus dados continuam guardados.
-              </>{" "}
-              <Link href="/signup" className="font-semibold underline">
-                Prefiro só criar a conta
-              </Link>
-            </div>
-          ) : (
-            <p className="mt-2 text-sm leading-6 text-slate-600">
-              Crie a conta da empresa e escolha o plano na tela seguinte, com 30 dias gratuitos e sem cartão.{" "}
-              <Link href="/#planos" className="font-semibold text-emerald-700 underline hover:text-emerald-800">
-                Ver planos e testar 30 dias grátis
-              </Link>
-            </p>
+          {resumoDoPlano ?? <ProductPreview />}
+          {resumoDoPlano ? null : (
+            <ul className="max-w-md space-y-1">
+              <Vantagem>{TRIAL_DAYS} dias grátis em qualquer plano, sem cartão.</Vantagem>
+              <Vantagem>O plano é escolhido na tela seguinte.</Vantagem>
+            </ul>
           )}
-
-          <form action={signupAction} className="mt-8 space-y-4">
-            <div className="space-y-1.5">
-              <Label>Empresa</Label>
-              <Input name="companyName" placeholder="Nome da empresa" required minLength={2} />
-            </div>
-            <div className="space-y-1.5">
-              <Label>CNPJ ou CPF</Label>
-              <Input name="document" inputMode="numeric" autoComplete="off" placeholder="Somente números" required />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Segmento</Label>
-              <Input name="segment" placeholder="Ex.: varejo, clínica, serviços" />
-            </div>
-            {/* Os dados de cobranca sao pedidos uma vez, aqui, mesmo sem plano
-                escolhido: e o que faz o pagamento no fim do teste ser um clique
-                em vez de um cadastro novo. */}
-            {plan ? <input type="hidden" name="plan" value={plan.code} /> : null}
-            <div className="space-y-1.5">
-              <Label>Telefone</Label>
-              <Input name="phone" inputMode="tel" autoComplete="tel" placeholder="(11) 98765-4321" required />
-            </div>
-            <BillingAddressFields />
-            <div className="space-y-1.5">
-              <Label>Seu nome</Label>
-              <Input name="ownerName" placeholder="Nome completo" required minLength={2} />
-            </div>
-            <div className="space-y-1.5">
-              <Label>E-mail</Label>
-              <Input name="email" type="email" placeholder="voce@empresa.com" required />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Senha</Label>
-              <Input name="password" type="password" required minLength={10} autoComplete="new-password" />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Confirmar senha</Label>
-              <Input name="confirmPassword" type="password" required minLength={10} autoComplete="new-password" />
-            </div>
-            {error ? <p className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</p> : null}
-            <SubmitButton
-              className="w-full"
-              pendingLabel="Criando sua conta..."
-              icon={<ArrowRight className="h-4 w-4" aria-hidden="true" />}
-            >
-              {comTeste ? "Criar conta e continuar" : "Criar conta e entrar"}
-            </SubmitButton>
-          </form>
-
-          <div className="mt-6 flex items-center gap-2 text-sm text-slate-600">
-            <LockKeyhole className="h-4 w-4 text-slate-400" aria-hidden="true" />
-            Já tem conta?
-            <Link href="/login" className="font-semibold text-emerald-700 hover:text-emerald-800">
-              Entrar
+        </>
+      }
+    >
+      <h1 className="text-2xl font-semibold tracking-tight text-slate-950">
+        {comTeste ? `Testar o Plano ${plan?.name}` : "Criar a conta da sua empresa"}
+      </h1>
+      <p className="mt-2 text-sm leading-6 text-slate-600">
+        {comTeste ? (
+          `Leva uns dois minutos. O teste de ${TRIAL_DAYS} dias começa assim que a conta é criada.`
+        ) : (
+          <>
+            Leva uns dois minutos. O plano é escolhido na tela seguinte, com {TRIAL_DAYS} dias grátis e sem cartão.{" "}
+            <Link href="/#planos" className="font-semibold text-emerald-700 hover:text-emerald-800">
+              Ver planos
             </Link>
+          </>
+        )}
+      </p>
+
+      {resumoDoPlano ? <div className="mt-6 lg:hidden">{resumoDoPlano}</div> : null}
+
+      {error ? <AuthError>{error}</AuthError> : null}
+
+      <form action={signupAction} className="mt-8 space-y-8">
+        {plan ? <input type="hidden" name="plan" value={plan.code} /> : null}
+
+        <Bloco numero={1} titulo="Sua empresa">
+          <div className="space-y-1.5">
+            <Label htmlFor="companyName">Nome da empresa</Label>
+            <Input id="companyName" name="companyName" placeholder="Ex.: Mercado Bom Preço" required minLength={2} />
           </div>
-        </section>
-      </div>
-    </main>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="document">CNPJ ou CPF</Label>
+              <Input id="document" name="document" inputMode="numeric" autoComplete="off" placeholder="Somente números" required />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="phone">Telefone</Label>
+              <Input id="phone" name="phone" inputMode="tel" autoComplete="tel" placeholder="(11) 98765-4321" required />
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="segment">Segmento (opcional)</Label>
+            <Input id="segment" name="segment" placeholder="Ex.: varejo, clínica, serviços" />
+          </div>
+        </Bloco>
+
+        {/* Os dados de cobranca sao pedidos uma vez, aqui, mesmo sem plano
+            escolhido: e o que faz o pagamento no fim do teste ser um clique
+            em vez de um cadastro novo. */}
+        <Bloco
+          numero={2}
+          titulo="Endereço de cobrança"
+          descricao="Pedimos agora para que, no fim do teste, assinar seja um clique. Digite o CEP e o resto se preenche."
+        >
+          <BillingAddressFields />
+        </Bloco>
+
+        <Bloco numero={3} titulo="Seu acesso" descricao="Você entra como dono da conta e cadastra a equipe depois.">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="ownerName">Seu nome</Label>
+              <Input id="ownerName" name="ownerName" autoComplete="name" placeholder="Nome completo" required minLength={2} />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="email">E-mail</Label>
+              <Input id="email" name="email" type="email" autoComplete="email" placeholder="voce@empresa.com" required />
+            </div>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="password">Senha</Label>
+              <PasswordInput id="password" name="password" required minLength={8} autoComplete="new-password" aria-describedby="regra-senha" />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="confirmPassword">Confirmar senha</Label>
+              <PasswordInput id="confirmPassword" name="confirmPassword" required minLength={8} autoComplete="new-password" />
+            </div>
+          </div>
+          <p id="regra-senha" className="-mt-1 text-xs leading-5 text-slate-500">
+            Pelo menos 8 caracteres, com uma letra maiúscula e um caractere especial, como ! @ # ou $.
+          </p>
+        </Bloco>
+
+        <SubmitButton
+          className="h-11 w-full"
+          pendingLabel="Criando sua conta..."
+          icon={<ArrowRight className="h-4 w-4" aria-hidden="true" />}
+        >
+          {comTeste ? "Criar conta e começar o teste" : "Criar conta"}
+        </SubmitButton>
+      </form>
+    </AuthShell>
   );
 }
