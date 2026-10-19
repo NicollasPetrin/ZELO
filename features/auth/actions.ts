@@ -7,6 +7,7 @@ import { hashPassword, needsRehash, verifyPassword } from "@/lib/auth/password";
 import { prisma } from "@/lib/db/client";
 import { parseDocument } from "@/lib/document";
 import { readText } from "@/lib/form-data";
+import { planOrder } from "@/lib/plans";
 import { assertIpRateLimit, assertRateLimit } from "@/lib/rate-limit";
 import { loginSchema, signupSchema } from "@/lib/validations";
 
@@ -74,10 +75,18 @@ export async function loginAction(formData: FormData) {
 }
 
 export async function signupAction(formData: FormData) {
+  // O plano escolhido na landing volta junto com o erro. Sem ele a pagina
+  // perdia o resumo do plano e a conta nascia sem a escolha que a pessoa fez.
+  // Conferido contra a lista de planos para so valores conhecidos irem na URL.
+  const planoEscolhido = planOrder.find((code) => code === readText(formData, "plan"));
+  function voltarComErro(codigo: string): never {
+    redirect(`/signup?error=${codigo}${planoEscolhido ? `&plano=${planoEscolhido}` : ""}`);
+  }
+
   try {
     await assertIpRateLimit("signup", 5, 60 * 60_000);
   } catch {
-    redirect("/signup?error=rate");
+    voltarComErro("rate");
   }
 
   const parsed = signupSchema.safeParse({
@@ -98,7 +107,7 @@ export async function signupAction(formData: FormData) {
   });
 
   if (!parsed.success) {
-    redirect("/signup?error=dados");
+    voltarComErro("dados");
   }
 
   try {
@@ -108,7 +117,7 @@ export async function signupAction(formData: FormData) {
       windowMs: 60 * 60_000,
     });
   } catch {
-    redirect("/signup?error=rate");
+    voltarComErro("rate");
   }
 
   const existingUser = await prisma.user.findUnique({
@@ -121,7 +130,7 @@ export async function signupAction(formData: FormData) {
   });
 
   if (existingUser) {
-    redirect("/signup?error=email");
+    voltarComErro("email");
   }
 
   const documento = parsed.data.document ? parseDocument(parsed.data.document) : null;
@@ -136,7 +145,7 @@ export async function signupAction(formData: FormData) {
     });
 
     if (empresaComDocumento) {
-      redirect("/signup?error=documento");
+      voltarComErro("documento");
     }
   }
 

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { ArrowRight, Check } from "lucide-react";
 import { AuthError, AuthShell } from "@/components/auth/auth-shell";
+import { KeepFormValues } from "@/components/auth/keep-form-values";
 import { ProductPreview } from "@/components/auth/product-preview";
 import { signupAction } from "@/features/auth/actions";
 import { getCurrentUser } from "@/lib/auth/session";
@@ -137,6 +138,7 @@ export default async function SignupPage({
 
       <form action={signupAction} className="mt-8 space-y-8">
         {plan ? <input type="hidden" name="plan" value={plan.code} /> : null}
+        <KeepFormValues storageKey="zelo:cadastro" />
 
         <Bloco numero={1} titulo="Sua empresa">
           <div className="space-y-1.5">

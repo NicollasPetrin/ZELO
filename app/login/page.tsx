@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AuthError, AuthShell } from "@/components/auth/auth-shell";
+import { KeepFormValues } from "@/components/auth/keep-form-values";
 import { ProductPreview } from "@/components/auth/product-preview";
 import { loginAction } from "@/features/auth/actions";
 import { getCurrentUser } from "@/lib/auth/session";
@@ -57,6 +58,7 @@ export default async function LoginPage({
       {error ? <AuthError>{error}</AuthError> : null}
 
       <form action={loginAction} className="mt-8 space-y-5">
+        <KeepFormValues storageKey="zelo:login" focusAfterRestore="password" />
         <div className="space-y-1.5">
           <Label htmlFor="email">E-mail</Label>
           <Input id="email" name="email" type="email" autoComplete="email" placeholder="voce@empresa.com" required autoFocus />
