@@ -18,6 +18,7 @@ import {
   Menu,
   MessageSquare,
   Settings,
+  Store,
   Trophy,
   Users,
   X,
@@ -39,6 +40,8 @@ export type SidebarProps = {
   chatUnread: number;
   /** Setores como espacos. Null quando a pessoa nao gerencia equipe. */
   spaces: SidebarSpace[] | null;
+  /** Empresa de demonstracao: mostra a loja ao vivo com a equipe ficticia. */
+  isDemo?: boolean;
 };
 
 // Cor fixa por setor, tirada do nome: o mesmo setor tem sempre a mesma cor,
@@ -135,7 +138,7 @@ const icone = (Icon: typeof Home) => <Icon className="h-4 w-4 shrink-0" aria-hid
  * espacos (com o numero de atrasadas ao lado, que e o que o dono quer ver
  * primeiro), depois ferramentas e equipe.
  */
-function SidebarContent({ role, plan, companyName, logoUrl, inboxUnread, chatUnread, spaces }: SidebarProps) {
+function SidebarContent({ role, plan, companyName, logoUrl, inboxUnread, chatUnread, spaces, isDemo }: SidebarProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const setorAtual = pathname === "/team-tasks" ? searchParams.get("departmentId") : null;
@@ -233,6 +236,7 @@ function SidebarContent({ role, plan, companyName, logoUrl, inboxUnread, chatUnr
 
             <Secao titulo="Ferramentas">
               <Item href="/dashboard" label="Painel" icon={icone(Gauge)} ativo={em("/dashboard")} />
+              {equipe && isDemo ? <Item href="/loja-ao-vivo" label="Loja ao vivo" icon={icone(Store)} ativo={em("/loja-ao-vivo")} /> : null}
               {equipe ? (
                 access.canUseBasicReports ? (
                   <Item href="/reports" label="Relatórios" icon={icone(BarChart3)} ativo={em("/reports")} />
