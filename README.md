@@ -319,6 +319,7 @@ http://localhost:3000
 | `npm run db:setup` | Gera Prisma Client, aplica migrations e executa seed. |
 | `npm run db:demo` | Cria/atualiza contas demo dos planos Basico, Gestao e Completo. |
 | `npm run db:seed` | Executa seed do Prisma. |
+| `npm run db:bom-lugar` | Cria a empresa de teste Mercadinho Bom Lugar (13 logins, 53 tarefas, 24 metas). So em banco de teste; aceita `--inicio AAAA-MM-DD` e `--recriar`. |
 | `npm run db:load-seed` | Gera massa sintetica somente para teste de carga em staging. |
 | `npm run db:reset` | Reseta o banco via Prisma. |
 | `npm run load:public` | Executa teste de carga leve nas rotas publicas. |

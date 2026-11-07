@@ -13,6 +13,7 @@ import { assertUserActionRateLimit } from "@/lib/rate-limit";
 import { reconcileTaskStatus } from "@/lib/task-status";
 import { assertCompanyHasActivePlan } from "@/lib/subscription";
 import { syncTaskCalendarSafely } from "@/features/calendar/sync";
+import { advanceRecurringTaskSafely } from "@/features/tasks/recurrence";
 import { canComplete, PROOF_REQUIRED_MESSAGE, statusAfterRejection } from "@/lib/task-proof";
 import {
   attachmentSchema,
@@ -216,6 +217,11 @@ export async function updateTaskAction(values: unknown) {
       await prisma.recurrenceRule.deleteMany({ where: { taskId: task.id } });
     }
 
+    // Rotina concluida: a proxima ocorrencia ja entra na lista de quem faz.
+    if (statusAtualizado === "COMPLETED" && task.status !== "COMPLETED") {
+      await advanceRecurringTaskSafely(task.id, user);
+    }
+
     await recordActivity({
       companyId: user.companyId,
       actorId: user.id,
@@ -285,6 +291,11 @@ export async function updateTaskStatusAction(values: unknown) {
 
     if (updateResult.count === 0) {
       throw new Error("Tarefa não encontrada.");
+    }
+
+    // Rotina concluida: a proxima ocorrencia ja entra na lista de quem faz.
+    if (statusReconciliado === "COMPLETED" && task.status !== "COMPLETED") {
+      await advanceRecurringTaskSafely(task.id, user);
     }
 
     const recipientId = task.creatorId === user.id ? task.assigneeId : task.creatorId;
@@ -446,7 +457,7 @@ export async function approveTaskProofAction(values: unknown) {
 
     const task = await prisma.task.findFirst({
       where: { id: parsed.taskId, companyId: user.companyId },
-      select: { id: true, title: true, assigneeId: true, requiresProof: true, completedAt: true },
+      select: { id: true, title: true, assigneeId: true, requiresProof: true, completedAt: true, status: true },
     });
 
     if (!task) {
@@ -463,6 +474,11 @@ export async function approveTaskProofAction(values: unknown) {
       where: { id: task.id },
       data: { status: "COMPLETED", completedAt: task.completedAt ?? new Date() },
     });
+
+    // Rotina concluida: a proxima ocorrencia ja entra na lista de quem faz.
+    if (task.status !== "COMPLETED") {
+      await advanceRecurringTaskSafely(task.id, user);
+    }
 
     if (task.assigneeId !== user.id) {
       await prisma.notification.create({

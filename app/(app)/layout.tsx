@@ -44,6 +44,7 @@ export default async function AuthenticatedLayout({ children }: { children: Reac
         inboxUnread: unreadCount,
         chatUnread,
         spaces,
+        isDemo: user.company.isDemo,
       }}
     >
       {children}
